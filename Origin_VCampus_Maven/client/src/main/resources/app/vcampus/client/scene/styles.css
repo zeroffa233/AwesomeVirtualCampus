@@ -1,16 +1,39 @@
 .nav-button {
-    -fx-background-color: #E0E0E0;
-    -fx-text-fill: black;
-    -fx-font-size: 14px;
-    -fx-background-radius: 5;
+    -fx-background-color: #FFFFFF; /* White Background */
+    -fx-text-fill: #333333; /* Dark Text */
+    -fx-font-size: 16px; /* Increased font size */
+    -fx-font-weight: bold;
+    -fx-background-radius: 0;
+    -fx-padding: 10; /* Uniform padding */
+    -fx-alignment: CENTER; /* Centered text */
 }
 
 .nav-button:hover {
-    -fx-background-color: #D0D0D0;
+    -fx-background-color: #f5f5f5; /* Light Gray for hover */
 }
 
 .nav-button:pressed,
 .nav-button:focused {
-    -fx-background-color: #007BFF;
+    -fx-background-color: #4CAF50; /* Accent Color */
     -fx-text-fill: white;
+}
+
+.top-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0.5, 0, 2);
+}
+
+.view-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+.menu-icon-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 50em; /* Make it a circle */
+}
+
+.menu-icon-button:hover {
+    -fx-background-color: #f5f5f5; /* Light gray background on hover */
 }

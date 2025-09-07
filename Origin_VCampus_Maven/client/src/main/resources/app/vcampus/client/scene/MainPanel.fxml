@@ -1,17 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.Pane?>
 
-<StackPane fx:controller="app.vcampus.client.scene.MainPanelController" prefHeight="800.0" prefWidth="1400.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-    <children>
-        <AnchorPane>
+<BorderPane fx:controller="app.vcampus.client.scene.MainPanelController" prefHeight="800.0" prefWidth="1400.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <top>
+        <StackPane styleClass="top-bar">
+            <padding>
+                <Insets left="20.0" right="20.0" top="10.0" bottom="10.0" />
+            </padding>
             <children>
-                <StackPane fx:id="contentPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                <JFXButton fx:id="menuButton" onAction="#handleMenuButtonClick" text="MENU" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0" />
+                <JFXButton fx:id="menuButton" onAction="#handleMenuButtonClick" styleClass="menu-icon-button" StackPane.alignment="CENTER_LEFT">
+                    <graphic>
+                        <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="/images/menu.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </JFXButton>
+                <Label fx:id="viewTitle" styleClass="view-title" text="Home" StackPane.alignment="CENTER" />
             </children>
-        </AnchorPane>
-        <fx:include fx:id="navRail" source="NavRail.fxml" />
-    </children>
-</StackPane>
+        </StackPane>
+    </top>
+    <center>
+        <StackPane>
+            <children>
+                <Pane fx:id="backgroundAnimationPane" />
+                <StackPane fx:id="contentPane" />
+                <Pane fx:id="overlayPane" onMouseClicked="#handleOverlayClick" style="-fx-background-color: rgba(0, 0, 0, 0.4);" visible="false" />
+                <fx:include fx:id="navRail" source="NavRail.fxml" />
+            </children>
+        </StackPane>
+    </center>
+</BorderPane>

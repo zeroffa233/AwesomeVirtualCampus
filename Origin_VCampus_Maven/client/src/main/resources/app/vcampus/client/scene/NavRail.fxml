@@ -1,21 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="navRailPane" fx:controller="app.vcampus.client.scene.NavRailController" alignment="TOP_CENTER" prefWidth="200.0" spacing="10.0" style="-fx-background-color: #F5F5F5;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-    <padding>
-        <Insets top="20.0" />
-    </padding>
+<VBox fx:controller="app.vcampus.client.scene.NavRailController" alignment="TOP_CENTER" prefWidth="180.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <JFXButton fx:id="homeButton" onAction="#handleHome" prefHeight="40.0" prefWidth="160.0" styleClass="nav-button" text="主页" />
-        <JFXButton fx:id="studentStatusButton" onAction="#handleStudentStatus" prefHeight="40.0" prefWidth="160.0" styleClass="nav-button" text="学籍" />
-        <JFXButton fx:id="teachingAffairsButton" onAction="#handleTeachingAffairs" prefHeight="40.0" prefWidth="160.0" styleClass="nav-button" text="教务" />
-        <JFXButton fx:id="libraryButton" onAction="#handleLibrary" prefHeight="40.0" prefWidth="160.0" styleClass="nav-button" text="图书馆" />
-        <JFXButton fx:id="shopButton" onAction="#handleShop" prefHeight="40.0" prefWidth="160.0" styleClass="nav-button" text="超市" />
-        <JFXButton fx:id="financeButton" onAction="#handleFinance" prefHeight="40.0" prefWidth="160.0" styleClass="nav-button" text="财务" />
-        <JFXButton fx:id="adminButton" onAction="#handleAdmin" prefHeight="40.0" prefWidth="160.0" styleClass="nav-button" text="管理员" />
-        <JFXButton fx:id="gptButton" onAction="#handleGpt" prefHeight="40.0" prefWidth="160.0" styleClass="nav-button" text="GPT" />
+        <Pane prefHeight="120.0">
+            <children>
+                <ImageView fitHeight="80.0" fitWidth="80.0" layoutX="50.0" layoutY="20.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/Logo.png" />
+                    </image>
+                </ImageView>
+            </children>
+        </Pane>
+        <JFXButton fx:id="homeButton" onAction="#handleHome" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="主页" VBox.vgrow="ALWAYS" />
+        <JFXButton fx:id="studentStatusButton" onAction="#handleStudentStatus" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="学籍" VBox.vgrow="ALWAYS" />
+        <JFXButton fx:id="teachingAffairsButton" onAction="#handleTeachingAffairs" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="教务" VBox.vgrow="ALWAYS" />
+        <JFXButton fx:id="libraryButton" onAction="#handleLibrary" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="图书馆" VBox.vgrow="ALWAYS" />
+        <JFXButton fx:id="shopButton" onAction="#handleShop" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="超市" VBox.vgrow="ALWAYS" />
+        <JFXButton fx:id="financeButton" onAction="#handleFinance" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="财务" VBox.vgrow="ALWAYS" />
+        <JFXButton fx:id="adminButton" onAction="#handleAdmin" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="管理员" VBox.vgrow="ALWAYS" />
+        <JFXButton fx:id="gptButton" onAction="#handleGpt" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="GPT" VBox.vgrow="ALWAYS" />
     </children>
 </VBox>

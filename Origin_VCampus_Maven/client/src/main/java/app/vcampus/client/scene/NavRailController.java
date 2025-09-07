@@ -10,53 +10,48 @@ public class NavRailController {
         this.mainPanelController = mainPanelController;
     }
 
-    private void switchView(String fxmlPath) {
+    private void switchView(String fxmlPath, String title) {
         mainPanelController.toggleNavRail();
-        mainPanelController.loadView(fxmlPath);
+        mainPanelController.loadView(fxmlPath, title);
     }
 
     @FXML
     private void handleHome() {
-        switchView("/app/vcampus/client/scene/subscene/HomeView.fxml");
+        switchView("/app/vcampus/client/scene/sub/HomeView.fxml", "主页");
     }
 
     @FXML
     private void handleStudentStatus() {
-        System.out.println("Student Status button clicked");
-        // switchView("/app/vcampus/client/scene/subscene/StudentStatusView.fxml");
+        switchView("/app/vcampus/client/scene/sub/StudentStatusView.fxml", "学籍管理");
     }
 
     @FXML
     private void handleTeachingAffairs() {
-        System.out.println("Teaching Affairs button clicked");
-        // switchView("/app/vcampus/client/scene/subscene/TeachingAffairsView.fxml");
+        switchView("/app/vcampus/client/scene/sub/TeachingAffairsView.fxml", "教务系统");
     }
 
     @FXML
     private void handleLibrary() {
-        switchView("/app/vcampus/client/scene/subscene/LibraryView.fxml");
+        switchView("/app/vcampus/client/scene/sub/LibraryView.fxml", "图书馆");
     }
 
     @FXML
     private void handleShop() {
-        System.out.println("Shop button clicked");
-        // switchView("/app/vcampus/client/scene/subscene/ShopView.fxml");
+        switchView("/app/vcampus/client/scene/sub/ShopView.fxml", "网上商店");
     }
 
     @FXML
     private void handleFinance() {
-        System.out.println("Finance button clicked");
-        mainPanelController.loadView("/app/vcampus/client/scene/sub/FinanceView.fxml");
+        switchView("/app/vcampus/client/scene/sub/FinanceView.fxml", "财务中心");
     }
 
     @FXML
     private void handleAdmin() {
-        System.out.println("Admin button clicked");
+        switchView("/app/vcampus/client/scene/sub/AdminView.fxml", "系统管理");
     }
 
     @FXML
     private void handleGpt() {
-        System.out.println("GPT button clicked");
-        mainPanelController.loadView("/app/vcampus/client/scene/sub/GptView.fxml");
+        switchView("/app/vcampus/client/scene/sub/GptView.fxml", "VCampus GPT");
     }
 }

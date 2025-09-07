@@ -1,11 +1,17 @@
 package app.vcampus.client.scene;
 
+import app.vcampus.client.util.UIUtils;
+import com.jfoenix.controls.JFXButton;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -20,30 +26,44 @@ public class MainPanelController implements Initializable {
     private StackPane contentPane;
 
     @FXML
-    private VBox navRailPane; // The root pane of NavRail.fxml, injected via fx:id
+    private VBox navRail;
 
     @FXML
-    private NavRailController navRailController; // The controller of NavRail.fxml
+    private NavRailController navRailController;
+
+    @FXML
+    private Pane overlayPane;
+
+    @FXML
+    private Label viewTitle;
+
+    @FXML
+    private Pane backgroundAnimationPane;
+
+    @FXML
+    private JFXButton menuButton;
 
     private boolean isNavRailVisible = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Pass this controller to the navRail controller
+        System.out.println("DEBUG: Initializing MainPanelController...");
+        System.out.println("DEBUG: FXML injection check: menuButton is " + (menuButton == null ? "null" : "not null"));
+
         navRailController.setMainPanelController(this);
-
-        // Initially hide the nav rail off-screen
-        navRailPane.setTranslateX(-navRailPane.getPrefWidth());
-        StackPane.setAlignment(navRailPane, javafx.geometry.Pos.CENTER_LEFT);
-
-        // Load home view by default
-        loadView("/app/vcampus/client/scene/subscene/HomeView.fxml");
+        navRail.setMaxWidth(Region.USE_PREF_SIZE);
+        navRail.setTranslateX(-navRail.getPrefWidth());
+        StackPane.setAlignment(navRail, javafx.geometry.Pos.CENTER_LEFT);
+        overlayPane.managedProperty().bind(overlayPane.visibleProperty());
+        // UIUtils.createFlowingLightAnimation(backgroundAnimationPane);
+        loadView("/app/vcampus/client/scene/sub/HomeView.fxml", "主页");
     }
 
-    public void loadView(String fxmlPath) {
+    public void loadView(String fxmlPath, String title) {
         try {
             Node view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxmlPath)));
             contentPane.getChildren().setAll(view);
+            viewTitle.setText(title);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,19 +71,34 @@ public class MainPanelController implements Initializable {
 
     @FXML
     private void handleMenuButtonClick() {
+        System.out.println("--- handleMenuButtonClick called ---");
         toggleNavRail();
     }
 
+    @FXML
+    private void handleOverlayClick() {
+        if (isNavRailVisible) {
+            toggleNavRail();
+        }
+    }
+
     public void toggleNavRail() {
-        TranslateTransition transition = new TranslateTransition(Duration.millis(300), navRailPane);
+        TranslateTransition navRailTransition = new TranslateTransition(Duration.millis(300), navRail);
+        FadeTransition overlayFade = new FadeTransition(Duration.millis(300), overlayPane);
 
         if (isNavRailVisible) {
-            transition.setToX(-navRailPane.getWidth());
+            navRailTransition.setToX(-navRail.getPrefWidth());
+            overlayFade.setToValue(0.0);
+            overlayFade.setOnFinished(event -> overlayPane.setVisible(false));
         } else {
-            transition.setToX(0);
+            overlayPane.setVisible(true);
+            navRailTransition.setToX(0);
+            overlayFade.setToValue(1.0);
+            overlayFade.setOnFinished(null);
         }
 
-        transition.play();
+        ParallelTransition parallelTransition = new ParallelTransition(navRailTransition, overlayFade);
+        parallelTransition.play();
         isNavRailVisible = !isNavRailVisible;
     }
 }
