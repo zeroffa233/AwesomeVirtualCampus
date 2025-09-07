@@ -62,7 +62,7 @@ mysql> exit
 mysql -u root -p vcampus < path/to/your/file.sql
 mysql -u root -p
 mysql> USE vcampus;
-mysql> SHOW TABLES;
+U
 ```
 
 ## 可能存在的问题

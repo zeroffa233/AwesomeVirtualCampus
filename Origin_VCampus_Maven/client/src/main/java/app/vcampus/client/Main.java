@@ -18,7 +18,8 @@ public class Main extends Application {
         primaryStage = stage;
         primaryStage.setResizable(false);
         // For UI debugging, call startForDebug(). For normal operation, call showLogin().
-        startForDebug();
+        showLogin();
+        //startForDebug();
     }
 
     public static void startForDebug() {

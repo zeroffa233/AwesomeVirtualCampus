@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
+import javafx.animation.Interpolator; //for toggleNavRail()
 public class MainPanelController implements Initializable {
     @FXML
     private StackPane contentPane;
@@ -82,9 +83,15 @@ public class MainPanelController implements Initializable {
         }
     }
 
+    private static final Duration ANIMATION_SPEED = Duration.millis(450);
+    private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.2, 0.8, 0.2, 1.0);
     public void toggleNavRail() {
-        TranslateTransition navRailTransition = new TranslateTransition(Duration.millis(300), navRail);
-        FadeTransition overlayFade = new FadeTransition(Duration.millis(300), overlayPane);
+        TranslateTransition navRailTransition = new TranslateTransition(ANIMATION_SPEED, navRail);
+        FadeTransition overlayFade = new FadeTransition(ANIMATION_SPEED, overlayPane);
+
+        // --- 修改：使用我们自定义的插值器 ---
+        navRailTransition.setInterpolator(CUSTOM_EASING);
+        overlayFade.setInterpolator(CUSTOM_EASING);
 
         if (isNavRailVisible) {
             navRailTransition.setToX(-navRail.getPrefWidth());
