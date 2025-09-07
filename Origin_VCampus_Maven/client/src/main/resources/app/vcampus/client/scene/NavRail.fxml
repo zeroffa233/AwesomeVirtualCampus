@@ -4,7 +4,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:controller="app.vcampus.client.scene.NavRailController" alignment="TOP_CENTER" prefWidth="200.0" spacing="10.0" style="-fx-background-color: #F5F5F5;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<VBox fx:id="navRailPane" fx:controller="app.vcampus.client.scene.NavRailController" alignment="TOP_CENTER" prefWidth="200.0" spacing="10.0" style="-fx-background-color: #F5F5F5;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <padding>
         <Insets top="20.0" />
     </padding>

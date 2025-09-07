@@ -10,32 +10,37 @@ public class NavRailController {
         this.mainPanelController = mainPanelController;
     }
 
+    private void switchView(String fxmlPath) {
+        mainPanelController.toggleNavRail();
+        mainPanelController.loadView(fxmlPath);
+    }
+
     @FXML
     private void handleHome() {
-        mainPanelController.loadView("/app/vcampus/client/scene/subscene/HomeView.fxml");
+        switchView("/app/vcampus/client/scene/subscene/HomeView.fxml");
     }
 
     @FXML
     private void handleStudentStatus() {
         System.out.println("Student Status button clicked");
-        // mainPanelController.loadView("/app/vcampus/client/scene/subscene/StudentStatusView.fxml");
+        // switchView("/app/vcampus/client/scene/subscene/StudentStatusView.fxml");
     }
 
     @FXML
     private void handleTeachingAffairs() {
         System.out.println("Teaching Affairs button clicked");
-        // mainPanelController.loadView("/app/vcampus/client/scene/subscene/TeachingAffairsView.fxml");
+        // switchView("/app/vcampus/client/scene/subscene/TeachingAffairsView.fxml");
     }
 
     @FXML
     private void handleLibrary() {
-        mainPanelController.loadView("/app/vcampus/client/scene/subscene/LibraryView.fxml");
+        switchView("/app/vcampus/client/scene/subscene/LibraryView.fxml");
     }
 
     @FXML
     private void handleShop() {
         System.out.println("Shop button clicked");
-        // mainPanelController.loadView("/app/vcampus/client/scene/subscene/ShopView.fxml");
+        // switchView("/app/vcampus/client/scene/subscene/ShopView.fxml");
     }
 
     @FXML
@@ -47,7 +52,6 @@ public class NavRailController {
     @FXML
     private void handleAdmin() {
         System.out.println("Admin button clicked");
-        // mainPanelController.loadView("/app/vcampus/client/scene/subscene/AdminView.fxml");
     }
 
     @FXML
