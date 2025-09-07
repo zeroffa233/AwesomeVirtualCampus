@@ -1,8 +1,0 @@
-.text-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #007BFF;
-}
-
-.text-button:hover {
-    -fx-underline: true;
-}
