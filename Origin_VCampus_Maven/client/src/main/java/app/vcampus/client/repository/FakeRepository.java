@@ -130,22 +130,6 @@ public class FakeRepository {
             }
         }
 
-        // 另外一种常见约定：username 就是学号（例如 login 时使用学号作为 username）
-        try {
-            String username = null;
-            // 尝试从 fakeUserDb 中找到 user 对应的 key（因为我们没有 user.getUsername() 保证）
-            for (Map.Entry<String, User> e : fakeUserDb.entrySet()) {
-                if (e.getValue() == user) {
-                    username = e.getKey();
-                    break;
-                }
-            }
-            if (username != null) {
-                Student byNum = fakeStudentDb.get(username);
-                if (byNum != null) return byNum;
-            }
-        } catch (Throwable ignored) {
-        }
 
         return null;
     }
