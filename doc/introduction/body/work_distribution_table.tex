@@ -21,8 +21,7 @@
 
 \begin{table}[H]
     \centering
-    \setlength{\tabcolsep}{14mm}{
-        \begin{tabular}{cl}
+    \begin{tabular}{>{\centering\arraybackslash}m{4cm} p{12cm}} % 定义第一列左对齐，第二列为宽度12cm的段落
             \hline
             \rowcolor[HTML]{96FFFB}
             第一周 & \multicolumn{1}{c}{\cellcolor[HTML]{96FFFB}8月25日 - 8月29日} \\
@@ -32,23 +31,38 @@
             计划  & 在第二周初步实现数据库通信和各功能模块                                       \\
             建议  & 合理分工，统筹调度                                                 \\
             \hline
-        \end{tabular}
-    }
+    \end{tabular}
 \end{table}
 
 \begin{table}[H]
     \centering
-    \setlength{\tabcolsep}{14mm}{
-        \begin{tabular}{cl}
-            \hline
-            \rowcolor[HTML]{96FFFB}
-            第二周 & \multicolumn{1}{c}{\cellcolor[HTML]{96FFFB}9月1日 - 9月7日} \\
-            \hline
-            进度  & 1. 完成登录界面的前端设计和所有操作逻辑 2. 完成主界面的风格设计和各模块切换逻辑 3. 创建各模块子视图的 FXML ，将各模块开发解耦，彻底分离工作 4. ChatGPT 功能初步完成开发，实现软件内正常对话                                  \\
-            状态  & 借助 Git 的强大版本管理能力，我们已经进入稳步开发阶段                                         \\
-            计划  & 在第三周彻底实现各模块的前端页面以及相关后端逻辑                                       \\
-            建议  & 进展顺利，稳步推进                                                 \\
-            \hline
-        \end{tabular}
-    }
+    % \setlength{\extrarowheight}{8pt} % 可选：增加一些额外的行高，让长文本有更多呼吸空间
+    \begin{tabular}{>{\centering\arraybackslash}m{4cm} p{12cm}} % 定义第一列左对齐，第二列为宽度12cm的段落
+        \hline
+        % --- 表头 ---
+        \rowcolor[HTML]{96FFFB}
+        第二周 & \multicolumn{1}{c}{\cellcolor[HTML]{96FFFB}9月1日 - 9月7日} \\
+        \hline
+        
+        % --- 内容区 ---
+        % 下面这一行是关键：
+        % 我们同时在第一列和第二列使用了 \multirow{4}{...}{...} 命令。
+        % 这意味着从这一行开始，每一列的单元格都会向下“占据”4行空间。
+        % 第一个 \multirow{4}{*}{进度} 的宽度由 "进度" 二字的自然宽度决定。
+        % 第二个 \multirow 的宽度我们手动设为 12cm，以匹配 p{12cm} 的列定义，确保文本能正确换行。
+        \multirow{4}{*}{进度} & \multirow{4}{12cm}{1. 完成登录界面的前端设计和所有操作逻辑 \\2. 完成主界面的风格设计和各模块切换逻辑 \\3. 创建各模块子视图的 FXML ，将各模块开发解耦，彻底分离工作 \\4. ChatGPT 功能初步完成开发，实现软件内正常对话} \\
+        
+        % 下面这三行是“占位符”。
+        % 因为上面的 \multirow 已经定义了内容，所以我们只需要用空行来填充被占据的空间。
+        & \\
+        & \\
+        & \\
+        \hline
+        状态  & 借助 Git 的强大版本管理能力，我们已经进入稳步开发阶段 \\
+        %\hline
+        计划  & 在第三周彻底实现各模块的前端页面以及相关后端逻辑 \\
+        %\hline
+        建议  & 进展顺利，稳步推进 \\
+        \hline
+    \end{tabular}
 \end{table}
