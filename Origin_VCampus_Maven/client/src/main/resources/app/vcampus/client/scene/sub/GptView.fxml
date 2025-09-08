@@ -30,7 +30,7 @@
                     </padding>
                     <children>
                         <JFXTextArea fx:id="userInputField" minHeight="150.0" HBox.hgrow="ALWAYS" promptText="输入你的消息..." />
-                        <JFXButton fx:id="sendButton" onAction="#sendMessage" prefHeight="40.0" prefWidth="80.0" text="发送" />
+                        <JFXButton fx:id="sendButton" onAction="#sendMessage" maxHeight="Infinity" prefWidth="80.0" style="-fx-background-color: #007BFF; -fx-text-fill: white;"  text="发送" />
                     </children>
                 </HBox>
             </children>
