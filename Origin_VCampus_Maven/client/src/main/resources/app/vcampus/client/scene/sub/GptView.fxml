@@ -1,39 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXListView?>
 <?import com.jfoenix.controls.JFXTextArea?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane fx:controller="app.vcampus.client.scene.GptController" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <children>
-                <!-- 对话显示区域 -->
-                <ScrollPane fx:id="chatScrollPane" fitToWidth="true" VBox.vgrow="ALWAYS">
-                    <content>
-                        <VBox fx:id="chatDisplayArea" alignment="TOP_LEFT" spacing="10.0">
-                            <padding>
-                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                            </padding>
-                        </VBox>
-                    </content>
-                </ScrollPane>
-
-                <!-- 输入区域 -->
-                <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <SplitPane dividerPositions="0.25" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <items>
+                <!-- 左侧聊天记录区域 -->
+                <VBox alignment="TOP_CENTER" spacing="10.0" style="-fx-background-color: #f4f4f4;">
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                     </padding>
                     <children>
-                        <JFXTextArea fx:id="userInputField" minHeight="150.0" HBox.hgrow="ALWAYS" promptText="输入你的消息..." />
-                        <JFXButton fx:id="sendButton" onAction="#sendMessage" maxHeight="Infinity" prefWidth="80.0" style="-fx-background-color: #007BFF; -fx-text-fill: white;"  text="发送" />
+                        <JFXListView fx:id="chatHistoryListView" VBox.vgrow="ALWAYS" />
+                        <JFXButton fx:id="newChatButton" onAction="#createNewChat" prefWidth="Infinity" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="创建新聊天" />
                     </children>
-                </HBox>
-            </children>
-        </VBox>
+                </VBox>
+
+                <!-- 右侧对话主区域 -->
+                <VBox>
+                    <children>
+                        <!-- 对话显示区域 -->
+                        <ScrollPane fx:id="chatScrollPane" fitToWidth="true" VBox.vgrow="ALWAYS">
+                            <content>
+                                <VBox fx:id="chatDisplayArea" alignment="TOP_LEFT" spacing="10.0">
+                                    <padding>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </padding>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+
+                        <!-- 输入区域 -->
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                            <children>
+                                <JFXTextArea fx:id="userInputField" minHeight="150.0" HBox.hgrow="ALWAYS" promptText="输入你的消息 (Ctrl+Enter 发送)..." />
+                                <JFXButton fx:id="sendButton" onAction="#sendMessage" maxHeight="Infinity" prefWidth="80.0" style="-fx-background-color: #007BFF; -fx-text-fill: white;" text="发送" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </items>
+        </SplitPane>
     </children>
 </AnchorPane>

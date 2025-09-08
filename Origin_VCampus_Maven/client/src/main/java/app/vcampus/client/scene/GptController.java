@@ -1,62 +1,66 @@
 package app.vcampus.client.scene;
 
+import app.vcampus.client.util.ChatSession;
 import app.vcampus.client.viewmodel.GptViewModel;
+import app.vcampus.client.util.ChatSession.ChatSessionSummary;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Label; // Using Label for text to easily wrap and style
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.event.ActionEvent;
-import javafx.scene.input.KeyCode;
-
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXListCell; // Import JFXListCell
 import com.jfoenix.controls.JFXTextArea;
 
 import java.net.URL;
-import java.util.ResourceBundle;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class GptController implements Initializable {
-    @FXML
-    private ScrollPane chatScrollPane;
-    @FXML
-    private VBox chatDisplayArea;
-    @FXML
-    private JFXTextArea userInputField;
-    @FXML
-    private JFXButton sendButton;
+    // FXML UI elements for chat display
+    @FXML private ScrollPane chatScrollPane;
+    @FXML private VBox chatDisplayArea;
+    @FXML private JFXTextArea userInputField;
+    @FXML private JFXButton sendButton;
+
+    // FXML UI elements for chat history
+    @FXML private JFXListView<ChatSessionSummary> chatHistoryListView;
+    @FXML private JFXButton newChatButton;
 
     private GptViewModel viewModel;
-    private Map<UUID, HBox> displayedMessageNodes = new HashMap<>(); // Link UUID to displayed HBox for removal
+    private final Map<UUID, HBox> displayedMessageNodes = new HashMap<>();
 
-    private static final double MESSAGE_MAX_WIDTH_PERCENT = 0.7; // 70% of chat area width
-    private static final double MESSAGE_MIN_WIDTH = 50.0; // Minimum width, e.g., 50 pixels
+    private static final double MESSAGE_MAX_WIDTH_PERCENT = 0.7;
+    private static final double MESSAGE_MIN_WIDTH = 50.0;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         viewModel = new GptViewModel();
 
-        // Bind UI elements to ViewModel properties
+        // --- Bindings for Chat Area ---
         userInputField.textProperty().bindBidirectional(viewModel.userInputProperty());
         sendButton.disableProperty().bind(viewModel.sendButtonDisabledProperty());
 
-        // Listen for changes in chatMessages and update UI
+        // Listen for changes in chatMessages to update UI
         viewModel.getChatMessages().addListener((javafx.collections.ListChangeListener.Change<? extends GptViewModel.Message> change) -> {
             while (change.next()) {
-                if (change.wasAdded()) {
-                    for (GptViewModel.Message message : change.getAddedSubList()) {
-                        addMessageToDisplay(message);
-                    }
-                }
                 if (change.wasRemoved()) {
                     for (GptViewModel.Message message : change.getRemoved()) {
                         removeMessageFromDisplay(message.getId());
+                    }
+                }
+                if (change.wasAdded()) {
+                    for (GptViewModel.Message message : change.getAddedSubList()) {
+                        addMessageToDisplay(message);
                     }
                 }
             }
@@ -65,68 +69,152 @@ public class GptController implements Initializable {
         // Auto-scroll to the bottom
         chatScrollPane.vvalueProperty().bind(chatDisplayArea.heightProperty());
 
-        // Add keyboard event listener for Ctrl + Enter
+        // Keyboard shortcut for sending message
         userInputField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER && event.isControlDown()) {
                 viewModel.sendMessage();
-                event.consume(); // Consume event to prevent newline in JFXTextArea
+                event.consume();
             }
         });
 
-        // Manually add initial welcome messages from ViewModel to ensure they appear
-        // This is done once at initialization. Subsequent messages are handled by the listener.
-        for (GptViewModel.Message message : viewModel.getChatMessages()) {
-            addMessageToDisplay(message);
+        // --- Bindings for Chat History ---
+
+        chatHistoryListView.setCellFactory(listView -> new ChatHistoryCell(viewModel));
+        chatHistoryListView.setItems(viewModel.getChatHistory());
+        chatHistoryListView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null && (oldSelection == null || !oldSelection.getId().equals(newSelection.getId()))) {
+                viewModel.loadSession(newSelection.getId());
+            }
+        });
+
+        // Manually trigger initial UI population
+        viewModel.initializeSession();
+    }
+
+    private static class ChatHistoryCell extends JFXListCell<ChatSession.ChatSessionSummary> {
+        private final HBox hbox = new HBox();
+        private final Label label = new Label();
+        private final JFXButton deleteButton = new JFXButton("X");
+        private final Region spacer = new Region();
+        private final GptViewModel viewModel;
+
+        public ChatHistoryCell(GptViewModel viewModel) {
+            super();
+            this.viewModel = viewModel;
+
+            // Configure cell layout
+            hbox.setAlignment(Pos.CENTER_LEFT);
+            hbox.setSpacing(10);
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            hbox.getChildren().addAll(label, spacer, deleteButton);
+
+            // Style the delete button
+            deleteButton.setStyle(
+                    "-fx-background-color: #ff6666;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-font-size: 10px;" +
+                            "-fx-padding: 0;" +
+                            "-fx-min-width: 20px; -fx-max-width: 20px;" +
+                            "-fx-min-height: 20px; -fx-max-height: 20px;" +
+                            "-fx-background-radius: 10;" +
+                            "-fx-border-radius: 10;"
+            );
+        }
+
+        @Override
+        protected void updateItem(ChatSession.ChatSessionSummary item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || item == null) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                label.setText(item.getTitle());
+
+                // Set the action for the button. It calls the ViewModel's delete method.
+                deleteButton.setOnAction(event -> {
+                    if (item != null) {
+                        viewModel.deleteSession(item.getId());
+                    }
+                });
+
+                // [FIX] Explicitly set text to null to prevent the default text from showing.
+                setText(null);
+
+                setGraphic(hbox);
+            }
         }
     }
+
+
+    /**
+     * Called when the view is about to be closed. Ensures the current session is saved.
+     */
+    public void shutdown() {
+        if (viewModel != null) {
+            viewModel.saveCurrentSession();
+            System.out.println("GptController shutdown hook executed, session saved.");
+        }
+    }
+
 
     @FXML
     private void sendMessage(ActionEvent event) {
         viewModel.sendMessage();
     }
 
-    /**
-     * Adds a message to the chat display area based on the ViewModel's Message object.
-     *
-     * @param message The Message object from the ViewModel.
-     */
+    @FXML
+    private void createNewChat(ActionEvent event) {
+        viewModel.createNewSession();
+    }
+
     private void addMessageToDisplay(GptViewModel.Message message) {
         Platform.runLater(() -> {
             HBox messageContainer = new HBox();
             messageContainer.setPadding(new javafx.geometry.Insets(5));
-            messageContainer.setUserData(message.getId()); // Store UUID in HBox
             displayedMessageNodes.put(message.getId(), messageContainer);
 
-            Label messageLabel = new Label();
-            messageLabel.textProperty().bind(message.streamingContentProperty()); // Bind to streaming content
-            messageLabel.setWrapText(true);
+            // [FIX] 1. Replace the Label with a Text node.
+            // The Text node is the fundamental component for text layout and handles wrapping more gracefully.
+            Text textNode = new Text();
+            textNode.textProperty().bind(message.streamingContentProperty());
 
-            TextFlow textFlow = new TextFlow(messageLabel);
+            // The TextFlow will now manage the wrapping of the Text node within its bounds.
+            TextFlow textFlow = new TextFlow(textNode);
+
+            // Keep the original, static max width calculation. This is correct.
             textFlow.setMaxWidth(chatDisplayArea.getWidth() * MESSAGE_MAX_WIDTH_PERCENT);
+
             textFlow.setMinWidth(MESSAGE_MIN_WIDTH);
             textFlow.setPadding(new javafx.geometry.Insets(8));
             textFlow.setStyle("-fx-border-radius: 10px; -fx-background-radius: 10px;");
 
-            if ("user".equals(message.getSender())) {
-                messageContainer.setAlignment(Pos.CENTER_RIGHT);
-                messageLabel.setStyle("-fx-text-fill: white;");
-                textFlow.setStyle(textFlow.getStyle() + "-fx-background-color: #007bff;");
-            } else if ("model".equals(message.getSender())) {
-                messageContainer.setAlignment(Pos.CENTER_LEFT);
-                messageLabel.setStyle("-fx-text-fill: white;");
-                textFlow.setStyle(textFlow.getStyle() + "-fx-background-color: #4EB052;");
-            } else { // "system" messages
-                messageContainer.setAlignment(Pos.CENTER);
-                messageLabel.setStyle("-fx-text-fill: gray; -fx-font-style: italic;");
-                textFlow.setStyle(textFlow.getStyle() + "-fx-background-color: transparent;");
-                textFlow.setPadding(new javafx.geometry.Insets(0));
+            switch (message.getSender()) {
+                case "user":
+                    messageContainer.setAlignment(Pos.CENTER_RIGHT);
+                    // [FIX] 2. For a Text node, the color property is '-fx-fill', not '-fx-text-fill'.
+                    textNode.setStyle("-fx-fill: white;");
+                    textFlow.setStyle(textFlow.getStyle() + "-fx-background-color: #007bff;");
+                    break;
+                case "model":
+                case "assistant":
+                    messageContainer.setAlignment(Pos.CENTER_LEFT);
+                    textNode.setStyle("-fx-fill: white;");
+                    textFlow.setStyle(textFlow.getStyle() + "-fx-background-color: #4EB052;");
+                    break;
+                default: // "system" messages
+                    messageContainer.setAlignment(Pos.CENTER);
+                    textNode.setStyle("-fx-fill: gray; -fx-font-style: italic;");
+                    textFlow.setStyle(textFlow.getStyle() + "-fx-background-color: transparent;");
+                    textFlow.setPadding(new javafx.geometry.Insets(0));
+                    break;
             }
 
             if (message.isDeletable()) {
+                // This part remains completely unchanged
                 JFXButton deleteButton = new JFXButton("X");
                 deleteButton.setStyle("-fx-background-color: #ff6666; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 0 5 0 5; -fx-min-width: 25px; -fx-max-width: 25px; -fx-min-height: 25px; -fx-max-height: 25px; -fx-background-radius: 12.5; -fx-border-radius: 12.5;");
-                deleteButton.setUserData(message.getId());
-                deleteButton.setOnAction(this::deleteMessageAction);
+                deleteButton.setOnAction(event -> viewModel.deleteMessage(message.getId()));
 
                 HBox buttonWrapper = new HBox(deleteButton);
                 buttonWrapper.setAlignment(Pos.CENTER);
@@ -141,16 +229,10 @@ public class GptController implements Initializable {
             } else {
                 messageContainer.getChildren().add(textFlow);
             }
-
             chatDisplayArea.getChildren().add(messageContainer);
         });
     }
 
-    /**
-     * Removes a message's HBox from the displayed UI.
-     *
-     * @param messageIdToDelete The UUID of the message to remove.
-     */
     private void removeMessageFromDisplay(UUID messageIdToDelete) {
         Platform.runLater(() -> {
             HBox messageHBox = displayedMessageNodes.get(messageIdToDelete);
@@ -161,16 +243,5 @@ public class GptController implements Initializable {
                 System.err.println("Could not find HBox for message ID: " + messageIdToDelete);
             }
         });
-    }
-
-    /**
-     * Handles the deletion of a message from the ViewModel.
-     *
-     * @param event The ActionEvent triggered by the delete button.
-     */
-    private void deleteMessageAction(ActionEvent event) {
-        JFXButton sourceButton = (JFXButton) event.getSource();
-        UUID messageIdToDelete = (UUID) sourceButton.getUserData();
-        viewModel.deleteMessage(messageIdToDelete);
     }
 }

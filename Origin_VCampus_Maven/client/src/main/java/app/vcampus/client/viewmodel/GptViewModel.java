@@ -1,5 +1,9 @@
 package app.vcampus.client.viewmodel;
 
+import app.vcampus.client.gateway.GptClient;
+import app.vcampus.client.util.ChatSession;
+import app.vcampus.client.util.ChatSession.ChatSessionSummary;
+import app.vcampus.client.util.MessageEntry;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -14,9 +18,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.UUID;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class GptViewModel {
@@ -25,183 +28,181 @@ public class GptViewModel {
     private final StringProperty userInput = new SimpleStringProperty("");
     private final ObservableList<Message> chatMessages = FXCollections.observableArrayList();
     private final BooleanProperty sendButtonDisabled = new SimpleBooleanProperty(false);
+    private final ObservableList<ChatSessionSummary> chatHistory = FXCollections.observableArrayList();
 
-    // API related constants and fields
+    // API related constants
     private final String WELCOME_MESSAGE = "你好！我是AI助手，有什么可以帮你的吗？";
     private final String SYSTEM_PROMPT = "你是一个乐于助人的AI助手, 正在和一个学生宋兵甲对话。";
     private final String MODEL = "deepseek-v3.1";
-    private final String API_KEY = "sk-588905851d1b4421ae51c9ad64fb120b"; // Replace with your API Key
-    private final String API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"; // Replace with your API Base URL
+    private final String API_KEY = "sk-588905851d1b4421ae51c9ad64fb120b";
+    private final String API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
 
-    // Internal data structures
-    private List<MessageEntry> apiMessageHistory = new ArrayList<>(); // Store dialogue history for API calls
-    private UUID currentStreamingMessageId; // To link the streaming model response to its UUID
+    // Data Gateway
+    private final GptClient gptClient = GptClient.getInstance();
+    private ChatSession currentSession;
+    private UUID currentStreamingMessageId;
 
-    public GptViewModel() {
-        // Initialize with a welcome message
+
+    public void initializeSession() {
+        loadChatHistorySummaries();
+        List<ChatSessionSummary> history = gptClient.getChatHistorySummaries();
+        if (!history.isEmpty()) {
+            loadSession(history.get(0).getId());
+        } else {
+            createNewSession();
+        }
+    }
+
+    /**
+     * Deletes a session from the gateway and updates the UI.
+     * If the deleted session is the one currently being viewed, it creates a new session.
+     *
+     * @param sessionIdToDelete The UUID of the session to delete.
+     */
+    public void deleteSession(UUID sessionIdToDelete) {
+        if (sessionIdToDelete == null) return;
+
+        boolean wasActiveSession = currentSession != null && currentSession.getId().equals(sessionIdToDelete);
+
+        // 1. Delete from the data source
+        gptClient.deleteChatSession(sessionIdToDelete);
+
+        // 2. Check if the deleted session was the active one
+        if (wasActiveSession) {
+            // [FIX] Set currentSession to null BEFORE creating a new one.
+            // This prevents createNewSession() from saving the session we just deleted.
+            currentSession = null;
+            createNewSession();
+        }
+
+        // 3. Refresh the list of summaries in the UI
+        loadChatHistorySummaries();
+    }
+
+    // #region Properties for UI Binding
+    public StringProperty userInputProperty() { return userInput; }
+    public ObservableList<Message> getChatMessages() { return chatMessages; }
+    public BooleanProperty sendButtonDisabledProperty() { return sendButtonDisabled; }
+    public ObservableList<ChatSessionSummary> getChatHistory() { return chatHistory; }
+    // #endregion
+
+    // #region Session Management Core Logic
+    public void createNewSession() {
+        if (currentSession != null && currentSession.getMessageHistory().size() > 1) {
+            saveCurrentSession();
+        }
+
+        currentSession = new ChatSession(UUID.randomUUID());
+        currentSession.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", SYSTEM_PROMPT)));
+
+        rebuildChatDisplay();
         addMessage(new Message(UUID.randomUUID(), "system", WELCOME_MESSAGE, false));
-        // Add the initial system prompt to the API message list
-        apiMessageHistory.add(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", SYSTEM_PROMPT)));
+        loadChatHistorySummaries(); // Refresh list to show the new chat if user types and saves
     }
 
-    public StringProperty userInputProperty() {
-        return userInput;
-    }
-
-    public ObservableList<Message> getChatMessages() {
-        return chatMessages;
-    }
-
-    public BooleanProperty sendButtonDisabledProperty() {
-        return sendButtonDisabled;
-    }
-
-    /**
-     * Represents a single message in the chat.
-     */
-    public static class Message {
-        private final UUID id;
-        private final String sender;
-        private final String content;
-        private final boolean deletable;
-        private StringProperty streamingContent; // For model streaming responses
-
-        public Message(UUID id, String sender, String content, boolean deletable) {
-            this.id = id;
-            this.sender = sender;
-            this.content = content;
-            this.deletable = deletable;
-            this.streamingContent = new SimpleStringProperty(content);
+    public void loadSession(UUID sessionId) {
+        if (currentSession != null && currentSession.getId().equals(sessionId)) {
+            return;
+        }
+        if (currentSession != null && currentSession.getMessageHistory().size() > 1) {
+            saveCurrentSession();
         }
 
-        public UUID getId() {
-            return id;
-        }
-
-        public String getSender() {
-            return sender;
-        }
-
-        public String getContent() {
-            return content;
-        }
-
-        public boolean isDeletable() {
-            return deletable;
-        }
-
-        public StringProperty streamingContentProperty() {
-            return streamingContent;
-        }
-
-        public void appendStreamingContent(String newContent) {
-            if (streamingContent.get().equals("思考中...")) {
-                streamingContent.set(newContent);
-                return;
+        try {
+            ChatSession loadedSession = gptClient.loadChatSession(sessionId);
+            if (loadedSession != null) {
+                currentSession = loadedSession;
+                rebuildChatDisplay();
+            } else {
+                throw new Exception("Session not found in client.");
             }
-            streamingContent.set(streamingContent.get() + newContent);
+        } catch (Exception e) {
+            System.err.println("Error loading session " + sessionId + ": " + e.getMessage());
+            addMessage(new Message(UUID.randomUUID(), "system", "加载聊天记录失败，已创建新聊天。", false));
+            createNewSession();
         }
     }
 
-    // Custom class to hold UUID and message JSONObject for API history
-    private static class MessageEntry {
-        UUID id;
-        JSONObject message;
-
-        public MessageEntry(UUID id, JSONObject message) {
-            this.id = id;
-            this.message = message;
+    public void saveCurrentSession() {
+        if (currentSession == null || currentSession.getMessageHistory().size() <= 1) {
+            return; // Don't save empty sessions
         }
-
-        public UUID getId() {
-            return id;
-        }
-
-        public JSONObject getMessage() {
-            return message;
-        }
+        currentSession.updateTitle();
+        currentSession.setLastModified(System.currentTimeMillis());
+        gptClient.saveChatSession(currentSession);
+        loadChatHistorySummaries(); // Refresh the list with updated title/order
     }
 
-    /**
-     * Adds a message to the chat messages list (for UI display).
-     *
-     * @param message The message to add.
-     */
-    public void addMessage(Message message) {
-        chatMessages.add(message);
+    private void loadChatHistorySummaries() {
+        Platform.runLater(() -> {
+            chatHistory.setAll(gptClient.getChatHistorySummaries());
+        });
     }
 
-    /**
-     * Updates the content of a streaming model response.
-     *
-     * @param messageId The ID of the message to update.
-     * @param newContent The new content to append.
-     */
-    public void updateStreamingMessage(UUID messageId, String newContent) {
-        Platform.runLater(() -> { // 将更新操作放到 JavaFX 线程
-            for (int i = 0; i < chatMessages.size(); i++) {
-                if (chatMessages.get(i).getId().equals(messageId)) {
-                    chatMessages.get(i).appendStreamingContent(newContent);
-                    break;
+    private void rebuildChatDisplay() {
+        Platform.runLater(() -> {
+            chatMessages.clear();
+            List<MessageEntry> history = currentSession.getMessageHistory();
+            for (MessageEntry entry : history) {
+                JSONObject msgJson = entry.getMessage();
+                String role = msgJson.getString("role");
+                String content = msgJson.getString("content");
+
+                if (!"system".equals(role)) {
+                    chatMessages.add(new Message(entry.getId(), role, content, true));
                 }
             }
         });
     }
+    // #endregion
 
-    /**
-     * Handles sending a user message and initiating the API call.
-     */
+    // #region Message Handling
     public void sendMessage() {
         String userMessageContent = userInput.get().trim();
-        if (userMessageContent.isEmpty()) {
-            return;
-        }
+        if (userMessageContent.isEmpty()) return;
 
-        // 1. User input content added to chat history and displayed
         UUID userMessageId = UUID.randomUUID();
-        apiMessageHistory.add(new MessageEntry(userMessageId, new JSONObject().put("role", "user").put("content", userMessageContent)));
+        JSONObject userMessageJson = new JSONObject().put("role", "user").put("content", userMessageContent);
+        currentSession.addMessage(new MessageEntry(userMessageId, userMessageJson));
         addMessage(new Message(userMessageId, "user", userMessageContent, true));
-        userInput.set(""); // Clear input field
+        userInput.set("");
 
-        // 2. Create placeholder for model response and add to UI immediately
         currentStreamingMessageId = UUID.randomUUID();
-        // Add a placeholder message to the UI that will be updated during streaming
         addMessage(new Message(currentStreamingMessageId, "model", "思考中...", true));
-
-        sendButtonDisabled.set(true); // Disable send button
+        sendButtonDisabled.set(true);
 
         new Thread(() -> {
             try {
-                callApi(apiMessageHistory.stream().map(MessageEntry::getMessage).collect(Collectors.toList()));
-                // After API call completes, re-enable send button
-                sendButtonDisabled.set(false);
+                List<JSONObject> apiMessages = currentSession.getMessageHistory().stream()
+                        .map(MessageEntry::getMessage)
+                        .collect(Collectors.toList());
+                callApi(apiMessages);
             } catch (Exception e) {
-                // If an error occurs, display an error message
-                addMessage(new Message(UUID.randomUUID(), "system", "请求API出错: " + e.getMessage(), false));
-                sendButtonDisabled.set(false); // Re-enable send button
+                String errorMsg = "请求API出错: " + e.getMessage();
+                addMessage(new Message(UUID.randomUUID(), "system", errorMsg, false));
                 e.printStackTrace();
+            } finally {
+                Platform.runLater(() -> sendButtonDisabled.set(false));
             }
         }).start();
     }
 
-    /**
-     * Handles the deletion of a message from both the UI and the message history.
-     *
-     * @param messageIdToDelete The UUID of the message to delete.
-     */
     public void deleteMessage(UUID messageIdToDelete) {
-        if (messageIdToDelete == null) {
-            System.err.println("Attempted to delete a message without a valid UUID.");
-            return;
-        }
-
-        // 1. Remove from the API messages list
-        apiMessageHistory.removeIf(entry -> entry.getId().equals(messageIdToDelete));
-
-        // 2. Remove from the displayed chat messages
+        if (messageIdToDelete == null) return;
+        currentSession.removeMessage(messageIdToDelete);
         chatMessages.removeIf(message -> message.getId().equals(messageIdToDelete));
     }
 
+    public void addMessage(Message message) { Platform.runLater(() -> chatMessages.add(message)); }
+
+    public void updateStreamingMessage(UUID messageId, String newContent) {
+        Platform.runLater(() -> {
+            chatMessages.stream()
+                    .filter(m -> m.getId().equals(messageId))
+                    .findFirst()
+                    .ifPresent(message -> message.appendStreamingContent(newContent));
+        });
+    }
 
     private void callApi(List<JSONObject> currentMessages) throws Exception {
         URL url = new URL(API_BASE_URL);
@@ -217,38 +218,61 @@ public class GptViewModel {
         requestBody.put("stream", true);
 
         try (OutputStream os = conn.getOutputStream()) {
-            byte[] input = requestBody.toString().getBytes("utf-8");
-            os.write(input, 0, input.length);
+            os.write(requestBody.toString().getBytes("utf-8"));
         }
 
         StringBuilder fullModelResponse = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-            String responseLine;
-            while ((responseLine = br.readLine()) != null) {
-                if (responseLine.startsWith("data: ")) {
-                    String jsonData = responseLine.substring(6);
-                    if (jsonData.equals("[DONE]")) {
-                        break;
-                    }
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("data: ")) {
+                    String jsonData = line.substring(6);
+                    if ("[DONE]".equals(jsonData)) break;
                     JSONObject chunk = new JSONObject(jsonData);
                     if (chunk.has("choices")) {
-                        JSONObject choice = chunk.getJSONArray("choices").getJSONObject(0);
-                        if (choice.has("delta")) {
-                            JSONObject delta = choice.getJSONObject("delta");
-                            if (delta.has("content")) {
-                                String content = delta.getString("content");
-                                if (content != null && !content.isEmpty()) {
-                                    fullModelResponse.append(content);
-                                    // Update the streaming message in the ViewModel, which will notify the UI
-                                    updateStreamingMessage(currentStreamingMessageId, content);
-                                }
-                            }
+                        JSONObject delta = chunk.getJSONArray("choices").getJSONObject(0).optJSONObject("delta");
+                        if (delta != null && delta.has("content")) {
+                            String content = delta.getString("content");
+                            fullModelResponse.append(content);
+                            updateStreamingMessage(currentStreamingMessageId, content);
                         }
                     }
                 }
             }
         }
-        // After API call completes, add the full model response to the dialogue history
-        apiMessageHistory.add(new MessageEntry(currentStreamingMessageId, new JSONObject().put("role", "assistant").put("content", fullModelResponse.toString())));
+
+        if (fullModelResponse.length() > 0) {
+            JSONObject modelMessageJson = new JSONObject().put("role", "assistant").put("content", fullModelResponse.toString());
+            currentSession.addMessage(new MessageEntry(currentStreamingMessageId, modelMessageJson));
+            saveCurrentSession();
+        }
+    }
+    // #endregion
+
+    // This class remains here as it's part of the ViewModel layer due to JavaFX properties.
+    public static class Message {
+        private final UUID id;
+        private final String sender;
+        private final String content;
+        private final boolean deletable;
+        private final StringProperty streamingContent;
+
+        public Message(UUID id, String sender, String content, boolean deletable) {
+            this.id = id; this.sender = sender; this.content = content; this.deletable = deletable;
+            this.streamingContent = new SimpleStringProperty(content);
+        }
+
+        public UUID getId() { return id; }
+        public String getSender() { return sender; }
+        public String getContent() { return content; }
+        public boolean isDeletable() { return deletable; }
+        public StringProperty streamingContentProperty() { return streamingContent; }
+        public void appendStreamingContent(String newContent) {
+            if ("思考中...".equals(streamingContent.get())) {
+                streamingContent.set(newContent);
+            } else {
+                streamingContent.set(streamingContent.get() + newContent);
+            }
+        }
     }
 }
