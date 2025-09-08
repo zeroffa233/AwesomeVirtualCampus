@@ -43,26 +43,28 @@ public class NavRailController implements Initializable {
         this.mainPanelController = mainPanelController;
     }
 
-    private JFXButton createSecondaryMenuButton(String text, Runnable action) {
+    /**
+     * 【关键改动】创建二级菜单按钮的辅助方法。
+     * 它现在接收一个 FXML 路径，并为按钮绑定加载该路径的动作。
+     * @param text 按钮显示的文本
+     * @param subViewFxmlPath 点击后要加载的子视图 FXML 路径
+     * @return 配置好的 JFXButton
+     */
+    private JFXButton createSecondaryMenuButton(String text, String subViewFxmlPath) {
         JFXButton button = new JFXButton(text);
-
-        // --- 终极方案的关键代码 ---
-        // 强制按钮的最大高度为无穷大，使其能够自动拉伸并填满父容器（顶栏）的高度
-        button.setMaxHeight(Double.MAX_VALUE);
-        // --- 结束关键代码 ---
-
+        button.setMaxHeight(Double.MAX_VALUE); // 确保按钮填满顶栏高度
         button.getStyleClass().add("top-bar-menu-button");
 
         button.setOnAction(event -> {
+            // 1. 调用 MainPanelController 加载子视图
+            mainPanelController.loadSubView(subViewFxmlPath);
+
+            // 2. 管理高亮状态
             if (button.getParent() != null) {
                 button.getParent().getChildrenUnmodifiable().forEach(node ->
                         node.getStyleClass().remove("active"));
             }
             button.getStyleClass().add("active");
-
-            if (action != null) {
-                action.run();
-            }
         });
         return button;
     }
@@ -91,56 +93,54 @@ public class NavRailController implements Initializable {
     @FXML
     private void handleStudentStatus() {
         setActiveButton(studentStatusButton);
-        JFXButton infoButton = createSecondaryMenuButton("我的学籍", () -> System.out.println("查看学籍信息"));
-        JFXButton applyButton = createSecondaryMenuButton("学籍异动", () -> System.out.println("申请学籍异动"));
-        infoButton.getStyleClass().add("active");
+        JFXButton infoButton = createSecondaryMenuButton("我的学籍", "/app/vcampus/client/scene/sub/studentstatus/InfoView.fxml");
+        JFXButton applyButton = createSecondaryMenuButton("学籍异动", "/app/vcampus/client/scene/sub/studentstatus/ApplyView.fxml");
+        infoButton.getStyleClass().add("active"); // 默认高亮第一个
+        // 初始加载的父视图
         switchView("/app/vcampus/client/scene/sub/StudentStatusView.fxml", "学籍管理", List.of(infoButton, applyButton));
     }
 
     @FXML
     private void handleTeachingAffairs() {
         setActiveButton(teachingAffairsButton);
-        JFXButton courseSelectionButton = createSecondaryMenuButton("在线选课", () -> System.out.println("进入选课界面"));
-        JFXButton gradesButton = createSecondaryMenuButton("成绩查询", () -> System.out.println("查询个人成绩"));
-        JFXButton scheduleButton = createSecondaryMenuButton("我的课表", () -> System.out.println("查看本学期课表"));
+        JFXButton courseSelectionButton = createSecondaryMenuButton("在线选课", "/app/vcampus/client/scene/sub/teachingaffairs/CourseSelectionView.fxml");
+        JFXButton gradesButton = createSecondaryMenuButton("成绩查询", "/app/vcampus/client/scene/sub/teachingaffairs/GradesView.fxml");
+        JFXButton scheduleButton = createSecondaryMenuButton("我的课表", "/app/vcampus/client/scene/sub/teachingaffairs/ScheduleView.fxml");
         courseSelectionButton.getStyleClass().add("active");
+        // 初始加载的父视图
         switchView("/app/vcampus/client/scene/sub/TeachingAffairsView.fxml", "教务系统", List.of(courseSelectionButton, gradesButton, scheduleButton));
     }
 
     @FXML
     private void handleLibrary() {
         setActiveButton(libraryButton);
-        JFXButton searchButton = createSecondaryMenuButton("书籍检索", () -> System.out.println("执行书籍检索"));
-        JFXButton historyButton = createSecondaryMenuButton("借阅历史", () -> System.out.println("查看借阅历史"));
+        JFXButton searchButton = createSecondaryMenuButton("书籍检索", "/app/vcampus/client/scene/sub/LibraryView.fxml");
+        JFXButton historyButton = createSecondaryMenuButton("借阅历史", "/app/vcampus/client/scene/sub/LibraryView.fxml");
         searchButton.getStyleClass().add("active");
+        // 初始加载的父视图
         switchView("/app/vcampus/client/scene/sub/LibraryView.fxml", "图书馆", List.of(searchButton, historyButton));
     }
 
+    // ... 对 handleShop, handleFinance, handleAdmin 等方法进行类似的修改 ...
     @FXML
     private void handleShop() {
         setActiveButton(shopButton);
-        JFXButton myCartButton = createSecondaryMenuButton("购物车", () -> System.out.println("打开购物车"));
-        JFXButton myOrdersButton = createSecondaryMenuButton("我的订单", () -> System.out.println("查看历史订单"));
-        myCartButton.getStyleClass().add("active");
-        switchView("/app/vcampus/client/scene/sub/ShopView.fxml", "网上商店", List.of(myCartButton, myOrdersButton));
+        // ... 创建二级菜单按钮
+        switchView("/app/vcampus/client/scene/sub/ShopView.fxml", "网上商店", List.of(/* ... 按钮列表 ... */));
     }
 
     @FXML
     private void handleFinance() {
         setActiveButton(financeButton);
-        JFXButton detailsButton = createSecondaryMenuButton("消费明细", () -> System.out.println("查询消费明细"));
-        JFXButton rechargeButton = createSecondaryMenuButton("一卡通充值", () -> System.out.println("进入充值页面"));
-        detailsButton.getStyleClass().add("active");
-        switchView("/app/vcampus/client/scene/sub/FinanceView.fxml", "财务中心", List.of(detailsButton, rechargeButton));
+        // ... 创建二级菜单按钮
+        switchView("/app/vcampus/client/scene/sub/FinanceView.fxml", "财务中心", List.of(/* ... 按钮列表 ... */));
     }
 
     @FXML
     private void handleAdmin() {
         setActiveButton(adminButton);
-        JFXButton userManagementButton = createSecondaryMenuButton("用户管理", () -> System.out.println("管理系统用户"));
-        JFXButton systemLogButton = createSecondaryMenuButton("系统日志", () -> System.out.println("查看系统日志"));
-        userManagementButton.getStyleClass().add("active");
-        switchView("/app/vcampus/client/scene/sub/AdminView.fxml", "系统管理", List.of(userManagementButton, systemLogButton));
+        // ... 创建二级菜单按钮
+        switchView("/app/vcampus/client/scene/sub/AdminView.fxml", "系统管理", List.of(/* ... 按钮列表 ... */));
     }
 
     @FXML

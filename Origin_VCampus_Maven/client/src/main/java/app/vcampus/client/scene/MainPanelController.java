@@ -9,6 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
+// import javafx.stage.Stage; // Stage 相关的导入已移除
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -45,13 +46,32 @@ public class MainPanelController implements Initializable {
         overlayPane.managedProperty().bind(overlayPane.visibleProperty());
 
         navRail.setOpacity(0);
-
         Platform.runLater(() -> {
             navRail.setTranslateX(-navRail.getWidth());
             navRail.setOpacity(1);
             switchView("/app/vcampus/client/scene/sub/HomeView.fxml", "主页", List.of());
-            contentPane.requestFocus();
         });
+    }
+
+    // public void setStage(Stage stage) { ... } // 此方法已根据您的要求被完全移除
+
+    public void loadSubView(String fxmlPath) {
+        try {
+            Node view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxmlPath)));
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(150), contentPane);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.setOnFinished(event -> {
+                contentPane.getChildren().setAll(view);
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(150), contentPane);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
+            fadeOut.play();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void switchView(String fxmlPath, String title, List<Node> secondaryMenuItems) {
