@@ -1,7 +1,7 @@
 .nav-button {
     -fx-background-color: #FFFFFF; /* White Background */
     -fx-text-fill: #333333; /* Dark Text */
-    -fx-font-size: 16px; /* Increased font size */
+    -fx-font-size: 18px; /* Increased font size */
     -fx-font-weight: bold;
     -fx-background-radius: 0;
     -fx-padding: 10; /* Uniform padding */

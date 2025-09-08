@@ -16,9 +16,9 @@
                 <Insets left="20.0" right="20.0" top="10.0" bottom="10.0" />
             </padding>
             <children>
-                <JFXButton fx:id="menuButton" onAction="#handleMenuButtonClick" styleClass="menu-icon-button" StackPane.alignment="CENTER_LEFT">
+                <JFXButton fx:id="menuButton" onAction="#handleMenuButtonClick" styleClass="menu-icon-button" prefWidth="44.0" prefHeight="44.0" StackPane.alignment="CENTER_LEFT">
                     <graphic>
-                        <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
                             <image>
                                 <Image url="/images/menu.png" />
                             </image>
