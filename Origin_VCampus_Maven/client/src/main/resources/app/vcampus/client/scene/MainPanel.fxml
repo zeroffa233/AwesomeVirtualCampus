@@ -3,31 +3,68 @@
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
 
 <BorderPane fx:controller="app.vcampus.client.scene.MainPanelController" prefHeight="800.0" prefWidth="1400.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <top>
-        <StackPane styleClass="top-bar">
+        <HBox alignment="CENTER_LEFT" styleClass="top-bar">
             <padding>
-                <Insets left="20.0" right="20.0" top="10.0" bottom="10.0" />
+                <Insets bottom="5.0" top="5.0" />
             </padding>
             <children>
-                <JFXButton fx:id="menuButton" onAction="#handleMenuButtonClick" styleClass="menu-icon-button" prefWidth="60.0" prefHeight="60.0" StackPane.alignment="CENTER_LEFT">
-                    <graphic>
-                        <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
-                            <image>
-                                <Image url="/images/menu.png" />
-                            </image>
-                        </ImageView>
-                    </graphic>
-                </JFXButton>
-                <Label fx:id="viewTitle" styleClass="view-title" text="Home" StackPane.alignment="CENTER" />
+                <!-- 1. 左侧区域: 菜单按钮 -->
+                <HBox alignment="CENTER" spacing="8.0">
+                    <children>
+                        <JFXButton fx:id="menuButton" onAction="#handleMenuButtonClick" prefHeight="50.0" prefWidth="70.0" styleClass="menu-icon-button">
+                            <graphic>
+                                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="/images/menu.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </JFXButton>
+                        <Separator orientation="VERTICAL" />
+                    </children>
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </HBox>
+
+                <!-- 2. 中间区域: 标题 -->
+                <StackPane fx:id="titleContainer" prefWidth="140.0" alignment="CENTER_LEFT">
+                    <padding>
+                        <Insets left="20.0" />
+                    </padding>
+                    <children>
+                        <Label fx:id="viewTitle" styleClass="view-title" text="Home">
+                            <font>
+                                <Font name="System Bold" size="20.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </StackPane>
+
+                <!--  Spacer: 这个 Pane 会自动扩展，将右侧内容推到边缘 -->
+                <Pane HBox.hgrow="ALWAYS" />
+
+                <!-- 3. 右侧区域: 二级菜单 -->
+                <HBox fx:id="secondaryMenuContainer" alignment="CENTER_LEFT" spacing="10">
+                    <!-- 子元素由 Java 代码动态添加 -->
+                    <padding>
+                        <Insets bottom="5.0" top="5.0" right="20.0" />
+                    </padding>
+                </HBox>
+
             </children>
-        </StackPane>
+        </HBox>
     </top>
     <center>
         <StackPane>
@@ -40,3 +77,4 @@
         </StackPane>
     </center>
 </BorderPane>
+

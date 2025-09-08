@@ -1,86 +1,85 @@
 package app.vcampus.client.scene;
 
-import app.vcampus.client.util.UIUtils;
 import com.jfoenix.controls.JFXButton;
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-import javafx.animation.Interpolator; //for toggleNavRail()
-import javafx.animation.ParallelTransition;
-
 public class MainPanelController implements Initializable {
+
+    // FXML Injections
     @FXML
     private StackPane contentPane;
-
     @FXML
     private VBox navRail;
-
     @FXML
     private NavRailController navRailController;
-
     @FXML
     private Pane overlayPane;
-
     @FXML
     private Label viewTitle;
-
     @FXML
     private Pane backgroundAnimationPane;
-
     @FXML
     private JFXButton menuButton;
+    @FXML
+    private HBox secondaryMenuContainer;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        System.out.println("DEBUG: Initializing MainPanelController...");
-        System.out.println("DEBUG: FXML injection check: menuButton is " + (menuButton == null ? "null" : "not null"));
-
         navRailController.setMainPanelController(this);
         navRail.setMaxWidth(Region.USE_PREF_SIZE);
-        navRail.setTranslateX(-navRail.getPrefWidth());
         StackPane.setAlignment(navRail, javafx.geometry.Pos.CENTER_LEFT);
         overlayPane.managedProperty().bind(overlayPane.visibleProperty());
-        // UIUtils.createFlowingLightAnimation(backgroundAnimationPane);
-        loadView("/app/vcampus/client/scene/sub/HomeView.fxml", "主页");
+
+        navRail.setOpacity(0);
+
+        Platform.runLater(() -> {
+            navRail.setTranslateX(-navRail.getWidth());
+            navRail.setOpacity(1);
+            switchView("/app/vcampus/client/scene/sub/HomeView.fxml", "主页", List.of());
+            contentPane.requestFocus();
+        });
     }
 
-    public void loadView(String fxmlPath, String title) {
+    public void switchView(String fxmlPath, String title, List<Node> secondaryMenuItems) {
+        updateTitle(title);
+
         try {
             Node view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxmlPath)));
             contentPane.getChildren().setAll(view);
-            viewTitle.setText(title);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        secondaryMenuContainer.getChildren().setAll(secondaryMenuItems);
+
+        if (!isNavRailVisible) {
+            showSecondaryMenu();
+        } else {
+            secondaryMenuContainer.setOpacity(0);
+            secondaryMenuContainer.setVisible(false);
+            secondaryMenuContainer.setManaged(false);
+        }
     }
+
 
     @FXML
     private void handleMenuButtonClick() {
-        System.out.println("--- handleMenuButtonClick called ---");
         toggleNavRail();
     }
-
-
-    // NOTE: The code below(till the end of this file) is AI-generated content
-    private boolean isNavRailVisible = false;
-    private static final Duration ANIMATION_SPEED = Duration.millis(450);
-    private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.2, 0.8, 0.2, 1.0);
 
     @FXML
     private void handleOverlayClick() {
@@ -89,51 +88,90 @@ public class MainPanelController implements Initializable {
         }
     }
 
+    // region --- NavRail (Sidebar) Animation ---
+    private boolean isNavRailVisible = false;
+    private static final Duration ANIMATION_SPEED = Duration.millis(350);
+    private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.4, 0.1, 0.2, 1.0);
     private ParallelTransition parallelTransition;
+
     public void toggleNavRail() {
-        // --- Stop any previous animation that might be running. ---
-        // This is the key to making the animation interruptible.
         if (parallelTransition != null) {
             parallelTransition.stop();
         }
 
-        // Determine the target state based on the current state.
         boolean show = !isNavRailVisible;
+        if (show) {
+            hideSecondaryMenu();
+        } else {
+            showSecondaryMenu();
+        }
 
         TranslateTransition navRailTransition = new TranslateTransition(ANIMATION_SPEED, navRail);
         FadeTransition overlayFade = new FadeTransition(ANIMATION_SPEED, overlayPane);
-
         navRailTransition.setInterpolator(CUSTOM_EASING);
         overlayFade.setInterpolator(CUSTOM_EASING);
 
         if (show) {
-            // Prepare the "show" animation.
-            // The overlay must be set to visible before its fade-in animation can play.
             overlayPane.setVisible(true);
             navRailTransition.setToX(0);
             overlayFade.setToValue(1.0);
         } else {
-            // Prepare the "hide" animation.
-            navRailTransition.setToX(-navRail.getPrefWidth());
+            navRailTransition.setToX(-navRail.getWidth());
             overlayFade.setToValue(0.0);
         }
-        // --- Create a new animation instance to take over. ---
-        // This new animation will start from the current visual state of the elements.
+
         parallelTransition = new ParallelTransition(navRailTransition, overlayFade);
-
-        // --- Core Change 3: Conditionally set the onFinished event for cleanup. ---
-        // We only need to perform a cleanup action (set overlay to invisible)
-        // when the animation's goal is to hide everything.
         if (!show) {
-            parallelTransition.setOnFinished(event -> {
-                overlayPane.setVisible(false);
-            });
+            parallelTransition.setOnFinished(event -> overlayPane.setVisible(false));
         }
-
         parallelTransition.play();
-
-        // Immediately update the state to reflect the user's latest intent.
-        // This ensures the next click will correctly determine the new target state.
         isNavRailVisible = show;
     }
+    // endregion
+
+    // region --- TopBar Animation Logic ---
+    public void updateTitle(String newTitle) {
+        if (viewTitle.getText() != null && viewTitle.getText().equals(newTitle)) return;
+
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(200), viewTitle);
+        fadeOut.setFromValue(1.0);
+        fadeOut.setToValue(0.0);
+        fadeOut.setInterpolator(Interpolator.EASE_IN);
+
+        fadeOut.setOnFinished(event -> {
+            viewTitle.setText(newTitle);
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(200), viewTitle);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+            fadeIn.setInterpolator(Interpolator.EASE_OUT);
+            fadeIn.play();
+        });
+        fadeOut.play();
+    }
+
+    private void hideSecondaryMenu() {
+        FadeTransition fade = new FadeTransition(ANIMATION_SPEED, secondaryMenuContainer);
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+        fade.setInterpolator(CUSTOM_EASING);
+        fade.setOnFinished(e -> {
+            secondaryMenuContainer.setVisible(false);
+            secondaryMenuContainer.setManaged(false);
+        });
+        fade.play();
+    }
+
+    private void showSecondaryMenu() {
+        if (secondaryMenuContainer.getChildren().isEmpty()) return;
+
+        secondaryMenuContainer.setVisible(true);
+        secondaryMenuContainer.setManaged(true);
+
+        FadeTransition fade = new FadeTransition(ANIMATION_SPEED, secondaryMenuContainer);
+        fade.setFromValue(0.0);
+        fade.setToValue(1.0);
+        fade.setInterpolator(CUSTOM_EASING);
+        fade.play();
+    }
+    // endregion
 }

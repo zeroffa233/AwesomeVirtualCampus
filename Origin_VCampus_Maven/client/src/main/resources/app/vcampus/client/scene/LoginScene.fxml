@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane fx:controller="app.vcampus.client.scene.LoginScene" prefHeight="600.0" prefWidth="400.0" styleClass="root-pane" stylesheets="@modern-login.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<StackPane fx:controller="app.vcampus.client.scene.LoginScene" prefHeight="600.0" prefWidth="400.0" styleClass="root-pane" stylesheets="@LoginScene.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <Pane fx:id="animationPane" />
         <VBox alignment="TOP_CENTER" spacing="25.0">

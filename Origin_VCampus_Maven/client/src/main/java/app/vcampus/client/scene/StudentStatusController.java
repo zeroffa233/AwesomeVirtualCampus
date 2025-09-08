@@ -13,12 +13,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ResourceBundle;
 
 public class StudentStatusController implements Initializable {
-
-    @FXML private ListView<String> sideListView;
 
     @FXML private StackPane contentPane;
     @FXML private AnchorPane studentInfoPane;
@@ -42,22 +39,25 @@ public class StudentStatusController implements Initializable {
     @FXML private JFXButton searchBtn;
     @FXML private ListView<Student> searchResultsList;
 
+    // 可选：增加切换按钮，如果想通过按钮切换两个 Pane
+    @FXML private JFXButton showInfoBtn;
+    @FXML private JFXButton showModifyBtn;
+
     private final StudentStatusViewModel viewModel = new StudentStatusViewModel();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 填充侧栏项
-        sideListView.getItems().setAll(Arrays.asList("我的学籍信息", "修改学籍信息"));
 
-        // 切换子页面
-        sideListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldV, newV) -> {
-            int idx = newV.intValue();
-            if (idx == 0) showStudentInfo();
-            else if (idx == 1) showModifyPane();
-        });
+        // 默认显示 studentInfoPane
+        showStudentInfo();
 
-        // 默认选中第一项（延迟到 UI 线程）
-        Platform.runLater(() -> sideListView.getSelectionModel().select(0));
+        // 切换按钮事件
+        if (showInfoBtn != null) {
+            showInfoBtn.setOnAction(e -> showStudentInfo());
+        }
+        if (showModifyBtn != null) {
+            showModifyBtn.setOnAction(e -> showModifyPane());
+        }
 
         // 绑定 viewModel -> UI（当 currentStudent 改变时刷新界面）
         viewModel.currentStudentProperty().addListener((obs, oldS, newS) -> {
