@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javafx.animation.Interpolator; //for toggleNavRail()
+import javafx.animation.ParallelTransition;
+
 public class MainPanelController implements Initializable {
     @FXML
     private StackPane contentPane;
@@ -43,8 +45,6 @@ public class MainPanelController implements Initializable {
 
     @FXML
     private JFXButton menuButton;
-
-    private boolean isNavRailVisible = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -76,6 +76,12 @@ public class MainPanelController implements Initializable {
         toggleNavRail();
     }
 
+
+    // NOTE: The code below(till the end of this file) is AI-generated content
+    private boolean isNavRailVisible = false;
+    private static final Duration ANIMATION_SPEED = Duration.millis(450);
+    private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.2, 0.8, 0.2, 1.0);
+
     @FXML
     private void handleOverlayClick() {
         if (isNavRailVisible) {
@@ -83,29 +89,51 @@ public class MainPanelController implements Initializable {
         }
     }
 
-    private static final Duration ANIMATION_SPEED = Duration.millis(450);
-    private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.2, 0.8, 0.2, 1.0);
+    private ParallelTransition parallelTransition;
     public void toggleNavRail() {
+        // --- Stop any previous animation that might be running. ---
+        // This is the key to making the animation interruptible.
+        if (parallelTransition != null) {
+            parallelTransition.stop();
+        }
+
+        // Determine the target state based on the current state.
+        boolean show = !isNavRailVisible;
+
         TranslateTransition navRailTransition = new TranslateTransition(ANIMATION_SPEED, navRail);
         FadeTransition overlayFade = new FadeTransition(ANIMATION_SPEED, overlayPane);
 
-        // --- 修改：使用我们自定义的插值器 ---
         navRailTransition.setInterpolator(CUSTOM_EASING);
         overlayFade.setInterpolator(CUSTOM_EASING);
 
-        if (isNavRailVisible) {
-            navRailTransition.setToX(-navRail.getPrefWidth());
-            overlayFade.setToValue(0.0);
-            overlayFade.setOnFinished(event -> overlayPane.setVisible(false));
-        } else {
+        if (show) {
+            // Prepare the "show" animation.
+            // The overlay must be set to visible before its fade-in animation can play.
             overlayPane.setVisible(true);
             navRailTransition.setToX(0);
             overlayFade.setToValue(1.0);
-            overlayFade.setOnFinished(null);
+        } else {
+            // Prepare the "hide" animation.
+            navRailTransition.setToX(-navRail.getPrefWidth());
+            overlayFade.setToValue(0.0);
+        }
+        // --- Create a new animation instance to take over. ---
+        // This new animation will start from the current visual state of the elements.
+        parallelTransition = new ParallelTransition(navRailTransition, overlayFade);
+
+        // --- Core Change 3: Conditionally set the onFinished event for cleanup. ---
+        // We only need to perform a cleanup action (set overlay to invisible)
+        // when the animation's goal is to hide everything.
+        if (!show) {
+            parallelTransition.setOnFinished(event -> {
+                overlayPane.setVisible(false);
+            });
         }
 
-        ParallelTransition parallelTransition = new ParallelTransition(navRailTransition, overlayFade);
         parallelTransition.play();
-        isNavRailVisible = !isNavRailVisible;
+
+        // Immediately update the state to reflect the user's latest intent.
+        // This ensures the next click will correctly determine the new target state.
+        isNavRailVisible = show;
     }
 }
