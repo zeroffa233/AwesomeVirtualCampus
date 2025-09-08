@@ -40,7 +40,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-//TODO: 聊天框匹配长度(不满一行自动缩短) 输入框提高最小高度 界面美化 正式输出后清楚思考中占位符
+import java.util.UUID;
+//TODO: 删除消息
 
 public class GptController implements Initializable {
     @FXML
@@ -54,14 +55,20 @@ public class GptController implements Initializable {
 
     private Text currentModelResponseText;
 
+    private final String WELCOME_MESSAGE = "你好！我是AI助手，有什么可以帮你的吗？";
+    private final String SYSTEM_PROMPT = "你是一个乐于助人的AI助手, 正在和";
+    private final String MODEL = "deepseek-v3.1";
     private final String API_KEY = "sk-588905851d1b4421ae51c9ad64fb120b"; // 替换为你的API Key
     private final String API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"; // 替换为你的API Base URL
     private List<JSONObject> messages = new ArrayList<>(); // 存储对话历史
 
+    private static final double MESSAGE_MAX_WIDTH_PERCENT = 0.7; // 70% 的聊天区域宽度
+    private static final double MESSAGE_MIN_WIDTH = 50.0; // 最小宽度，例如50像素
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // 初始化，可以加载一些默认消息或者设置UI样式
-        addMessageToChat("system", "你好！我是AI助手，有什么可以帮你的吗？");
+        addMessageToChat("system", WELCOME_MESSAGE);
+        messages.add(new JSONObject().put("role", "system").put("content", SYSTEM_PROMPT));
         // 自动将ScrollPane滚动到底部 [8]
         chatScrollPane.vvalueProperty().bind(chatDisplayArea.heightProperty());
     }
@@ -83,11 +90,21 @@ public class GptController implements Initializable {
         // 2. 为模型回应创建占位符并立即添加到UI
         // 这里我们先添加一个空的或加载中的消息，之后会流式更新
         Platform.runLater(() -> {
-            HBox modelMessageContainer = createMessageContainer("model");
-            //TODO: 输出后清楚思考中占位符
+            HBox modelMessageContainer = new HBox();
+            modelMessageContainer.setPadding(new javafx.geometry.Insets(5));
+            modelMessageContainer.setAlignment(Pos.CENTER_LEFT); // 模型消息左对齐
+
             currentModelResponseText = new Text("思考中..."); // 占位符
             TextFlow textFlow = new TextFlow(currentModelResponseText);
-            textFlow.setPrefWidth(chatDisplayArea.getWidth() * 0.7); // 限制文本宽度
+            textFlow.setMaxWidth(chatDisplayArea.getWidth() * MESSAGE_MAX_WIDTH_PERCENT); // 设置最大宽度
+            textFlow.setMinWidth(MESSAGE_MIN_WIDTH);
+            textFlow.setPadding(new javafx.geometry.Insets(8)); // 统一padding
+            textFlow.setStyle("-fx-border-radius: 10px; -fx-background-radius: 10px;"); // 统一圆角
+
+            // 设置模型消息的特定样式
+            currentModelResponseText.setStyle("-fx-fill: white;"); // 模型回应文本颜色
+            textFlow.setStyle(textFlow.getStyle() + "-fx-background-color: #4EB052;"); // 使用你指定的背景色
+
             modelMessageContainer.getChildren().add(textFlow);
             chatDisplayArea.getChildren().add(modelMessageContainer);
         });
@@ -134,14 +151,12 @@ public class GptController implements Initializable {
             // 使用TextFlow来更好地处理文本换行和样式 [18]
             Text messageText = new Text(message);
             TextFlow textFlow = new TextFlow(messageText);
-            textFlow.setPrefWidth(chatDisplayArea.getWidth() * 0.7); // 限制文本宽度
-
+            textFlow.setMaxWidth(chatDisplayArea.getWidth() * MESSAGE_MAX_WIDTH_PERCENT); // 设置最大宽度
+            textFlow.setMinWidth(MESSAGE_MIN_WIDTH);
+            System.out.println(sender);
             if ("user".equals(sender)) {
                 messageText.setStyle("-fx-fill: white;");
                 textFlow.setStyle("-fx-background-color: #007bff; -fx-padding: 8px; -fx-border-radius: 10px; -fx-background-radius: 10px;");
-            } else if ("model".equals(sender)) {
-                messageText.setStyle("-fx-fill: black;");
-                textFlow.setStyle("-fx-background-color: #e2e2e2; -fx-padding: 8px; -fx-border-radius: 10px; -fx-background-radius: 10px;");
             } else { // system 消息
                 messageText.setStyle("-fx-fill: gray; -fx-font-style: italic;");
             }
@@ -155,6 +170,9 @@ public class GptController implements Initializable {
     // 更新模型回应的文本片段
     private void updateModelResponseStream(String newContent) {
         Platform.runLater(() -> {
+            if (currentModelResponseText.getText().equals("思考中...")) {
+                currentModelResponseText.setText(""); // 清除占位符
+            }
             if (currentModelResponseText != null) {
                 currentModelResponseText.setText(currentModelResponseText.getText() + newContent);
             }
@@ -170,7 +188,7 @@ public class GptController implements Initializable {
         conn.setDoOutput(true);
 
         JSONObject requestBody = new JSONObject();
-        requestBody.put("model", "deepseek-v3.1"); // 根据你的API选择合适的模型
+        requestBody.put("model", MODEL); // 根据你的API选择合适的模型
         requestBody.put("messages", currentMessages); // 发送整个对话历史
         requestBody.put("stream", true); // 请求流式响应
 
