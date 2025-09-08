@@ -4,6 +4,15 @@ import app.vcampus.client.gateway.AuthClient;
 import app.vcampus.client.net.NettyHandler;
 import app.vcampus.server.entity.User;
 
+
+import app.vcampus.server.entity.Student;
+import app.vcampus.server.enums.Gender;
+import app.vcampus.server.enums.StudentStatus;
+import app.vcampus.server.enums.PoliticalStatus;
+
+import java.sql.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 public class FakeRepository {
     public static NettyHandler handler;
     public static boolean isConnected = false;
