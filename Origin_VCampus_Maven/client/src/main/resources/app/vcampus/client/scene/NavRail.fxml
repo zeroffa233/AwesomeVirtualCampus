@@ -12,7 +12,7 @@
             <children>
                 <ImageView fitHeight="80.0" fitWidth="80.0" layoutX="50.0" layoutY="20.0" pickOnBounds="true" preserveRatio="true">
                     <image>
-                        <Image url="/images/Logo.png" />
+                        <Image url="/images/logo.png" />
                     </image>
                 </ImageView>
             </children>
