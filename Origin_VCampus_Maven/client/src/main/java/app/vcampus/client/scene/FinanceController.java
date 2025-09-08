@@ -1,29 +1,16 @@
 package app.vcampus.client.scene;
 
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.layout.StackPane;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.Objects;
-import java.util.ResourceBundle;
-
+import app.vcampus.client.viewmodel.FinanceViewModel;
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-
+import java.net.URL;
+import java.util.ResourceBundle;
 
 public class FinanceController implements Initializable {
     @FXML
@@ -38,29 +25,27 @@ public class FinanceController implements Initializable {
     @FXML
     private JFXButton rechargeButton;
 
-    private double balance = 1000.00; // 示例余额
+    //@FXML
+    //private Label statusLabel; // 用于显示状态消息
+
+    private FinanceViewModel viewModel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        updateBalanceLabel();
-    }
+        viewModel = new FinanceViewModel();
 
-    private void updateBalanceLabel() {
-        balanceLabel.setText(String.format("%.2f", balance));
+        // 将视图组件绑定到视图模型属性
+        balanceLabel.textProperty().bind(viewModel.balanceProperty().asString("%.2f"));
+        rechargeAmountField.textProperty().bindBidirectional(viewModel.rechargeAmountProperty());
+        qrCodeImageView.imageProperty().bind(viewModel.qrCodeImageProperty());
+        // statusLabel.textProperty().bind(viewModel.statusMessageProperty());
+
+        // 初始更新（如果需要）
+        // viewModel.updateBalance(); // 可以在这里调用方法从后端获取最新余额
     }
 
     @FXML
     private void handleRecharge(ActionEvent event) {
-        String rechargeRef = "这个链接充值了: " + rechargeAmountField.getText() + "元";
-        System.out.println(rechargeRef);
-        generateAndDisplayQRCode(rechargeRef);
-        //TODO: 真正的请求并等待结果
-        balance += Double.parseDouble(rechargeAmountField.getText());
-        updateBalanceLabel();
-        rechargeAmountField.clear();
-    }
-
-    private void generateAndDisplayQRCode(String data) {
-        //TODO: 生成二维码并显示在 qrCodeImageView 中
+        viewModel.performRecharge();
     }
 }
