@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:controller="app.vcampus.client.scene.SideBarController" alignment="TOP_CENTER" prefWidth="200.0" stylesheets="@SideBar.css" style="-fx-background-color: #f0f0f0;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <Pane prefHeight="120.0">
+            <children>
+                <ImageView fitHeight="70.0" fitWidth="170.0" layoutX="15.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/logo.png" />
+                    </image>
+                </ImageView>
+            </children>
+        </Pane>
+        <JFXButton fx:id="homeButton" onAction="#handleHome" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="主页" graphicTextGap="40" VBox.vgrow="ALWAYS">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/home.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </JFXButton>
+        <JFXButton fx:id="studentStatusButton" onAction="#handleStudentStatus" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="学籍" graphicTextGap="40" VBox.vgrow="ALWAYS">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/student.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </JFXButton>
+        <JFXButton fx:id="courseButton" onAction="#handleTeachingAffairs" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="教务" graphicTextGap="40" VBox.vgrow="ALWAYS">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/teaching.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </JFXButton>
+        <JFXButton fx:id="libraryButton" onAction="#handleLibrary" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="图书馆" graphicTextGap="40" VBox.vgrow="ALWAYS">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/library.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </JFXButton>
+        <JFXButton fx:id="shopButton" onAction="#handleShop" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="超市" graphicTextGap="40" VBox.vgrow="ALWAYS">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/shop.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </JFXButton>
+        <JFXButton fx:id="financeButton" onAction="#handleFinance" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="财务" graphicTextGap="40" VBox.vgrow="ALWAYS">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/finance.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </JFXButton>
+        <JFXButton fx:id="adminButton" onAction="#handleAdmin" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="管理员" graphicTextGap="40" VBox.vgrow="ALWAYS">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/administrator.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </JFXButton>
+        <JFXButton fx:id="gptButton" onAction="#handleGpt" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="GPT" graphicTextGap="40" VBox.vgrow="ALWAYS">
+            <graphic>
+                <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="/images/llm.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </JFXButton>
+    </children>
+</VBox>

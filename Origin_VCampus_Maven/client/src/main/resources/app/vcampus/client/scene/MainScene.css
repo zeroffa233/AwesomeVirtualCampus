@@ -1,0 +1,60 @@
+/*
+White: #FFFFFFDE
+Black: #000000DE
+Gray: #F3EFF4DE
+SEU-Green: #607830DE
+ */
+
+/* General style for the top bar */
+.top-bar {
+    -fx-background-color: #F8F8F8; /* A very light grey background */
+    -fx-border-color: #EAEAEA;
+    -fx-border-width: 0 0 1px 0; /* A subtle bottom border */
+}
+
+/* Style for the main view title */
+.title {
+    -fx-text-fill: #1A1A1A; /* Darker text for better contrast */
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+/* General style for icon buttons like the main menu button */
+.menu-button {
+    -fx-background-radius: 8px; /* Slightly rounded corners */
+    -fx-background-color: transparent;
+
+    /* --- 关键属性 --- */
+    /* JFoenix专属：这个属性定义了点击时“波纹”动效的颜色。 */
+    /* 要修改点击动效的颜色，请直接修改下面的颜色值。 */
+    -jfx-rippler-fill: #4CAF50 !important;
+}
+
+.menu-button:hover {
+    -fx-background-color: #f0f0f0; /* Light gray background on hover */
+}
+
+/* --- Secondary Menu Button Styling (Ultimate Version) --- */
+.top-bar-menu-button {
+    -fx-background-color: transparent; /* Default transparent background */
+    -fx-background-radius: 6px; /* A slightly more pronounced radius */
+    -fx-border-radius: 6px;     /* Keep border and background radius in sync */
+    -fx-text-fill: #333333;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600; /* Bolder text */
+    -fx-padding: 0 16px; /* Horizontal spacing */
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+    -fx-border-color: transparent; /* No border by default */
+}
+
+.top-bar-menu-button:hover {
+    -fx-background-color: #f0f0f0; /* Subtle background on hover */
+}
+
+/* Active state now has a solid, block-like background */
+.top-bar-menu-button.active {
+    -fx-background-color: #607830DE; /* Solid accent color background */
+    -fx-text-fill: #ffffff;        /* White text for contrast */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 1);
+}

@@ -1,0 +1,19 @@
+/* --- Styles for NavRail Buttons --- */
+.nav-button {
+    -fx-background-color: #f0f0f0; /* White Background */
+    -fx-text-fill: #333333; /* Dark Text */
+    -fx-font-size: 18px; /* Increased font size */
+    -fx-font-weight: bold;
+    -fx-background-radius: 0;
+    -fx-padding: 10 10 10 30; /* Adjusted padding for left alignment */
+    -fx-alignment: CENTER_LEFT; /* Align content to the left */
+}
+
+.nav-button:hover {
+    -fx-background-color: #F8F8F8; /* Light Gray for hover */
+}
+
+.nav-button.active {
+    -fx-background-color: #607830DE; /* Accent Color */
+    -fx-text-fill: white;
+}
