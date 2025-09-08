@@ -74,7 +74,7 @@ public class Main extends Application {
     }
 
     public static void showMainPanel() throws IOException {
-        Parent root = FXMLLoader.load(Objects.requireNonNull(Main.class.getResource("/app/vcampus/client/scene/MainPanel.fxml")));
+        Parent root = FXMLLoader.load(Objects.requireNonNull(Main.class.getResource("/app/vcampus/client/scene/MainScene.fxml")));
         primaryStage.setTitle("VCampus");
         primaryStage.setScene(new Scene(root, 1400, 800));
         primaryStage.centerOnScreen();
