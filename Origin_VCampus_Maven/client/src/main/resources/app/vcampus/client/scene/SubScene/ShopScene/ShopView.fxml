@@ -21,10 +21,15 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="app.vcampus.client.scene.ShopController">
     <children>
-        <!-- 1. 主内容区域：商品展示 -->
-        <ScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER" AnchorPane.bottomAnchor="56.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <!-- 1. Main content area: Product display -->
+        <ScrollPane fx:id="mainScrollPane"
+                    fitToWidth="true"
+                    hbarPolicy="NEVER"
+                    AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="0.0">
             <content>
-                <!-- ... VBox, GridPane, etc. go here as you had them ... -->
                 <VBox alignment="TOP_CENTER" spacing="20.0">
                     <children>
                         <VBox maxWidth="1000.0" prefWidth="1000.0" spacing="10.0">
@@ -41,8 +46,21 @@
                                 </Label>
                                 <HBox alignment="CENTER_LEFT" spacing="16.0">
                                     <children>
-                                        <JFXTextField fx:id="searchField" labelFloat="true" promptText="搜索商品（支持模糊搜索）" HBox.hgrow="ALWAYS" />
-                                        <JFXButton fx:id="searchButton" buttonType="RAISED" style="-fx-background-color: #7C4DFF;" text="搜索" textFill="WHITE" />
+                                        <!-- 【修改点 1】为搜索框添加 style 属性，增大字体来提升整体高度和视觉大小 -->
+                                        <JFXTextField fx:id="searchField"
+                                                      labelFloat="true"
+                                                      promptText="搜索商品（支持模糊搜索）"
+                                                      style="-fx-font-size: 16px;"
+                                                      HBox.hgrow="ALWAYS" />
+
+                                        <!-- 【修改点 2】为搜索按钮设置首选高度，并增大字体 -->
+                                        <JFXButton fx:id="searchButton"
+                                                   buttonType="RAISED"
+                                                   prefHeight="48.0"
+                                                   style="-fx-background-color: #7C4DFF; -fx-font-size: 16px;"
+                                                   text="搜索"
+                                                   textFill="WHITE"
+                                                   translateY="-6.0"/>
                                     </children>
                                 </HBox>
                             </children>
@@ -62,16 +80,26 @@
                         </GridPane>
                     </children>
                     <padding>
-                        <Insets left="100.0" right="100.0" />
+                        <Insets left="100.0" right="100.0" bottom="56.0"/>
                     </padding>
                 </VBox>
             </content>
         </ScrollPane>
 
-        <!-- 2. 底部结算栏 (现在在遮罩下方) -->
-        <HBox fx:id="bottomBar" alignment="CENTER_LEFT" style="-fx-background-color: #7C4DFF;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <HBox fx:id="bottomBar"
+              alignment="CENTER_LEFT"
+              prefHeight="56.0"
+              onMouseClicked="#toggleCart"
+              style="-fx-background-color: #7C4DFF; -fx-cursor: hand;"
+              AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0">
             <children>
-                <JFXButton fx:id="toggleCartButton" onAction="#toggleCart" text="结算" textFill="WHITE" />
+                <Label text="单击底部以结算" textFill="WHITE">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Label>
                 <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
                     <children>
                         <Label fx:id="itemCountLabel" text="已选择 0 项商品" textFill="WHITE">
@@ -91,16 +119,17 @@
                 </HBox>
             </children>
             <padding>
-                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                <Insets left="30.0" right="30.0" />
             </padding>
         </HBox>
 
-        <!-- 3. 全屏遮罩 (在结算栏上方) -->
         <StackPane fx:id="overlayPane" onMouseClicked="#toggleCart" style="-fx-background-color: rgba(0, 0, 0, 0.4);" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
 
-        <!-- 4. 购物车视图 (在最顶层) -->
-        <VBox fx:id="cartView" style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, -5);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <!-- ... cart view content as you had it ... -->
+        <VBox fx:id="cartView"
+              style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, -5);"
+              AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0">
             <padding>
                 <Insets top="20" right="100" bottom="80" left="100" />
             </padding>
