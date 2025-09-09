@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.vcampus.client.scene.SubScene.CourseScene.CourseListItemController"
+            styleClass="course-item-root" prefWidth="820" minHeight="80">
+
+    <children>
+        <VBox spacing="8" AnchorPane.topAnchor="8" AnchorPane.leftAnchor="8" AnchorPane.rightAnchor="8" AnchorPane.bottomAnchor="8">
+            <!-- Header -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <VBox>
+                    <Label fx:id="courseNameLabel" styleClass="course-title" />
+                    <Label fx:id="courseIdLabel" styleClass="course-sub" />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox fx:id="chipBox" spacing="6" alignment="CENTER_RIGHT" />
+                <ToggleButton fx:id="expandToggle" text="展开" />
+            </HBox>
+
+            <Separator />
+
+            <!-- 可展开区域动画容器（初始为 0 高度） -->
+            <!-- 使用 VBox 替代 Pane，这样子节点会被布局并随容器高度变化 -->
+            <StackPane>
+                <VBox fx:id="expandContainer" maxHeight="0.0" minHeight="0.0" prefHeight="0.0" >
+                    <ScrollPane fx:id="tcScroll" fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" prefHeight="240">
+                        <content>
+                            <HBox fx:id="teachingClassBox" spacing="10" />
+                        </content>
+                    </ScrollPane>
+                </VBox>
+            </StackPane>
+        </VBox>
+    </children>
+</AnchorPane>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController"
+            prefWidth="900" prefHeight="720"
+            stylesheets="@teachingaffairs.css"
+            style="-fx-background-color: white;">
+
+    <children>
+        <VBox spacing="16" AnchorPane.topAnchor="16" AnchorPane.leftAnchor="16" AnchorPane.rightAnchor="16" AnchorPane.bottomAnchor="16">
+            <!-- 顶部间距 -->
+            <Region prefHeight="1" />
+            <!-- 标题区域 -->
+            <VBox spacing="4">
+                <Label fx:id="headingLabel" styleClass="page-heading" />
+                <Label fx:id="captionLabel" styleClass="page-caption" />
+            </VBox>
+
+            <!-- 列表：使用 ScrollPane 包裹 VBox -->
+            <!-- ScrollPane 占满剩余空间 -->
+            <ScrollPane fx:id="scrollPane" fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+                <content>
+                    <VBox fx:id="coursesContainer" spacing="10">
+                        <padding>
+                            <Insets top="8.0" right="8.0" bottom="8.0" left="8.0" />
+                        </padding>
+                    </VBox>
+                </content>
+            </ScrollPane>
+        </VBox>
+    </children>
+</AnchorPane>
