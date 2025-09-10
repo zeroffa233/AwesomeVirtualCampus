@@ -30,6 +30,8 @@ import java.util.Objects;
 import javafx.scene.text.Text;
 import app.vcampus.client.util.ShopItem;
 import app.vcampus.client.util.ShopTransactionRecord;
+import javafx.scene.shape.Rectangle;
+
 //TODO : 模糊搜索优化
 //TODO : 去掉 Cart 的自动换行
 public class ShopController {
@@ -193,7 +195,21 @@ public class ShopController {
         imageContainer.setMinSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
         imageContainer.setPrefSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
         imageContainer.setMaxSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
-        imageContainer.setStyle("-fx-background-color: #F0F0F0; -fx-background-radius: 4;");
+        // 【优化】我们不再需要背景圆角了，因为剪裁会处理它
+        imageContainer.setStyle("-fx-background-color: #F0F0F0;");
+
+        // --- 【关键修正】将剪裁应用到“相框”而不是“照片” ---
+        // 1. 创建一个和图片视口一样大的矩形，作为我们的“剪刀”
+        Rectangle clip = new Rectangle(VIEWPORT_SIZE, VIEWPORT_SIZE);
+
+        // 2. 设置矩形的圆角半径，这个值可以随你调整
+        double cornerRadius = 30.0;
+        clip.setArcWidth(cornerRadius);
+        clip.setArcHeight(cornerRadius);
+
+        // 3. 将这个圆角矩形“剪刀”应用到我们的 imageContainer (相框) 上
+        imageContainer.setClip(clip);
+        // --- 修正结束 ---
 
         try {
             Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(item.getImagePath())));
@@ -206,12 +222,14 @@ public class ShopController {
                 imageView.setFitHeight(VIEWPORT_SIZE);
             }
 
+            // 我们不再对 imageView 本身进行剪裁
             imageContainer.getChildren().add(imageView);
 
         } catch (Exception e) {
             System.err.println("Could not load image: " + item.getImagePath());
         }
 
+        // --- 后面的代码保持完全不变 ---
         VBox textContent = new VBox(10);
         textContent.setAlignment(Pos.CENTER_LEFT);
 
@@ -238,7 +256,6 @@ public class ShopController {
         card.getChildren().addAll(imageContainer, textContent);
         return card;
     }
-
     private void updateCartItemsList() {
         cartItemsContainer.getChildren().clear();
         for (ShopItem item : chosenItems) {

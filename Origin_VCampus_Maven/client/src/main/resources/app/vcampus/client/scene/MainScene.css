@@ -58,3 +58,31 @@ SEU-Green: #607830DE
     -fx-text-fill: #ffffff;        /* White text for contrast */
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 1);
 }
+
+/* --- “立即支付”按钮的专属样式 --- */
+.payment-action-button {
+    /* --- 核心外观 (直接从 .top-bar-menu-button.active 复制) --- */
+    -fx-background-color: #607830DE; /* 你想要的 SEU-Green */
+    -fx-text-fill: #ffffff;        /* 白色文字 */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 1); /* 细微的阴影 */
+
+    /* --- 基础样式 (从 .top-bar-menu-button 继承优点) --- */
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+    -fx-padding: 8px 20px; /* 调整内边距，让按钮更饱满 */
+    -fx-cursor: hand;
+    -fx-background-insets: 0; /* 确保圆角生效的关键 */
+}
+
+/* --- 交互状态 --- */
+.payment-action-button:hover {
+    /* 悬停时颜色可以稍微变亮一点，提供反馈 */
+    -fx-background-color: #79953c;
+}
+
+.payment-action-button:pressed {
+    /* 按下时颜色可以稍微变暗一点 */
+    -fx-background-color: #495a24;
+}
