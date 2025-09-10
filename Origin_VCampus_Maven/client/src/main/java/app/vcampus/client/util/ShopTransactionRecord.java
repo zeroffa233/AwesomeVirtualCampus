@@ -1,6 +1,5 @@
 package app.vcampus.client.util;
 
-import app.vcampus.client.model.ShopItem;
 import java.util.ArrayList;
 import java.util.List;
 

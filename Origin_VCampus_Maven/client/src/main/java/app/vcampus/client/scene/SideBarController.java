@@ -187,8 +187,11 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleFinance() {
         setActiveButton(financeButton);
+        JFXButton personalButton = createSecondaryMenuButton("个人财务管理", "/app/vcampus/client/scene/FinanceScene/PersonalFinanceView.fxml");
+        JFXButton manageButton = createSecondaryMenuButton("一卡通管理", "/app/vcampus/client/scene/FinanceScene/ManageFinanceView.fxml");
+        personalButton.getStyleClass().add("active");
         // ... 创建二级菜单按钮
-        switchView("/app/vcampus/client/scene/SubScene/FinanceScene/FinanceView.fxml", "财务中心", List.of(/* ... 按钮列表 ... */));
+        switchView("/app/vcampus/client/scene/SubScene/FinanceScene/ManageFinanceView.fxml", "财务中心", List.of(personalButton, manageButton));
     }
 
     @FXML
