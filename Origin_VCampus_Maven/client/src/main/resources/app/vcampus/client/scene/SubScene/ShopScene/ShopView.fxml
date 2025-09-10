@@ -57,7 +57,7 @@
                                         <JFXButton fx:id="searchButton"
                                                    buttonType="RAISED"
                                                    prefHeight="48.0"
-                                                   style="-fx-background-color: #B2C926B2; -fx-font-size: 16px;"
+                                                   style="-fx-background-color: #728748; -fx-font-size: 16px;"
                                                    text="搜索"
                                                    textFill="WHITE"
                                                    translateY="-6.0"/>
@@ -125,34 +125,63 @@
 
         <StackPane fx:id="overlayPane" onMouseClicked="#toggleCart" style="-fx-background-color: rgba(0, 0, 0, 0.4);" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
 
-        <VBox fx:id="cartView"
-              style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, -5);"
-              AnchorPane.bottomAnchor="0.0"
-              AnchorPane.leftAnchor="0.0"
-              AnchorPane.rightAnchor="0.0">
-            <padding>
-                <Insets top="20" right="100" bottom="80" left="100" />
-            </padding>
+
+        <!-- 我们将 VBox 改为 StackPane，以便在上面叠加“下单成功”的提示 -->
+        <StackPane fx:id="cartContainer"
+                   AnchorPane.bottomAnchor="0.0"
+                   AnchorPane.leftAnchor="0.0"
+                   AnchorPane.rightAnchor="0.0"
+                   AnchorPane.topAnchor="60.0">
             <children>
-                <HBox alignment="CENTER_LEFT">
-                    <VBox>
-                        <Label fx:id="cartTotalPriceLabel" text="共 0.00 元">
-                            <font><Font name="System Bold" size="28.0" /></font>
+                <!-- 这是你原来的 cartView，现在作为 StackPane 的底层 -->
+                <VBox fx:id="cartView"
+                      style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, -5);">
+                    <padding>
+                        <Insets top="20" right="100" bottom="80" left="100" />
+                    </padding>
+                    <children>
+                        <HBox alignment="CENTER_LEFT">
+                            <VBox>
+                                <Label fx:id="cartTotalPriceLabel" text="共 0.00 元">
+                                    <font><Font name="System Bold" size="28.0" /></font>
+                                </Label>
+                                <Label fx:id="cartItemCountLabel" text="已选择 0 件商品" textFill="#616161" />
+                            </VBox>
+                            <HBox HBox.hgrow="ALWAYS" />
+                            <!-- 【重要】为支付按钮添加 fx:id 和 onAction 事件 -->
+                            <JFXButton fx:id="payButton"
+                                       onAction="#handlePayment"
+                                       buttonType="RAISED"
+                                       prefHeight="48.0"
+                                       style="-fx-background-color: #728748;"
+                                       text="立即支付"
+                                       textFill="WHITE" />
+                        </HBox>
+                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="20.0" />
+                            </VBox.margin>
+                            <content>
+                                <VBox fx:id="cartItemsContainer" spacing="10" />
+                            </content>
+                        </ScrollPane>
+                    </children>
+                </VBox>
+
+                <!-- 【新增】“下单成功”的覆盖层 -->
+                <StackPane fx:id="successOverlay"
+                           alignment="CENTER"
+                           style="-fx-background-color: white;"
+                           visible="false"> <!-- 默认不可见 -->
+                    <children>
+                        <Label text="已下单" textFill="BLACK">
+                            <font>
+                                <Font name="System Bold" size="32.0" />
+                            </font>
                         </Label>
-                        <Label fx:id="cartItemCountLabel" text="已选择 0 件商品" textFill="#616161" />
-                    </VBox>
-                    <HBox HBox.hgrow="ALWAYS" />
-                    <JFXButton buttonType="RAISED" style="-fx-background-color: #B2C926B2;" text="立即支付" textFill="WHITE" />
-                </HBox>
-                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
-                    <VBox.margin>
-                        <Insets top="20.0" />
-                    </VBox.margin>
-                    <content>
-                        <VBox fx:id="cartItemsContainer" spacing="10" />
-                    </content>
-                </ScrollPane>
+                    </children>
+                </StackPane>
             </children>
-        </VBox>
+        </StackPane>
     </children>
 </AnchorPane>

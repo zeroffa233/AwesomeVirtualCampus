@@ -28,7 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javafx.scene.text.Text;
-
+import app.vcampus.client.model.ShopItem;
+import app.vcampus.client.util.ShopTransactionRecord;
 //TODO : 模糊搜索优化
 //TODO : 去掉 Cart 的自动换行
 public class ShopController {
@@ -48,6 +49,9 @@ public class ShopController {
     @FXML private VBox cartItemsContainer;
     @FXML private StackPane overlayPane;
 
+    @FXML private JFXButton payButton;
+    @FXML private StackPane successOverlay;
+    @FXML private StackPane cartContainer; // 【新增】
 
     // ViewModel / State Properties
     private final ObservableList<ShopItem> allItems = FXCollections.observableArrayList();
@@ -63,7 +67,9 @@ public class ShopController {
     private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.23, 1.0, 0.32, 1.0);
     private ParallelTransition cartAnimation;
 
-    // Initialization
+    public static final List<ShopTransactionRecord> transactionHistory = new ArrayList<>();
+
+    // 【已重构】
     @FXML
     public void initialize() {
         loadData();
@@ -72,26 +78,28 @@ public class ShopController {
         setupListeners();
         populateItemsGrid();
 
-        // 【关键】我们不再控制 topAnchor，而是给 cartView 设置一个最大高度的限制。
-        // 这个限制与窗口高度动态绑定。
-        cartView.maxHeightProperty().bind(
-                rootPane.heightProperty().subtract(60) // 最大高度 = 窗口高度 - 60
-        );
+        // 【修复问题1】将支付按钮的 disable 属性与购物车是否为空进行绑定
+        payButton.disableProperty().bind(Bindings.isEmpty(chosenItems));
 
-        // 确保初始位置在屏幕外 (这部分逻辑保持不变)
+        // 【修复问题2】不再绑定 cartView 的 maxHeight，让其自由生长
+        // 我们改为直接控制 cartContainer 的动画
+
+        // 确保 cartContainer 初始位置在屏幕外，且能响应窗口大小变化
         rootPane.heightProperty().addListener((obs, oldVal, newVal) -> {
             if (!isCartVisible) {
-                cartView.setTranslateY(newVal.doubleValue());
+                cartContainer.setTranslateY(newVal.doubleValue());
             }
         });
-        cartView.sceneProperty().addListener((obs, oldScene, newScene) -> {
+        cartContainer.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
-                cartView.setTranslateY(rootPane.getHeight());
+                cartContainer.setTranslateY(rootPane.getHeight());
             }
         });
 
-        cartView.setCache(true);
-        cartView.setCacheHint(javafx.scene.CacheHint.SPEED);
+        // 默认让弹窗“鼠标透明”，不拦截事件
+        cartContainer.setMouseTransparent(true);
+        cartContainer.setCache(true);
+        cartContainer.setCacheHint(javafx.scene.CacheHint.SPEED);
     }
     // --- Data Loading ---
     private void loadData() {
@@ -109,6 +117,7 @@ public class ShopController {
     }
 
 
+    // 【已重构】动画主体改为 cartContainer
     @FXML
     private void toggleCart() {
         if (cartAnimation != null) {
@@ -117,18 +126,23 @@ public class ShopController {
 
         isCartVisible = !isCartVisible;
 
-        TranslateTransition cartTransition = new TranslateTransition(ANIMATION_SPEED, cartView);
+        // 【核心修改】所有平移动画都只针对 cartContainer 这个“弹窗”
+        TranslateTransition cartTransition = new TranslateTransition(ANIMATION_SPEED, cartContainer);
         FadeTransition overlayFade = new FadeTransition(ANIMATION_SPEED, overlayPane);
-
         cartTransition.setInterpolator(CUSTOM_EASING);
         overlayFade.setInterpolator(CUSTOM_EASING);
 
         if (isCartVisible) {
-            // 在显示之前，刷新一次列表
+            cartContainer.setMouseTransparent(false);
             updateCartItemsList();
 
             overlayPane.setVisible(true);
-            cartTransition.setToY(0);
+            // 计算弹窗滑入的目标位置。
+            // 我们不能直接设为 0，因为 cartContainer 的顶部还有 60px 的边距
+            // 同时，我们还要确保它不会超出屏幕
+            double targetY = Math.max(60, rootPane.getHeight() - cartContainer.getHeight());
+            cartTransition.setToY(targetY);
+
             overlayFade.setToValue(0.6);
         } else {
             cartTransition.setToY(rootPane.getHeight());
@@ -138,13 +152,18 @@ public class ShopController {
         cartAnimation = new ParallelTransition(cartTransition, overlayFade);
 
         if (!isCartVisible) {
-            cartAnimation.setOnFinished(event -> overlayPane.setVisible(false));
+            cartAnimation.setOnFinished(event -> {
+                overlayPane.setVisible(false);
+                cartView.setOpacity(1);
+                successOverlay.setVisible(false);
+                cartContainer.setMouseTransparent(true);
+            });
         } else {
             cartAnimation.setOnFinished(null);
         }
-
         cartAnimation.play();
     }
+
     // --- UI Population ---
     private void populateItemsGrid() {
         itemsGrid.getChildren().clear();
@@ -240,41 +259,56 @@ public class ShopController {
         buttonColumn.setHgrow(Priority.NEVER);
         listItem.getColumnConstraints().addAll(infoColumn, buttonColumn);
 
-        // --- 2. 创建左侧的商品信息 VBox (保持不变) ---
+
+        // --- A. 【新增】创建左侧的图片 ---
+        ImageView imageView = new ImageView();
+        try {
+            Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(item.getImagePath())));
+            imageView.setImage(image);
+        } catch (Exception e) {
+            System.err.println("Could not load cart image: " + item.getImagePath());
+        }
+        // --- 【微调参数】在这里调整图片大小 ---
+        imageView.setFitHeight(60); // 设置图片高度为 60px
+        imageView.setFitWidth(60);  // 设置图片宽度为 60px
+        imageView.setPreserveRatio(true); // 保持宽高比
+
+
+        // --- B. 创建图片右侧的商品信息 VBox (保持不变) ---
         VBox nameAndPriceContainer = new VBox(4);
         nameAndPriceContainer.setAlignment(Pos.CENTER_LEFT);
 
-        // --- 3. 【核心修改】使用 Text 节点来显示商品名 ---
         Text nameText = new Text(item.getName());
         nameText.setFont(Font.font("System", FontWeight.NORMAL, 16));
-        // Text 节点使用 setFill 来设置颜色，而不是 setTextFill
         nameText.setFill(Color.web("#212121"));
-
-        // 【关键】为了实现自动换行，我们需要将 Text 节点的换行宽度绑定到其父容器的宽度上
-        // 这会让文本在容器宽度不够时自动换行
         nameText.wrappingWidthProperty().bind(nameAndPriceContainer.widthProperty());
 
-        // 我们保留 priceLabel 作为 Label，用于对比
         Label priceLabel = new Label(String.format("¥%.2f", item.getPrice()));
         priceLabel.setTextFill(Color.web("#616161"));
         priceLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
 
-        // 将 Text 节点和 Label 节点一同加入 VBox
         nameAndPriceContainer.getChildren().addAll(nameText, priceLabel);
 
-        // --- 4. 创建右侧的移除按钮 (保持不变) ---
+
+        // --- C. 【新增】创建一个 HBox 来包裹图片和商品信息 ---
+        HBox imageAndInfoContainer = new HBox(15); // 15px 的水平间距
+        imageAndInfoContainer.setAlignment(Pos.CENTER_LEFT);
+        imageAndInfoContainer.getChildren().addAll(imageView, nameAndPriceContainer);
+
+
+        // --- D. 创建右侧的移除按钮 (保持不变) ---
         JFXButton removeButton = new JFXButton("移除");
         removeButton.setTextFill(Color.RED);
         removeButton.setOnAction(e -> chosenItems.remove(item));
 
-        // --- 5. 将 VBox 和 Button 添加到 GridPane (保持不变) ---
-        listItem.add(nameAndPriceContainer, 0, 0);
+
+        // --- E. 【修改】将新的 HBox 和 Button 添加到 GridPane 中 ---
+        listItem.add(imageAndInfoContainer, 0, 0); // 将 HBox 作为一个整体放入第一列
         listItem.add(removeButton, 1, 0);
         GridPane.setHalignment(removeButton, javafx.geometry.HPos.RIGHT);
 
         return listItem;
     }
-
     // --- Bindings and Listeners ---
     private void setupBindings() {
         itemCountLabel.textProperty().bind(
@@ -294,12 +328,10 @@ public class ShopController {
     // 【已重构】
     private void setupListeners() {
         chosenItems.addListener((ListChangeListener<ShopItem>) c -> {
-            // 数据变化时，只更新数据属性
             chosenItemsCount.set(chosenItems.size());
             chosenItemsPrice.set(chosenItems.stream().mapToDouble(ShopItem::getPrice).sum());
 
-            // 【关键】如果购物车当前是可见的，就刷新它的列表
-            // 高度会由 JavaFX 根据 maxHeight 自动计算，我们不再需要手动干预
+            // 只有当弹窗可见时，才刷新列表内容
             if (isCartVisible) {
                 updateCartItemsList();
             }
@@ -326,21 +358,44 @@ public class ShopController {
         populateItemsGrid();
     }
 
-
-    // --- Data Model Class ---
-    private static class ShopItem {
-        private final String name;
-        private final double price;
-        private final String imagePath;
-
-        public ShopItem(String name, double price, String imagePath) {
-            this.name = name;
-            this.price = price;
-            this.imagePath = imagePath;
+    // 【已重构】修复动画逻辑
+    @FXML
+    private void handlePayment() {
+        // --- 0. 状态检查 (保持不变) ---
+        if (chosenItems.isEmpty() || successOverlay.isVisible()) {
+            return;
         }
 
-        public String getName() { return name; }
-        public double getPrice() { return price; }
-        public String getImagePath() { return imagePath; }
+        // --- 1. 记录交易 (保持不变) ---
+        ShopTransactionRecord record = new ShopTransactionRecord(chosenItems, chosenItemsPrice.get());
+        transactionHistory.add(record);
+        System.out.println("新交易已记录: " + record);
+
+        // --- 2. 准备动画 (已修改) ---
+        // cartView 淡出
+        FadeTransition cartFadeOut = new FadeTransition(Duration.millis(300), cartView);
+        cartFadeOut.setToValue(0);
+
+        // successOverlay 淡入
+        FadeTransition successFadeIn = new FadeTransition(Duration.millis(300), successOverlay);
+        successFadeIn.setFromValue(0);
+        successFadeIn.setToValue(1);
+
+        // --- 3. 执行动画 (已修改) ---
+        // 当 successOverlay 淡入完成后，再清空数据并收回弹窗
+        successFadeIn.setOnFinished(event -> {
+            chosenItems.clear(); // 在用户看到“已下单”后才清空数据
+
+            PauseTransition delay = new PauseTransition(Duration.millis(500));
+            delay.setOnFinished(e -> {
+                toggleCart(); // 调用统一的收回方法
+            });
+            delay.play();
+        });
+
+        // 启动动画：先显示 successOverlay，然后同时播放两个淡入淡出动画
+        successOverlay.setVisible(true);
+        cartFadeOut.play();
+        successFadeIn.play();
     }
 }
