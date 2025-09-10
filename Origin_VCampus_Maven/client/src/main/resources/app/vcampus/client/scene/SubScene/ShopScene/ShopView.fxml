@@ -57,7 +57,7 @@
                                         <JFXButton fx:id="searchButton"
                                                    buttonType="RAISED"
                                                    prefHeight="48.0"
-                                                   style="-fx-background-color: #7C4DFF; -fx-font-size: 16px;"
+                                                   style="-fx-background-color: #B2C926B2; -fx-font-size: 16px;"
                                                    text="搜索"
                                                    textFill="WHITE"
                                                    translateY="-6.0"/>
@@ -90,7 +90,7 @@
               alignment="CENTER_LEFT"
               prefHeight="56.0"
               onMouseClicked="#toggleCart"
-              style="-fx-background-color: #7C4DFF; -fx-cursor: hand;"
+              style="-fx-background-color: #728748; -fx-cursor: hand;"
               AnchorPane.bottomAnchor="0.0"
               AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0">
@@ -142,7 +142,7 @@
                         <Label fx:id="cartItemCountLabel" text="已选择 0 件商品" textFill="#616161" />
                     </VBox>
                     <HBox HBox.hgrow="ALWAYS" />
-                    <JFXButton buttonType="RAISED" style="-fx-background-color: #536DFE;" text="立即支付" textFill="WHITE" />
+                    <JFXButton buttonType="RAISED" style="-fx-background-color: #B2C926B2;" text="立即支付" textFill="WHITE" />
                 </HBox>
                 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
                     <VBox.margin>

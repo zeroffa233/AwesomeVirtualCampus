@@ -30,7 +30,7 @@ import java.util.Objects;
 import javafx.scene.text.Text;
 
 //TODO : 模糊搜索优化
-//TODO : 去掉Cart的自动换行
+//TODO : 去掉 Cart 的自动换行
 public class ShopController {
 
     // FXML Injected Fields
@@ -64,7 +64,6 @@ public class ShopController {
     private ParallelTransition cartAnimation;
 
     // Initialization
-// 【已重构】
     @FXML
     public void initialize() {
         loadData();
@@ -204,10 +203,10 @@ public class ShopController {
 
         Label priceLabel = new Label("¥ " + String.format("%.2f", item.getPrice()));
         priceLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
-        priceLabel.setTextFill(Color.valueOf("#d32f2f"));
+        priceLabel.setTextFill(Color.valueOf("#212121"));
 
         JFXButton addButton = new JFXButton("+");
-        addButton.setStyle("-fx-background-color: #7C4DFF; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
+        addButton.setStyle("-fx-background-color: #B2C926B2; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
         addButton.setButtonType(JFXButton.ButtonType.RAISED);
         addButton.setOnAction(event -> chosenItems.add(item));
 
