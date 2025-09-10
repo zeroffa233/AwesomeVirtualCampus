@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javafx.scene.text.Text;
-import app.vcampus.client.model.ShopItem;
+import app.vcampus.client.util.ShopItem;
 import app.vcampus.client.util.ShopTransactionRecord;
 //TODO : 模糊搜索优化
 //TODO : 去掉 Cart 的自动换行
