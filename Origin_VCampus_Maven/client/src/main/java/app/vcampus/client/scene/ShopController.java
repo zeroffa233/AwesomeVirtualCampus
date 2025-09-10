@@ -34,6 +34,7 @@ import javafx.scene.shape.Rectangle;
 
 //TODO : 模糊搜索优化
 //TODO : 去掉 Cart 的自动换行
+
 public class ShopController {
 
     // FXML Injected Fields
@@ -103,7 +104,7 @@ public class ShopController {
         cartContainer.setCache(true);
         cartContainer.setCacheHint(javafx.scene.CacheHint.SPEED);
     }
-    // --- Data Loading ---
+
     private void loadData() {
         // Simulating the items from the image
         allItems.add(new ShopItem("正版 黑暗之魂官方艺术设定集 全套1-2-3册 DARK SOULS", 249.00, "/images/500.png"));
@@ -118,8 +119,6 @@ public class ShopController {
         allItems.add(new ShopItem("原神 | 甘雨手办", 888.00, "/images/500.png"));
     }
 
-
-    // 【已重构】动画主体改为 cartContainer
     @FXML
     private void toggleCart() {
         if (cartAnimation != null) {
@@ -166,7 +165,6 @@ public class ShopController {
         cartAnimation.play();
     }
 
-    // --- UI Population ---
     private void populateItemsGrid() {
         itemsGrid.getChildren().clear();
         int col = 0;
@@ -190,7 +188,7 @@ public class ShopController {
         card.setPadding(new Insets(10));
         card.setAlignment(Pos.TOP_CENTER);
 
-        final double VIEWPORT_SIZE = 220.0;
+        final double VIEWPORT_SIZE = 270.0;
         StackPane imageContainer = new StackPane();
         imageContainer.setMinSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
         imageContainer.setPrefSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
@@ -256,6 +254,7 @@ public class ShopController {
         card.getChildren().addAll(imageContainer, textContent);
         return card;
     }
+
     private void updateCartItemsList() {
         cartItemsContainer.getChildren().clear();
         for (ShopItem item : chosenItems) {
@@ -263,7 +262,6 @@ public class ShopController {
         }
     }
 
-    // 【终极武器】使用纯粹的 Text 节点替换 Label，绕开所有可能的控件渲染 Bug
     private Node createCartListItem(ShopItem item) {
         // --- 1. 创建 GridPane 根布局 (保持不变) ---
         GridPane listItem = new GridPane();
@@ -326,7 +324,7 @@ public class ShopController {
 
         return listItem;
     }
-    // --- Bindings and Listeners ---
+
     private void setupBindings() {
         itemCountLabel.textProperty().bind(
                 Bindings.createStringBinding(() -> "已选择 " + chosenItemsCount.get() + " 项商品", chosenItemsCount)
@@ -342,7 +340,6 @@ public class ShopController {
         );
     }
 
-    // 【已重构】
     private void setupListeners() {
         chosenItems.addListener((ListChangeListener<ShopItem>) c -> {
             chosenItemsCount.set(chosenItems.size());
@@ -357,7 +354,6 @@ public class ShopController {
         searchButton.setOnAction(event -> performSearch());
         searchField.setOnAction(event -> performSearch());
     }
-    // 【新增】一个辅助方法，专门负责根据购物车状态更新其外观
 
     private void performSearch() {
         String keyword = searchField.getText().toLowerCase().trim();
@@ -375,7 +371,6 @@ public class ShopController {
         populateItemsGrid();
     }
 
-    // 【已重构】修复动画逻辑
     @FXML
     private void handlePayment() {
         // --- 0. 状态检查 (保持不变) ---

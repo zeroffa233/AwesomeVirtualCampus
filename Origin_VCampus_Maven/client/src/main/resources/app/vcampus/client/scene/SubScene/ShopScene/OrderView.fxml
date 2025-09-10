@@ -13,15 +13,14 @@
             <content>
                 <VBox alignment="TOP_CENTER" spacing="20.0">
                     <children>
-                        <!-- 主容器，所有内容将放在这里 -->
-                        <VBox fx:id="mainContainer" maxWidth="1000.0" spacing="20.0">
+                        <VBox fx:id="mainContainer" alignment="TOP_LEFT" maxWidth="1000.0" spacing="20.0">
                             <children>
-                                <!-- 1. 静态标题部分 -->
-                                <VBox spacing="5.0" translateX="-1.0">
+                                <!-- 1. 静态标题部分 (已移除 translateX) -->
+                                <VBox maxWidth="1000.0" prefWidth="1000.0" spacing="10.0" translateX="-5">
                                     <children>
-                                        <Label text="我的订单" translateX="-3.0">
+                                        <Label text="我的订单" translateX="-3">
                                             <font>
-                                                <Font name="System Bold" size="36.0" />
+                                                <Font name="System Bold" size="32.0" />
                                             </font>
                                         </Label>
                                         <Label text="查看所有订单" textFill="#616161">
@@ -31,13 +30,14 @@
                                         </Label>
                                     </children>
                                 </VBox>
-                                <!-- 2. 动态订单列表容器，将由 Controller 填充 -->
-                                <VBox fx:id="ordersListContainer" spacing="40.0" />
+                                <!-- 2. 动态订单列表容器 -->
+                                <VBox fx:id="ordersListContainer" spacing="40.0" translateX="-4"/>
                             </children>
                         </VBox>
                     </children>
+                    <!-- 【关键修改 2】左右内边距统一为 100.0 -->
                     <padding>
-                        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                        <Insets bottom="40.0" left="100.0" right="100.0" top="40.0" />
                     </padding>
                 </VBox>
             </content>
