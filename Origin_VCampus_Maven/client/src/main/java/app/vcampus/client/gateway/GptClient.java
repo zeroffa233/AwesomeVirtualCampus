@@ -84,6 +84,7 @@ public class GptClient {
         session2.setLastModified(System.currentTimeMillis()); // Make it the newest
         session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", "你是一个旅行规划助手。")));
         session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "user").put("content", "我想去云南玩，有什么推荐吗？")));
+        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "assistant").put("content", "云南的旅游方案...")));
         inMemoryStore.put(session2Id, session2);
 
         System.out.println("[GptClient] Mock data initialized with " + inMemoryStore.size() + " sessions.");

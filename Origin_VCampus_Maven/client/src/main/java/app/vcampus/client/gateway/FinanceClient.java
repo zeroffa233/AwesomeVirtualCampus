@@ -1,112 +1,62 @@
+// FinanceClient.java
 package app.vcampus.client.gateway;
 
-import app.vcampus.client.net.NettyHandler;
-import app.vcampus.server.entity.CardTransaction;
-import app.vcampus.server.entity.FinanceCard;
-import app.vcampus.server.entity.IEntity;
-import app.vcampus.server.utility.Request;
-import app.vcampus.server.utility.Response;
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.CompletableFuture;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+/**
+ * FinanceClient负责处理所有与财务相关的网络请求。
+ * 当前使用模拟数据和延迟来模拟真实的网络通信。
+ */
+public class FinanceClient {
 
-@Slf4j
-public class FinanceClient extends BaseClient {
-    public static FinanceCard getMyCard(NettyHandler handler) {
-        Request request = new Request();
-        request.setUri("finance/card/getSelf");
+    // 模拟的服务器端余额
+    private static double mockRemoteBalance = 1000.00;
 
-
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                String data = ((Map<String, String>) response.getData()).get("card");
-                return IEntity.fromJson(data, FinanceCard.class);
-            } else {
-                throw new RuntimeException("Failed to get card");
+    /**
+     * 模拟异步获取当前用户余额。
+     *
+     * @return 一个CompletableFuture，当操作完成时，它将包含最新的余额。
+     */
+    public CompletableFuture<Double> getBalance() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // 模拟100ms的网络延迟
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                // 在实际应用中，这里应该有更健壮的异常处理
+                throw new RuntimeException("获取余额时中断", e);
             }
-        } catch (Exception e) {
-            log.warn("Fail to get card", e);
-            return null;
-        }
+            return mockRemoteBalance;
+        });
     }
 
-    public static List<CardTransaction> getMyBills(NettyHandler handler) {
-        Request request = new Request();
-        request.setUri("finance/bills/getSelf");
+    /**
+     * 模拟异步处理充值请求。
+     *
+     * @param amount 充值的金额
+     * @return 一个CompletableFuture，当操作完成时，它将包含充值后的新余额。
+     *         如果充值失败，Future将以异常结束。
+     */
+    public CompletableFuture<Double> recharge(double amount) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // 模拟800ms的网络延迟和处理时间
+                Thread.sleep(800);
 
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                List<String> raw_data = (List<String>) response.getData();
-                List<CardTransaction> data = raw_data.stream().map(x -> IEntity.fromJson(x, CardTransaction.class)).collect(Collectors.toList());
-                data.sort((a, b) -> b.getTime().compareTo(a.getTime()));
-                return data;
-            } else {
-                throw new RuntimeException("Failed to get bills");
+                if (amount <= 0) {
+                    // 模拟服务器端验证失败
+                    throw new IllegalArgumentException("充值金额必须为正数");
+                }
+
+                // 模拟充值成功
+                mockRemoteBalance += amount;
+                return mockRemoteBalance;
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("充值操作中断", e);
             }
-        } catch (Exception e) {
-            log.warn("Fail to get bills", e);
-            return null;
-        }
-    }
-
-    public static FinanceCard getByCardNumber(NettyHandler handler, String cardNumber) {
-        Request request = new Request();
-        request.setUri("finance/card/getByCardNumber");
-        request.setParams(Map.of("cardNumber", cardNumber));
-
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                String raw_data = ((Map<String, String>) response.getData()).get("card");
-                return IEntity.fromJson(raw_data, FinanceCard.class);
-            } else {
-                throw new RuntimeException("Failed to get card");
-            }
-        } catch (Exception e) {
-            log.warn("Fail to get card", e);
-            return null;
-        }
-    }
-
-    public static FinanceCard updateCard(NettyHandler handler, FinanceCard card) {
-        Request request = new Request();
-        request.setUri("finance/card/update");
-        request.setParams(Map.of("card", card.toJson()));
-
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                String raw_data = ((Map<String, String>) response.getData()).get("card");
-                return IEntity.fromJson(raw_data, FinanceCard.class);
-            } else {
-                throw new RuntimeException("Failed to update card");
-            }
-        } catch (Exception e) {
-            log.warn("Fail to update card", e);
-            return null;
-        }
-    }
-
-    public static FinanceCard rechargeCard(NettyHandler handler, Integer cardNumber, Integer amount) {
-        Request request = new Request();
-        request.setUri("finance/card/recharge");
-        request.setParams(Map.of("cardNumber", cardNumber.toString(), "amount", amount.toString()));
-
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                String raw_data = ((Map<String, String>) response.getData()).get("card");
-                return IEntity.fromJson(raw_data, FinanceCard.class);
-            } else {
-                throw new RuntimeException("Failed to recharge card");
-            }
-        } catch (Exception e) {
-            log.warn("Fail to recharge card", e);
-            return null;
-        }
+        });
     }
 }
