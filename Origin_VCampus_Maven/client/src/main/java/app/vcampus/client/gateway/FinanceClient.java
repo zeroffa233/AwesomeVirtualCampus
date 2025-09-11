@@ -13,7 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FinanceClient {
+//TODO make it a real net io
+
+public class FinanceClient extends BaseClient {
 
     // --- Mock Database for Card Management ---
     private static final Map<String, CardInfo> cardDatabase = new ConcurrentHashMap<>();
@@ -23,7 +25,7 @@ public class FinanceClient {
         cardDatabase.put("123456", new CardInfo("123456", "正常", 13221836.50));
         cardDatabase.put("654321", new CardInfo("654321", "正常", 888.88));
         cardDatabase.put("100000", new CardInfo("100000", "已冻结", 123.00));
-        cardDatabase.put("200000", new CardInfo("200000", "已挂失", 0.00));
+        cardDatabase.put("200000", new CardInfo("200000", "已冻结", 0.00));
     }
 
     /**
@@ -51,7 +53,7 @@ public class FinanceClient {
      */
     public static boolean recharge(String cardNumber, double amount) {
         CardInfo card = cardDatabase.get(cardNumber);
-        if (card != null && amount > 0) {
+        if (card != null && amount > 0 && !"已冻结".equals(card.getStatus())) {
             card.setBalance(card.getBalance() + amount);
             return true;
         }

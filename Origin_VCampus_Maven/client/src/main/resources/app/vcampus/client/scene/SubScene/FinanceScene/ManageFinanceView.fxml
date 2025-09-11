@@ -21,7 +21,7 @@
             <children>
                 <JFXTextField fx:id="searchTextField" labelFloat="true" promptText="输入一卡通号" HBox.hgrow="ALWAYS"/>
                 <JFXButton fx:id="searchButton" buttonType="RAISED"
-                           style="-fx-background-color: #673AB7; -fx-text-fill: white;" text="搜索"/>
+                           style="-fx-background-color: #728748; -fx-text-fill: white;" text="搜索"/>
             </children>
         </HBox>
 

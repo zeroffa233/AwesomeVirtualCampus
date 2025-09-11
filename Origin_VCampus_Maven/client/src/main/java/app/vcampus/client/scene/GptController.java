@@ -32,6 +32,8 @@ import javafx.scene.text.TextFlow;
 import java.net.URL;
 import java.util.*;
 
+//TODO autosave on quit
+
 /**
  * Controller for the GPT Chat interface.
  * Manages the display of chat messages, chat history, and user interactions.

@@ -115,7 +115,6 @@ public class ManageFinanceViewModel {
                         showStatusMessage("充值 " + String.format("%.2f", amount) + " 元成功！", false);
                         // Manually update the balance in the ViewModel to refresh UI
                         CardInfo currentCard = foundCard.get();
-                        currentCard.setBalance(currentCard.getBalance() + amount);
                         updateCardInfoText(currentCard);
                         rechargeAmount.set("");
                     } else {
