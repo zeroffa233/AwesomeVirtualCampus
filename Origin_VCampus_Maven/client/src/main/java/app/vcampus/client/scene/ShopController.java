@@ -30,8 +30,11 @@ import java.util.Objects;
 import javafx.scene.text.Text;
 import app.vcampus.client.util.ShopItem;
 import app.vcampus.client.util.ShopTransactionRecord;
+import javafx.scene.shape.Rectangle;
+
 //TODO : 模糊搜索优化
 //TODO : 去掉 Cart 的自动换行
+
 public class ShopController {
 
     // FXML Injected Fields
@@ -101,7 +104,7 @@ public class ShopController {
         cartContainer.setCache(true);
         cartContainer.setCacheHint(javafx.scene.CacheHint.SPEED);
     }
-    // --- Data Loading ---
+
     private void loadData() {
         // Simulating the items from the image
         allItems.add(new ShopItem("正版 黑暗之魂官方艺术设定集 全套1-2-3册 DARK SOULS", 249.00, "/images/500.png"));
@@ -116,8 +119,6 @@ public class ShopController {
         allItems.add(new ShopItem("原神 | 甘雨手办", 888.00, "/images/500.png"));
     }
 
-
-    // 【已重构】动画主体改为 cartContainer
     @FXML
     private void toggleCart() {
         if (cartAnimation != null) {
@@ -164,7 +165,6 @@ public class ShopController {
         cartAnimation.play();
     }
 
-    // --- UI Population ---
     private void populateItemsGrid() {
         itemsGrid.getChildren().clear();
         int col = 0;
@@ -188,12 +188,26 @@ public class ShopController {
         card.setPadding(new Insets(10));
         card.setAlignment(Pos.TOP_CENTER);
 
-        final double VIEWPORT_SIZE = 220.0;
+        final double VIEWPORT_SIZE = 270.0;
         StackPane imageContainer = new StackPane();
         imageContainer.setMinSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
         imageContainer.setPrefSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
         imageContainer.setMaxSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
-        imageContainer.setStyle("-fx-background-color: #F0F0F0; -fx-background-radius: 4;");
+        // 【优化】我们不再需要背景圆角了，因为剪裁会处理它
+        imageContainer.setStyle("-fx-background-color: #F0F0F0;");
+
+        // --- 【关键修正】将剪裁应用到“相框”而不是“照片” ---
+        // 1. 创建一个和图片视口一样大的矩形，作为我们的“剪刀”
+        Rectangle clip = new Rectangle(VIEWPORT_SIZE, VIEWPORT_SIZE);
+
+        // 2. 设置矩形的圆角半径，这个值可以随你调整
+        double cornerRadius = 30.0;
+        clip.setArcWidth(cornerRadius);
+        clip.setArcHeight(cornerRadius);
+
+        // 3. 将这个圆角矩形“剪刀”应用到我们的 imageContainer (相框) 上
+        imageContainer.setClip(clip);
+        // --- 修正结束 ---
 
         try {
             Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(item.getImagePath())));
@@ -206,12 +220,14 @@ public class ShopController {
                 imageView.setFitHeight(VIEWPORT_SIZE);
             }
 
+            // 我们不再对 imageView 本身进行剪裁
             imageContainer.getChildren().add(imageView);
 
         } catch (Exception e) {
             System.err.println("Could not load image: " + item.getImagePath());
         }
 
+        // --- 后面的代码保持完全不变 ---
         VBox textContent = new VBox(10);
         textContent.setAlignment(Pos.CENTER_LEFT);
 
@@ -246,7 +262,6 @@ public class ShopController {
         }
     }
 
-    // 【终极武器】使用纯粹的 Text 节点替换 Label，绕开所有可能的控件渲染 Bug
     private Node createCartListItem(ShopItem item) {
         // --- 1. 创建 GridPane 根布局 (保持不变) ---
         GridPane listItem = new GridPane();
@@ -309,7 +324,7 @@ public class ShopController {
 
         return listItem;
     }
-    // --- Bindings and Listeners ---
+
     private void setupBindings() {
         itemCountLabel.textProperty().bind(
                 Bindings.createStringBinding(() -> "已选择 " + chosenItemsCount.get() + " 项商品", chosenItemsCount)
@@ -325,7 +340,6 @@ public class ShopController {
         );
     }
 
-    // 【已重构】
     private void setupListeners() {
         chosenItems.addListener((ListChangeListener<ShopItem>) c -> {
             chosenItemsCount.set(chosenItems.size());
@@ -340,7 +354,6 @@ public class ShopController {
         searchButton.setOnAction(event -> performSearch());
         searchField.setOnAction(event -> performSearch());
     }
-    // 【新增】一个辅助方法，专门负责根据购物车状态更新其外观
 
     private void performSearch() {
         String keyword = searchField.getText().toLowerCase().trim();
@@ -358,7 +371,6 @@ public class ShopController {
         populateItemsGrid();
     }
 
-    // 【已重构】修复动画逻辑
     @FXML
     private void handlePayment() {
         // --- 0. 状态检查 (保持不变) ---
