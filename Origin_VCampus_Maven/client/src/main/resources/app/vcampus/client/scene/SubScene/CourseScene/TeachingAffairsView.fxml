@@ -8,7 +8,8 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="app.vcampus.client.scene.TeachingAffairsController"
             prefWidth="800" prefHeight="600"
-            style="-fx-background-color: white;">
+            style="-fx-background-color: white;"
+            stylesheets="@teachingaffairs.css">
 
     <children>
         <VBox alignment="CENTER" spacing="20"

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/11.0.2"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController"
+            prefWidth="1000" prefHeight="760"
+            styleClass="timetable-root">
+
+    <children>
+        <VBox spacing="12" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" styleClass="timetable-container">
+            <Pane prefHeight="18"/>
+
+            <!-- 标题区域 -->
+            <VBox fx:id="titleBox" spacing="4" styleClass="page-title"
+                  alignment="CENTER"> <!-- 居中对齐 -->
+                <padding>
+                    <Insets top="12" right="24" bottom="12" left="24"/>
+                </padding>
+                <children>
+                    <Label fx:id="headingLabel" text="我的课表"
+                           styleClass="page-heading"
+                           style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                </children>
+            </VBox>
+
+
+            <!-- 周控件 -->
+            <HBox alignment="CENTER" spacing="12" styleClass="week-controls">
+                <padding>
+                    <Insets top="0" right="24" bottom="0" left="24"/>
+                </padding>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ToggleButton fx:id="prevWeekBtn" text="◀"  prefWidth="36" styleClass="top-bar-menu-button "/>
+                <Label fx:id="weekLabel" text="第 1 周" styleClass="week-label" />
+                <ToggleButton fx:id="nextWeekBtn" text="▶"  prefWidth="36" styleClass="top-bar-menu-button "/>
+                <Region HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <Separator />
+
+            <!-- Timetable area -->
+            <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" styleClass="timetable-scroll">
+                <padding>
+                    <Insets top="12" right="24" bottom="12" left="24"/>
+                </padding>
+                <content>
+                    <AnchorPane>
+                        <!-- 注意：GridPane 内容由控制器动态构建；这里主要提供样式钩子 -->
+                        <GridPane fx:id="timetableGrid" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0"
+                                  hgap="8" vgap="8" styleClass="timetable-grid" />
+                    </AnchorPane>
+                </content>
+            </ScrollPane>
+        </VBox>
+    </children>
+</AnchorPane>

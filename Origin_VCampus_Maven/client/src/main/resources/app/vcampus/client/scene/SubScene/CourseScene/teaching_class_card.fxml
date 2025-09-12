@@ -32,7 +32,7 @@
             <Region VBox.vgrow="ALWAYS" />
 
             <HBox alignment="CENTER_RIGHT">
-                <Button fx:id="actionBtn" text="选择" />
+                <ToggleButton fx:id="actionBtn" text="选择" styleClass="top-bar-menu-button" />
             </HBox>
         </VBox>
     </children>
