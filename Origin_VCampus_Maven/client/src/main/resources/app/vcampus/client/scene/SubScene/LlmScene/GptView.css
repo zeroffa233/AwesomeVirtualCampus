@@ -42,8 +42,12 @@
 
 .history-list-view .list-cell:filled:selected {
     -fx-background-color: #607830; /* SEU-Green */
-    -fx-text-fill: white;
     -fx-background-radius: 8px;
+}
+
+/* Ensure the text in a selected cell is always white, regardless of focus. */
+.history-list-view .list-cell:filled:selected .label {
+    -fx-text-fill: white;
 }
 
 /* --- Delete 'x' Button in History --- */
@@ -114,7 +118,8 @@
 
 /* User's message bubble */
 .user-bubble {
-    -fx-background-color: #607830; /* SEU-Green */
+    -fx-background-color: #607830DE; /* SEU-Green */
+    -fx-border-radius: 6px;
 }
 
 .user-bubble .text {
@@ -126,7 +131,7 @@
     -fx-background-color: #FFFFFF; /* White background */
     -fx-border-width: 1px;
     -fx-border-color: #DDE1E5; /* Subtle border for flat design */
-    -fx-border-radius: 8px; /* Match background radius */
+    -fx-border-radius: 6px; /* Match background radius */
 }
 
 .gpt-bubble .text {

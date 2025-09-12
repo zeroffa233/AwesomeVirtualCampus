@@ -9,6 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Paint;
 // import javafx.stage.Stage; // Stage 相关的导入已移除
 import javafx.util.Duration;
 
@@ -53,6 +54,9 @@ public class MainSceneController implements Initializable {
         if (sideBarController != null) {
             sideBarController.setMainSceneController(this);
         }
+
+        // Programmatically set the ripple color to ensure it overrides any default styles.
+        menuButton.setRipplerFill(Paint.valueOf("#607830DE"));
 
     }
 
