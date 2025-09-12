@@ -171,14 +171,34 @@ public class SideBarController implements Initializable {
         setActiveButton(libraryButton);
 
         List<Node> menuItems = new ArrayList<>();
-        JFXButton searchButton = createSecondaryMenuButton("书籍检索", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml");
-        JFXButton historyButton = createSecondaryMenuButton("我的借阅", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryHistoryView.fxml");
-        JFXButton addBookButton = createSecondaryMenuButton("添加图书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryAddBookView.fxml");
-        JFXButton borrowBookButton = createSecondaryMenuButton("办理借书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryBorrowBookView.fxml");
-        JFXButton returnBookButton = createSecondaryMenuButton("办理还书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryReturnBookView.fxml");
-        JFXButton updateBookButton = createSecondaryMenuButton("修改图书信息", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryDeleteBookView.fxml");
-        searchButton.getStyleClass().add("active");
-        switchView("/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml", "图书馆", List.of(searchButton, historyButton, addBookButton, borrowBookButton, returnBookButton, updateBookButton));
+        JFXButton searchBookButton = createSecondaryMenuButton("图书检索", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml");
+        searchBookButton.getStyleClass().add("active");
+        menuItems.add(searchBookButton);
+
+        boolean isAdmin = false;
+        if (FakeRepository.user != null && FakeRepository.user.getRoles() != null) {
+            if (Arrays.asList(FakeRepository.user.getRoles()).contains("admin")) {
+                isAdmin = true;
+            }
+        }
+
+        if (isAdmin) {
+            JFXButton borrowBookButton = createSecondaryMenuButton("办理借书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryBorrowBookView.fxml");
+            JFXButton returnBookButton = createSecondaryMenuButton("办理还书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryReturnBookView.fxml");
+            JFXButton updateBookButton = createSecondaryMenuButton("修改图书信息", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryDeleteBookView.fxml");
+            JFXButton addBookButton = createSecondaryMenuButton("添加图书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryAddBookView.fxml");
+            menuItems.add(borrowBookButton);
+            menuItems.add(returnBookButton);
+            menuItems.add(updateBookButton);
+            menuItems.add(addBookButton);
+        } else {
+            JFXButton historyButton = createSecondaryMenuButton("我的借阅", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryHistoryView.fxml");
+            JFXButton borrowBookButton = createSecondaryMenuButton("借阅图书", "/app/vcampus/client/scene/SubScene/LibraryScene/UserBorrowBookView.fxml");
+            menuItems.add(historyButton);
+            menuItems.add(borrowBookButton);
+        }
+
+        switchView("/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml", "书籍检索", menuItems);
     }
 
     // ... 对 handleShop, handleFinance, handleAdmin 等方法进行类似的修改 ...
