@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Label?>
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <Label text="这是借阅历史界面" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #228B22;" AnchorPane.topAnchor="120.0" AnchorPane.leftAnchor="120.0" />
+    </children>
+</AnchorPane>
+

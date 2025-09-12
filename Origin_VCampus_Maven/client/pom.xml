@@ -57,9 +57,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.jfoenix</groupId>
+            <groupId>us.ihmc</groupId>
             <artifactId>jfoenix</artifactId>
-            <version>9.0.10</version>
+            <version>17-0.1.1</version>
         </dependency>
 
         <dependency>

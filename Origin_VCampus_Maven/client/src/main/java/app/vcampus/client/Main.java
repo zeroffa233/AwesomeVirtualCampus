@@ -1,5 +1,6 @@
 package app.vcampus.client;
 
+import com.jfoenix.controls.JFXButton;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -36,6 +37,14 @@ public class Main extends Application {
                     // Create a dummy user for debugging purposes
                     app.vcampus.server.entity.User debugUser = new app.vcampus.server.entity.User();
                     debugUser.setName("Debug User");
+                    debugUser.setRoleStr("library_staff");
+                    debugUser.setCardNum(123456);
+
+                    app.vcampus.server.utility.Session session = new app.vcampus.server.utility.Session();
+                    session.setCardNum(123456);
+                    session.setRoles(new String[]{"library_staff"});
+                    app.vcampus.client.repository.FakeRepository.session = session;
+
                     // Set other properties of the user as needed for UI testing
                     app.vcampus.client.repository.FakeRepository.user = debugUser;
 

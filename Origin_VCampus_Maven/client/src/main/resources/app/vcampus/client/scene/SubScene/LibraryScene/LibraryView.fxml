@@ -1,8 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.AnchorPane?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.LibraryViewController" spacing="15" style="-fx-background-color: #FFFFFF; -fx-padding: 25;">
     <children>
-        <Label text="Library View" AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0" />
+        <Label text="查询图书" textFill="#333333">
+            <font>
+                <Font name="System Bold" size="28.0" />
+            </font>
+        </Label>
+        <Label text="查询图书馆藏书" textFill="#888888">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <children>
+                <JFXTextField fx:id="searchTextField" HBox.hgrow="ALWAYS" promptText="输入书名、作者或ISBN进行模糊搜索" style="-fx-font-size: 14px;">
+                    <focusColor>
+                        <Color blue="0.93" green="0.49" red="0.13" />
+                    </focusColor>
+                </JFXTextField>
+                <JFXButton fx:id="searchButton" text="确定" style="-fx-font-size: 14px; -fx-background-color: #2196F3; -fx-text-fill: white;" buttonType="RAISED"/>
+            </children>
+        </HBox>
+
+        <Label fx:id="resultCountLabel" text="" textFill="#555555">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+
+        <HBox fx:id="detailsBox" spacing="20" VBox.vgrow="NEVER" managed="false" visible="false">
+            <children>
+                <!-- Left Section: Basic Book Info -->
+                <VBox HBox.hgrow="ALWAYS" spacing="10" style="-fx-background-color: #FFFFFF; -fx-padding: 15; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
+                    <children>
+                        <Label fx:id="bookNameLabel" text="书名:" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        <Label fx:id="pressLabel" text="出版社:" style="-fx-font-size: 14px;"/>
+                        <Label fx:id="isbnLabel" text="ISBN:" style="-fx-font-size: 14px;"/>
+                        <Label text="简介:" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                        <JFXTextArea fx:id="descriptionArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS" style="-fx-font-size: 13px; -fx-background-color: #F8F9FA;"/>
+                    </children>
+                </VBox>
+
+                <!-- Right Section: Copies Info and Cover -->
+                <VBox alignment="TOP_CENTER" spacing="10" style="-fx-background-color: #FFFFFF; -fx-padding: 15; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
+                    <children>
+                        <Label fx:id="totalCopiesLabel" text="馆藏副本:" style="-fx-font-size: 14px;"/>
+                        <Label fx:id="availableCopiesLabel" text="可借副本:" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="coverImageView" fitHeight="200.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true"/>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+
+        <!-- Table View for detailed copies -->
+        <TableView fx:id="copiesTableView" VBox.vgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
+            <columns>
+                <TableColumn fx:id="callNumberColumn" prefWidth="150.0" text="索引书号" />
+                <TableColumn fx:id="placeColumn" prefWidth="200.0" text="馆藏地" />
+                <TableColumn fx:id="bookStatusColumn" prefWidth="100.0" text="书籍状态" />
+            </columns>
+            <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+        </TableView>
     </children>
-</AnchorPane>
+</VBox>

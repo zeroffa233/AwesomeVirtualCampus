@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class BaseClient {
     public static Response sendRequest(NettyHandler handler, Request request) throws InterruptedException {
+        request.setSession(app.vcampus.client.repository.FakeRepository.session);
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Response> response = new AtomicReference<>();
         log.debug("Sending request: {}", request);

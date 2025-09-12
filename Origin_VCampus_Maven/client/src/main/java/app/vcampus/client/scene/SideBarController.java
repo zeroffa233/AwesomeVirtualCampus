@@ -167,10 +167,12 @@ public class SideBarController implements Initializable {
     private void handleLibrary() {
         setActiveButton(libraryButton);
         JFXButton searchButton = createSecondaryMenuButton("书籍检索", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml");
-        JFXButton historyButton = createSecondaryMenuButton("借阅历史", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml");
-        searchButton.getStyleClass().add("active");
-        // 初始加载的父视图
-        switchView("/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml", "图书馆", List.of(searchButton, historyButton));
+        JFXButton historyButton = createSecondaryMenuButton("我的借阅", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryHistoryView.fxml");
+        JFXButton addBookButton = createSecondaryMenuButton("添加图书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryAddBookView.fxml");
+        JFXButton borrowBookButton = createSecondaryMenuButton("办理借书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryBorrowBookView.fxml");
+        JFXButton returnBookButton = createSecondaryMenuButton("办理还书", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryReturnBookView.fxml");
+        JFXButton updateBookButton = createSecondaryMenuButton("修改图书信息", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryDeleteBookView.fxml");
+        switchView("/app/vcampus/client/scene/SubScene/LibraryScene/LibraryDefaultView.fxml", "图书馆", List.of(searchButton, historyButton, addBookButton, borrowBookButton, returnBookButton, updateBookButton));
     }
 
     // ... 对 handleShop, handleFinance, handleAdmin 等方法进行类似的修改 ...

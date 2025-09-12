@@ -17,6 +17,7 @@ public class FakeRepository {
     public static NettyHandler handler;
     public static boolean isConnected = false;
     public static User user;
+    public static app.vcampus.server.utility.Session session;
 
     public static boolean login(String username, String password) {
         User result = AuthClient.login(handler, username, password);
@@ -201,5 +202,3 @@ public class FakeRepository {
         return null;
     }
 }
-
-

@@ -21,7 +21,7 @@ import java.util.UUID;
 @Table(name = "book")
 public class LibraryBook implements IEntity {
     @Id
-    public UUID uuid = UUID.randomUUID();
+    public UUID uuid;
 
     @Column(nullable = false)
     public String name;

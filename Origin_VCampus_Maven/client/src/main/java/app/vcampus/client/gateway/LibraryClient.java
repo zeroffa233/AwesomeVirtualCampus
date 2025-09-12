@@ -6,8 +6,11 @@ import app.vcampus.server.entity.LibraryBook;
 import app.vcampus.server.entity.LibraryTransaction;
 import app.vcampus.server.utility.Request;
 import app.vcampus.server.utility.Response;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,15 +65,38 @@ public class LibraryClient extends BaseClient {
         try {
             Response response = BaseClient.sendRequest(handler, request);
             if (response.getStatus().equals("success")) {
-                Map<String, List<String>> raw_data = (Map<String, List<String>>) response.getData();
-                Map<String, List<LibraryBook>> data = new HashMap<>();
-                raw_data.forEach((key, value) -> data.put(key, value.stream().map(json -> IEntity.fromJson(json, LibraryBook.class)).toList()));
-                return data;
+                // 用 TypeToken 泛型反序列化，避免 LinkedTreeMap 问题
+                Gson gson = new Gson();
+                Type type = new TypeToken<Map<String, List<LibraryBook>>>(){}.getType();
+                String json = gson.toJson(response.getData());
+                return gson.fromJson(json, type);
             } else {
                 throw new RuntimeException("Failed to get book info");
             }
         } catch (InterruptedException e) {
             log.warn("Fail to get book info", e);
+            return null;
+        }
+    }
+
+    public static List<LibraryBook> searchBookForDeletion(NettyHandler handler, String bookName) {
+        Request request = new Request();
+        request.setUri("library/searchForDeletion");
+        request.setParams(Map.of(
+                "bookName", bookName
+        ));
+
+        try {
+            Response response = BaseClient.sendRequest(handler, request);
+            if (response.getStatus().equals("success")) {
+                Type type = new TypeToken<List<String>>(){}.getType();
+                List<String> raw_data = new Gson().fromJson(new Gson().toJson(response.getData()), type);
+                return raw_data.stream().map(json -> IEntity.fromJson(json, LibraryBook.class)).toList();
+            } else {
+                throw new RuntimeException("Failed to search books for deletion");
+            }
+        } catch (InterruptedException e) {
+            log.warn("Fail to search books for deletion", e);
             return null;
         }
     }

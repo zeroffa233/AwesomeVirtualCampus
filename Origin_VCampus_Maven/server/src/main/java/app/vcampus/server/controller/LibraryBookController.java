@@ -34,7 +34,7 @@ public class LibraryBookController {
      * @param database database
      * @return response, ok or bad request
      */
-    @RouteMapping(uri = "library/addBook", role = "library_staff")
+    @RouteMapping(uri = "library/addBook")
     public Response addBook(Request request, org.hibernate.Session database) {
         LibraryBook newBook = IEntity.fromJson(request.getParams().get("book"), LibraryBook.class);
         if (newBook == null) {
@@ -85,7 +85,7 @@ public class LibraryBookController {
      * @param database database
      * @return response, ok or error
      */
-    @RouteMapping(uri = "library/borrowBook", role = "library_staff")
+    @RouteMapping(uri = "library/borrowBook")
     public Response borrowBook(Request request, org.hibernate.Session database) {
         try {
             String bookUuid = request.getParams().get("bookUuid");
@@ -126,7 +126,7 @@ public class LibraryBookController {
      * @param database database
      * @return response, ok or bad request
      */
-    @RouteMapping(uri = "library/updateBook", role = "library_staff")
+    @RouteMapping(uri = "library/updateBook")
     public Response updateBook(Request request, org.hibernate.Session database) {
         LibraryBook newBook = IEntity.fromJson(request.getParams().get("book"), LibraryBook.class);
         LibraryBook toUpdate = database.get(LibraryBook.class, newBook.getUuid());
@@ -141,6 +141,7 @@ public class LibraryBookController {
         toUpdate.setCover(newBook.getCover());
         toUpdate.setPress(newBook.getPress());
         toUpdate.setAuthor(newBook.getAuthor());
+        toUpdate.setCallNumber(newBook.getCallNumber());
         toUpdate.setBookStatus(newBook.getBookStatus());
         database.persist(toUpdate);
         tx.commit();
@@ -162,12 +163,21 @@ public class LibraryBookController {
             if (keyword == null) return Response.Common.error("Keyword cannot be empty");
             List<LibraryBook> books = Database.likeQuery(LibraryBook.class, new String[]{"name", "isbn", "author", "description", "press"}, keyword, database);
 
-            return Response.Common.ok(books.stream().collect(Collectors.groupingBy(w -> w.isbn)).entrySet().stream().collect(Collectors.toMap(
-                    Map.Entry::getKey,
-                    e -> e.getValue().stream().map(LibraryBook::toJson).collect(Collectors.toList())
-            )));
+            return Response.Common.ok(books.stream().collect(Collectors.groupingBy(w -> w.isbn)));
         } catch (Exception e) {
             return Response.Common.error("Failed to search books");
+        }
+    }
+
+    @RouteMapping(uri = "library/searchForDeletion")
+    public Response searchForDeletion(Request request, org.hibernate.Session database) {
+        try {
+            String bookName = request.getParams().get("bookName");
+            if (bookName == null) return Response.Common.error("Book name cannot be empty");
+            List<LibraryBook> books = Database.getWhereString(LibraryBook.class, "name", bookName, database);
+            return Response.Common.ok(books.stream().map(IEntity::toJson).collect(Collectors.toList()));
+        } catch (Exception e) {
+            return Response.Common.error("Failed to search books for deletion");
         }
     }
 
@@ -244,7 +254,7 @@ public class LibraryBookController {
         }
     }
 
-    @RouteMapping(uri = "library/staff/records", role = "library_staff")
+    @RouteMapping(uri = "library/staff/records")
     public Response staffRecords(Request request, org.hibernate.Session database) {
         try {
             int cardNumber = Integer.parseInt(request.getParams().get("cardNumber"));
@@ -258,7 +268,7 @@ public class LibraryBookController {
         }
     }
 
-    @RouteMapping(uri = "library/staff/renew", role = "library_staff")
+    @RouteMapping(uri = "library/staff/renew")
     public Response staffRenew(Request request, org.hibernate.Session database) {
         try {
             String uuid = request.getParams().get("uuid");
@@ -284,7 +294,7 @@ public class LibraryBookController {
         }
     }
 
-    @RouteMapping(uri = "library/staff/return", role = "library_staff")
+    @RouteMapping(uri = "library/staff/return")
     public Response returnBook(Request request, org.hibernate.Session database) {
         try {
             String uuid = request.getParams().get("uuid");

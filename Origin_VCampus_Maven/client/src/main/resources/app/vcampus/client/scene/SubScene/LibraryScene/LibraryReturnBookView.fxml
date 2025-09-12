@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.LibraryReturnBookViewController">
+    <children>
+        <Label text="办理还书" textFill="#3c3c3c">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+        <Label text="办理还书的相关业务" textFill="#9e9e9e">
+            <font>
+                <Font size="14.0" />
+            </font>
+            <VBox.margin>
+                <Insets bottom="10.0" />
+            </VBox.margin>
+        </Label>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <children>
+                <Label text="一卡通号:" minWidth="-Infinity" />
+                <JFXTextField fx:id="cardNumberField" promptText="请输入用户的一卡通号" HBox.hgrow="ALWAYS">
+                    <focusColor>
+                        <Color blue="0.93" green="0.49" red="0.13" />
+                    </focusColor>
+                </JFXTextField>
+                <JFXButton fx:id="searchButton" text="搜寻" style="-fx-background-color: #2196F3; -fx-text-fill: white;" buttonType="RAISED" />
+            </children>
+        </HBox>
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background-insets: 0;">
+            <content>
+                <VBox fx:id="resultsVBox" spacing="15" />
+            </content>
+            <VBox.margin>
+                <Insets top="10.0" />
+            </VBox.margin>
+        </ScrollPane>
+    </children>
+</VBox>

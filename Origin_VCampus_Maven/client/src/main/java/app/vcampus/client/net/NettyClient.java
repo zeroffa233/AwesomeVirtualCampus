@@ -11,6 +11,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.json.JsonObjectDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.CharsetUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Callable;
@@ -37,7 +38,10 @@ public class NettyClient implements Callable<NettyHandler> {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(@NotNull SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new JsonObjectDecoder()).addLast(new StringEncoder()).addLast(new StringDecoder()).addLast(handler);
+                    ch.pipeline().addLast(new JsonObjectDecoder())
+                        .addLast(new StringEncoder(CharsetUtil.UTF_8))
+                        .addLast(new StringDecoder(CharsetUtil.UTF_8))
+                        .addLast(handler);
                 }
             });
 
