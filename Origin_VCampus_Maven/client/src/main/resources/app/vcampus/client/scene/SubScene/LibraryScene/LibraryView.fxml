@@ -9,6 +9,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
@@ -20,20 +21,16 @@
                 <Font name="System Bold" size="28.0" />
             </font>
         </Label>
-        <Label text="查询图书馆藏书" textFill="#888888">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </Label>
-
         <HBox alignment="CENTER_LEFT" spacing="10">
             <children>
-                <JFXTextField fx:id="searchTextField" HBox.hgrow="ALWAYS" promptText="输入书名、作者或ISBN进行模糊搜索" style="-fx-font-size: 14px;">
-                    <focusColor>
-                        <Color blue="0.93" green="0.49" red="0.13" />
-                    </focusColor>
-                </JFXTextField>
-                <JFXButton fx:id="searchButton" text="确定" style="-fx-font-size: 14px; -fx-background-color: #2196F3; -fx-text-fill: white;" buttonType="RAISED"/>
+                <Label text="查询图书馆藏书" textFill="#888888">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                </Label>
+                <Region HBox.hgrow="ALWAYS" />
+                <JFXTextField fx:id="searchTextField" prefWidth="250.0" promptText="输入关键字" />
+                <JFXButton fx:id="searchButton" prefHeight="30.0" prefWidth="80.0" style="-fx-background-color: #607830DE;" styleClass="button-raised" text="搜索" />
             </children>
         </HBox>
 
@@ -74,7 +71,7 @@
                 <TableColumn fx:id="placeColumn" prefWidth="200.0" text="馆藏地" />
                 <TableColumn fx:id="bookStatusColumn" prefWidth="100.0" text="书籍状态" />
             </columns>
-            <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+            <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
         </TableView>
     </children>
 </VBox>

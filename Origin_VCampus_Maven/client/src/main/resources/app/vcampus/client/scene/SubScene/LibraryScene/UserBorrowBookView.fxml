@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="20.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.UserBorrowBookViewController">
+    <padding>
+        <Insets bottom="20.0" left="50.0" right="50.0" top="20.0" />
+    </padding>
+    <children>
+        <HBox alignment="CENTER_LEFT">
+            <children>
+                <Label text="借阅图书">
+                    <font>
+                        <Font name="System Bold" size="24.0" />
+                    </font>
+                </Label>
+                <Region HBox.hgrow="ALWAYS" />
+                <JFXTextField fx:id="bookNameField" labelFloat="true" prefWidth="250.0" promptText="请输入书籍名称" />
+                <JFXButton fx:id="searchButton" style="-fx-background-color: #607830DE;" styleClass="button-raised" text="搜索" />
+            </children>
+        </HBox>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background-insets: 0;" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox fx:id="resultsVBox" spacing="15.0" />
+            </content>
+        </ScrollPane>
+    </children>
+</VBox>

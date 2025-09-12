@@ -4,13 +4,12 @@ import app.vcampus.client.gateway.LibraryClient;
 import app.vcampus.client.repository.FakeRepository;
 import app.vcampus.server.entity.LibraryBook;
 import app.vcampus.server.enums.BookStatus;
+import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
@@ -18,16 +17,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class LibraryBorrowBookViewController {
-
-    @FXML
-    private JFXTextField cardNumberField;
+public class UserBorrowBookViewController {
 
     @FXML
     private JFXTextField bookNameField;
@@ -69,14 +64,10 @@ public class LibraryBorrowBookViewController {
     private void displayResults(List<LibraryBook> books) {
         resultsVBox.getChildren().clear();
         if (books.isEmpty()) {
-            Label emptyLabel = new Label("未找到可供借阅的副本。");
-            emptyLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #888888;");
-            resultsVBox.setAlignment(Pos.CENTER);
-            resultsVBox.getChildren().add(emptyLabel);
+            resultsVBox.getChildren().add(new Label("未找到该书的可借阅副本。"));
             return;
         }
 
-        resultsVBox.setAlignment(Pos.TOP_LEFT);
         for (LibraryBook book : books) {
             resultsVBox.getChildren().add(createBookDisplayNode(book));
         }
@@ -87,63 +78,61 @@ public class LibraryBorrowBookViewController {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(10));
-        grid.setStyle("-fx-border-color: #dcdcdc; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-color: #F8F9FA; -fx-font-size: 14px;");
+        grid.setStyle("-fx-border-color: #dcdcdc; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-color: #F8F9FA;");
 
-        // Set column constraints for adaptive layout
         ColumnConstraints labelCol = new ColumnConstraints();
         labelCol.setHalignment(HPos.RIGHT);
         ColumnConstraints contentCol = new ColumnConstraints();
         contentCol.setHgrow(Priority.ALWAYS);
-        grid.getColumnConstraints().addAll(labelCol, contentCol, labelCol, contentCol, labelCol, contentCol);
+        grid.getColumnConstraints().addAll(labelCol, contentCol, labelCol, contentCol);
 
-        // Row 1: Book Name, Author, Press
-        Label nameLabel = new Label("书名:");
-        nameLabel.setStyle("-fx-font-weight: bold;");
-        Label nameContent = new Label(book.getName());
+        // Create labels with increased font size
+        Label bookNameTitle = new Label("书名:");
+        bookNameTitle.setStyle("-fx-font-size: 14px;");
+        Label bookNameContent = new Label(book.getName());
+        bookNameContent.setStyle("-fx-font-size: 14px;");
 
-        Label authorLabel = new Label("作者:");
-        authorLabel.setStyle("-fx-font-weight: bold;");
+        Label callNumberTitle = new Label("索书号:");
+        callNumberTitle.setStyle("-fx-font-size: 14px;");
+        Label callNumberContent = new Label(book.getCallNumber());
+        callNumberContent.setStyle("-fx-font-size: 14px;");
+
+        Label authorTitle = new Label("作者:");
+        authorTitle.setStyle("-fx-font-size: 14px;");
         Label authorContent = new Label(book.getAuthor());
+        authorContent.setStyle("-fx-font-size: 14px;");
 
-        Label pressLabel = new Label("出版社:");
-        pressLabel.setStyle("-fx-font-weight: bold;");
-        Label pressContent = new Label(book.getPress());
-
-        grid.addRow(0, nameLabel, nameContent, authorLabel, authorContent, pressLabel, pressContent);
-
-        // Row 2: Description
-        Label descLabel = new Label("简介:");
-        descLabel.setStyle("-fx-font-weight: bold;");
-        Label descriptionContent = new Label(book.getDescription());
-        descriptionContent.setWrapText(true);
-        grid.add(descLabel, 0, 1);
-        grid.add(descriptionContent, 1, 1, 5, 1);
-
-        // Row 3: Call Number, Place
-        Label callNumLabel = new Label("索书号:");
-        callNumLabel.setStyle("-fx-font-weight: bold;");
-        Label callNumContent = new Label(book.getCallNumber());
-
-        Label placeLabel = new Label("馆藏地:");
-        placeLabel.setStyle("-fx-font-weight: bold;");
+        Label placeTitle = new Label("馆藏地:");
+        placeTitle.setStyle("-fx-font-size: 14px;");
         Label placeContent = new Label(book.getPlace());
+        placeContent.setStyle("-fx-font-size: 14px;");
 
-        grid.addRow(2, callNumLabel, callNumContent, placeLabel, placeContent);
+        // Row 1: Book Name, Call Number
+        grid.add(bookNameTitle, 0, 0);
+        grid.add(bookNameContent, 1, 0);
+        grid.add(callNumberTitle, 2, 0);
+        grid.add(callNumberContent, 3, 0);
+
+        // Row 2: Author, Place
+        grid.add(authorTitle, 0, 1);
+        grid.add(authorContent, 1, 1);
+        grid.add(placeTitle, 2, 1);
+        grid.add(placeContent, 3, 1);
 
         // Borrow button
         JFXButton borrowButton = new JFXButton("确定借阅该副本");
-        borrowButton.setStyle("-fx-background-color: #607830; -fx-text-fill: white;");
+        borrowButton.setStyle("-fx-background-color: #607830DE; -fx-text-fill: white;"); // Apply new color
         borrowButton.setButtonType(JFXButton.ButtonType.RAISED);
         Label feedbackLabel = new Label();
         HBox buttonBox = new HBox(10, borrowButton, feedbackLabel);
-        grid.add(buttonBox, 0, 3, 6, 1);
+        grid.add(buttonBox, 0, 2, 4, 1);
 
         borrowButton.setOnAction(event -> {
-            String cardNumber = cardNumberField.getText();
-            if (cardNumber == null || cardNumber.trim().isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "请输入一卡通号");
+            if (FakeRepository.user == null || FakeRepository.user.getCardNum() == null) {
+                showAlert(Alert.AlertType.ERROR, "无法获取当前用户信息，请重新登录");
                 return;
             }
+            String cardNumber = FakeRepository.user.getCardNum().toString();
 
             borrowButton.setDisable(true);
             new Thread(() -> {
@@ -153,7 +142,7 @@ public class LibraryBorrowBookViewController {
                         feedbackLabel.setText("借阅成功!");
                         feedbackLabel.setStyle("-fx-text-fill: green;");
                     } else {
-                        feedbackLabel.setText("借阅失败，请检查一卡通号或该书状态。");
+                        feedbackLabel.setText("借阅失败");
                         feedbackLabel.setStyle("-fx-text-fill: red;");
                         borrowButton.setDisable(false);
                     }

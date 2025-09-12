@@ -86,8 +86,8 @@ public class LibraryUpdateBookViewController {
         GridPane grid = new GridPane();
         grid.setVgap(20);
         grid.setPadding(new Insets(30));
-        // Set border color to a light green and apply bold font to all labels within this grid
-        grid.setStyle("-fx-background-color: #FAFAFA; -fx-border-color: #A5D6A7; -fx-border-width: 1; -fx-border-radius: 8; -fx-font-size: 14px;");
+        // Set background to Gray, with a border to distinguish it from the main background
+        grid.setStyle("-fx-background-color: #F3EFF4; -fx-border-color: #BDBDBD; -fx-border-width: 1; -fx-border-radius: 8; -fx-font-size: 14px;");
 
         ColumnConstraints labelCol = new ColumnConstraints();
         labelCol.setHgrow(Priority.NEVER);
@@ -128,7 +128,7 @@ public class LibraryUpdateBookViewController {
         // Row 5: Save Button
         JFXButton saveButton = new JFXButton("保存此副本修改");
         saveButton.setButtonType(JFXButton.ButtonType.RAISED);
-        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: WHITE;");
+        saveButton.setStyle("-fx-background-color: #607830; -fx-text-fill: white;");
         Label feedbackLabel = new Label();
         HBox buttonBox = new HBox(10, saveButton, feedbackLabel);
         grid.add(buttonBox, 0, 4, 6, 1);

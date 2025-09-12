@@ -4,7 +4,6 @@ import app.vcampus.client.gateway.LibraryClient;
 import app.vcampus.client.repository.FakeRepository;
 import app.vcampus.server.entity.LibraryTransaction;
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
@@ -22,13 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LibraryReturnBookViewController {
-
-    @FXML
-    private JFXTextField cardNumberField;
-
-    @FXML
-    private JFXButton searchButton;
+public class LibraryHistoryViewController {
 
     @FXML
     private VBox resultsVBox;
@@ -37,20 +30,18 @@ public class LibraryReturnBookViewController {
 
     @FXML
     public void initialize() {
-        searchButton.setOnAction(event -> searchUserTransactions());
+        loadUserTransactions();
     }
 
-    private void searchUserTransactions() {
-        String cardNumber = cardNumberField.getText();
-        if (cardNumber == null || cardNumber.trim().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "请输入一卡通号");
+    private void loadUserTransactions() {
+        if (FakeRepository.user == null) {
+            Platform.runLater(() -> showAlert(Alert.AlertType.WARNING, "无法获取用户信息，请重新登录"));
             return;
         }
 
         new Thread(() -> {
             try {
-                List<LibraryTransaction> transactions = LibraryClient.staffGetRecords(FakeRepository.handler, cardNumber);
-                // Filter for books that are not yet returned
+                List<LibraryTransaction> transactions = LibraryClient.getMyRecords(FakeRepository.handler);
                 List<LibraryTransaction> activeTransactions = transactions.stream()
                         .filter(t -> t.getReturnTime() == null)
                         .collect(Collectors.toList());
@@ -58,7 +49,7 @@ public class LibraryReturnBookViewController {
                 Platform.runLater(() -> displayResults(activeTransactions));
             } catch (Exception e) {
                 e.printStackTrace();
-                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "搜索失败，请检查网络或一卡通号。"));
+                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "加载借阅列表失败，请检查网络连接。"));
             }
         }).start();
     }
@@ -66,10 +57,14 @@ public class LibraryReturnBookViewController {
     private void displayResults(List<LibraryTransaction> transactions) {
         resultsVBox.getChildren().clear();
         if (transactions.isEmpty()) {
-            resultsVBox.getChildren().add(new Label("该用户没有未归还的书籍。"));
+            Label emptyLabel = new Label("您当前没有借阅中的书籍。");
+            emptyLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #888888;");
+            resultsVBox.getChildren().add(emptyLabel);
+            resultsVBox.setAlignment(Pos.CENTER);
             return;
         }
 
+        resultsVBox.setAlignment(Pos.TOP_CENTER);
         for (LibraryTransaction transaction : transactions) {
             resultsVBox.getChildren().add(createTransactionNode(transaction));
         }
@@ -77,10 +72,10 @@ public class LibraryReturnBookViewController {
 
     private GridPane createTransactionNode(LibraryTransaction transaction) {
         GridPane grid = new GridPane();
-        grid.setHgap(20);
+        grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20));
-        grid.setStyle("-fx-border-color: #dcdcdc; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-color: #F8F9FA; -fx-font-size: 14px;");
+        grid.setPadding(new Insets(15));
+        grid.setStyle("-fx-border-color: #dcdcdc; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-color: #F8F9FA; -fx-background-radius: 8;");
 
         ColumnConstraints col1 = new ColumnConstraints();
         col1.setHalignment(HPos.RIGHT);
@@ -90,93 +85,65 @@ public class LibraryReturnBookViewController {
         col3.setHalignment(HPos.RIGHT);
         ColumnConstraints col4 = new ColumnConstraints();
         col4.setHgrow(Priority.ALWAYS);
-        ColumnConstraints col5 = new ColumnConstraints();
-        col5.setPrefWidth(100);
-        grid.getColumnConstraints().addAll(col1, col2, col3, col4, col5);
+        grid.getColumnConstraints().addAll(col1, col2, col3, col4);
 
         // Row 1
         Label nameLabel = new Label("书名:");
-        nameLabel.setStyle("-fx-font-weight: bold;");
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         Label nameContent = new Label(transaction.getBook().getName());
+        nameContent.setStyle("-fx-font-size: 14px;");
         grid.add(nameLabel, 0, 0);
         grid.add(nameContent, 1, 0);
 
         Label placeLabel = new Label("馆藏地:");
-        placeLabel.setStyle("-fx-font-weight: bold;");
+        placeLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         Label placeContent = new Label(transaction.getBook().getPlace());
+        placeContent.setStyle("-fx-font-size: 14px;");
         grid.add(placeLabel, 2, 0);
         grid.add(placeContent, 3, 0);
 
         // Row 2
         Label borrowLabel = new Label("借阅时间:");
-        borrowLabel.setStyle("-fx-font-weight: bold;");
+        borrowLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         Label borrowContent = new Label(dateFormat.format(transaction.getBorrowTime()));
+        borrowContent.setStyle("-fx-font-size: 14px;");
         grid.add(borrowLabel, 0, 1);
         grid.add(borrowContent, 1, 1);
 
         Label dueLabel = new Label("应还时间:");
-        dueLabel.setStyle("-fx-font-weight: bold;");
+        dueLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         Label dueContent = new Label(dateFormat.format(transaction.getDueTime()));
+        dueContent.setStyle("-fx-font-size: 14px;");
         grid.add(dueLabel, 2, 1);
         grid.add(dueContent, 3, 1);
 
         // Action Buttons
-        JFXButton renewButton = new JFXButton("续借");
-        renewButton.setStyle("-fx-background-color: #FFC107; -fx-text-fill: white;");
-        renewButton.setButtonType(JFXButton.ButtonType.RAISED);
-        renewButton.setPrefWidth(100);
-
         JFXButton returnButton = new JFXButton("还书");
-        returnButton.setStyle("-fx-background-color: #607830; -fx-text-fill: white;");
+        returnButton.setStyle("-fx-background-color: #607830DE; -fx-text-fill: white;");
         returnButton.setButtonType(JFXButton.ButtonType.RAISED);
-        returnButton.setPrefWidth(100);
+        returnButton.setPrefSize(100, 35);
 
-        VBox actionBox = new VBox(10, renewButton, returnButton);
-        actionBox.setAlignment(Pos.CENTER);
-        grid.add(actionBox, 4, 0, 1, 2);
-
-        Label feedbackLabel = new Label();
-        grid.add(feedbackLabel, 0, 2, 4, 1);
+        HBox actionBox = new HBox(10, returnButton);
+        actionBox.setAlignment(Pos.CENTER_RIGHT);
+        grid.add(actionBox, 0, 2, 4, 1);
 
         // Button Actions
-        renewButton.setOnAction(event -> handleRenew(transaction, feedbackLabel, renewButton, returnButton));
-        returnButton.setOnAction(event -> handleReturn(transaction, feedbackLabel, renewButton, returnButton));
+        returnButton.setOnAction(event -> handleReturn(transaction, returnButton));
 
         return grid;
     }
 
-    private void handleRenew(LibraryTransaction transaction, Label feedbackLabel, JFXButton renewButton, JFXButton returnButton) {
-        renewButton.setDisable(true);
-        returnButton.setDisable(true);
-        new Thread(() -> {
-            boolean success = LibraryClient.staffRenewBook(FakeRepository.handler, transaction.getUuid());
-            Platform.runLater(() -> {
-                if (success) {
-                    feedbackLabel.setText("续借成功！请重新搜索以刷新应还时间。");
-                    feedbackLabel.setStyle("-fx-text-fill: green;");
-                } else {
-                    feedbackLabel.setText("续借失败。");
-                    feedbackLabel.setStyle("-fx-text-fill: red;");
-                    renewButton.setDisable(false);
-                    returnButton.setDisable(false);
-                }
-            });
-        }).start();
-    }
-
-    private void handleReturn(LibraryTransaction transaction, Label feedbackLabel, JFXButton renewButton, JFXButton returnButton) {
-        renewButton.setDisable(true);
+    private void handleReturn(LibraryTransaction transaction, JFXButton returnButton) {
         returnButton.setDisable(true);
         new Thread(() -> {
             boolean success = LibraryClient.returnBook(FakeRepository.handler, transaction.getUuid());
             Platform.runLater(() -> {
                 if (success) {
-                    feedbackLabel.setText("还书成功!");
-                    feedbackLabel.setStyle("-fx-text-fill: green;");
+                    showAlert(Alert.AlertType.INFORMATION, "还书成功!");
+                    // Refresh the list
+                    loadUserTransactions();
                 } else {
-                    feedbackLabel.setText("还书失败。");
-                    feedbackLabel.setStyle("-fx-text-fill: red;");
-                    renewButton.setDisable(false);
+                    showAlert(Alert.AlertType.ERROR, "还书失败，请稍后再试。");
                     returnButton.setDisable(false);
                 }
             });

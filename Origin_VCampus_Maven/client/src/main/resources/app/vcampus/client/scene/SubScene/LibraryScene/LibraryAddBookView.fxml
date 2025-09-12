@@ -18,17 +18,17 @@
                 <Font name="System Bold" size="28.0" />
             </font>
         </Label>
-        <JFXTextField fx:id="nameField" labelFloat="true" promptText="书名" />
-        <JFXTextField fx:id="authorField" labelFloat="true" promptText="作者" />
-        <JFXTextField fx:id="isbnField" labelFloat="true" promptText="ISBN" />
-        <JFXTextField fx:id="pressField" labelFloat="true" promptText="出版社" />
-        <JFXTextField fx:id="callNumberField" labelFloat="true" promptText="索书号" />
-        <JFXTextField fx:id="placeField" labelFloat="true" promptText="馆藏地" />
-        <JFXTextField fx:id="coverField" labelFloat="true" promptText="封面图片链接" />
-        <JFXTextArea fx:id="descriptionArea" labelFloat="true" promptText="书籍简介" />
-        <JFXButton fx:id="confirmButton" buttonType="RAISED" style="-fx-background-color: #007BFF;" text="确认添加" textFill="WHITE">
+        <JFXTextField fx:id="nameField" labelFloat="true" promptText="书名" prefHeight="45" />
+        <JFXTextField fx:id="authorField" labelFloat="true" promptText="作者" prefHeight="45" />
+        <JFXTextField fx:id="isbnField" labelFloat="true" promptText="ISBN" prefHeight="45" />
+        <JFXTextField fx:id="pressField" labelFloat="true" promptText="出版社" prefHeight="45" />
+        <JFXTextField fx:id="callNumberField" labelFloat="true" promptText="索书号" prefHeight="45" />
+        <JFXTextField fx:id="placeField" labelFloat="true" promptText="馆藏地" prefHeight="45" />
+        <JFXTextField fx:id="coverField" labelFloat="true" promptText="封面图片链接" prefHeight="45" />
+        <JFXTextArea fx:id="descriptionArea" labelFloat="true" promptText="书籍简介" prefHeight="80" />
+        <JFXButton fx:id="confirmButton" buttonType="RAISED" prefHeight="50" style="-fx-background-color: #607830;" text="确认添加" textFill="WHITE">
             <font>
-                <Font name="System Bold" size="14.0" />
+                <Font name="System Bold" size="16.0" />
             </font>
         </JFXButton>
         <Label fx:id="infoLabel" textFill="#D32F2F" />
