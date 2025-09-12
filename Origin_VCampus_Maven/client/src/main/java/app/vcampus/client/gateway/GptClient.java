@@ -8,13 +8,12 @@ import org.json.JSONObject;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
+//TODO real net io
 /**
  * GptClient provides a gateway to access GPT chat history.
- * In the current development phase, it acts as a mock, holding chat records in memory.
- * In the future, this class will be updated to make network calls to a remote server.
+ * Holding chat records in memory as a cache.
  */
-public class GptClient {
+public class GptClient extends BaseClient {
 
     private static final GptClient instance = new GptClient();
 
@@ -23,7 +22,7 @@ public class GptClient {
 
     private GptClient() {
         // Pre-populate with some mock data for demonstration purposes
-        initializeMockData();
+        initializeData();
     }
 
     public static GptClient getInstance() {
@@ -76,14 +75,15 @@ public class GptClient {
         inMemoryStore.remove(sessionId);
     }
 
-    private void initializeMockData() {
-
+    private void initializeData() {
+        // TODO： make it real
         UUID session2Id = UUID.fromString("fedcba98-7654-3210-fedc-ba9876543210");
         ChatSession session2 = new ChatSession(session2Id);
         session2.setTitle("规划一次旅行");
         session2.setLastModified(System.currentTimeMillis()); // Make it the newest
         session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", "你是一个旅行规划助手。")));
         session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "user").put("content", "我想去云南玩，有什么推荐吗？")));
+        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "assistant").put("content", "云南的旅游方案...")));
         inMemoryStore.put(session2Id, session2);
 
         System.out.println("[GptClient] Mock data initialized with " + inMemoryStore.size() + " sessions.");

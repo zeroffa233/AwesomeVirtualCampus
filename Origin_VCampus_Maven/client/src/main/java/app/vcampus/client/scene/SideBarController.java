@@ -180,14 +180,20 @@ public class SideBarController implements Initializable {
     private void handleShop() {
         setActiveButton(shopButton);
         // ... 创建二级菜单按钮
-        switchView("/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml", "网上商店", List.of(/* ... 按钮列表 ... */));
+        JFXButton shopButton = createSecondaryMenuButton("购物页面", "/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml");
+        JFXButton orderButton = createSecondaryMenuButton("我的订单", "/app/vcampus/client/scene/SubScene/ShopScene/OrderView.fxml");
+        shopButton.getStyleClass().add("active");
+        switchView("/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml", "网上商店", List.of(shopButton, orderButton));
     }
-
+    
     @FXML
     private void handleFinance() {
         setActiveButton(financeButton);
+        JFXButton personalButton = createSecondaryMenuButton("个人财务管理", "/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml");
+        JFXButton manageButton = createSecondaryMenuButton("一卡通管理", "/app/vcampus/client/scene/SubScene/FinanceScene/ManageFinanceView.fxml");
+        personalButton.getStyleClass().add("active");
         // ... 创建二级菜单按钮
-        switchView("/app/vcampus/client/scene/SubScene/FinanceScene/FinanceView.fxml", "财务中心", List.of(/* ... 按钮列表 ... */));
+        switchView("/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml", "财务中心", List.of(personalButton, manageButton));
     }
 
     @FXML

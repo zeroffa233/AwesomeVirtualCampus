@@ -32,7 +32,7 @@ public class GptViewModel {
 
     // API related constants
     private final String WELCOME_MESSAGE = "你好！我是AI助手，有什么可以帮你的吗？";
-    private final String SYSTEM_PROMPT = "你是一个乐于助人的AI助手, 正在和一个学生宋兵甲对话。";
+    private final String SYSTEM_PROMPT = "你是一个乐于助人的AI助手Assistant-DeepSeek, 正在和一个学生对话，今天是9月10日。";
     private final String MODEL = "deepseek-v3.1";
     private final String API_KEY = "sk-588905851d1b4421ae51c9ad64fb120b";
     private final String API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";

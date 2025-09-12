@@ -101,7 +101,10 @@ public class MainSceneController implements Initializable {
 
     @FXML
     private void handleMenuButtonClick() {
-        toggleNavRail();
+        // Delay the animation slightly to allow the UI to render the :pressed state
+        PauseTransition pause = new PauseTransition(Duration.millis(50));
+        pause.setOnFinished(event -> toggleNavRail());
+        pause.play();
     }
 
     @FXML

@@ -3,7 +3,10 @@ package app.vcampus.client.repository;
 import app.vcampus.client.gateway.AuthClient;
 import app.vcampus.client.net.NettyHandler;
 import app.vcampus.server.entity.User;
-
+import app.vcampus.server.entity.Course;
+import app.vcampus.server.entity.TeachingClass;
+import app.vcampus.server.utility.Pair;
+import app.vcampus.server.entity.Student;
 
 import app.vcampus.server.entity.Student;
 import app.vcampus.server.enums.Gender;
@@ -12,6 +15,7 @@ import app.vcampus.server.enums.PoliticalStatus;
 
 import java.sql.Date;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 public class FakeRepository {
     public static NettyHandler handler;
@@ -200,5 +204,241 @@ public class FakeRepository {
             }
         }
         return null;
+    }
+    // 所有课程与教学班的内存存储
+    private static final Map<UUID, Course> courseMap = new LinkedHashMap<>();
+    private static final Map<UUID, TeachingClass> classMap = new LinkedHashMap<>();
+
+    // 每个班级的已选人数（仅在内存中维护）
+    private static final Map<UUID, Integer> classSelectedCount = new ConcurrentHashMap<>();
+
+    // 每个登录用户(cardNumber) 的选课集合（set of class UUID）
+    private static final Map<Integer, Set<UUID>> userSelections = new ConcurrentHashMap<>();
+
+    // 存储评教结果（classUuid -> list of (scores, comment)）
+    private static final Map<UUID, List<Pair<List<Integer>, String>>> evaluations = new ConcurrentHashMap<>();
+
+    static {
+        initSampleData();
+    }
+
+    private static void initSampleData() {
+        // 创建示例课程与教学班
+        // Course 1: 数据结构
+        Course c1 = new Course();
+        c1.setUuid(UUID.randomUUID());
+        c1.setCourseId("CS201");
+        c1.setCourseName("数据结构");
+        c1.setSchool("计算机学院");
+        c1.setCredit(3.0f);
+
+        TeachingClass tc1 = new TeachingClass();
+        tc1.setUuid(UUID.randomUUID());
+        tc1.setCourseUuid(c1.getUuid());
+        tc1.setTeacherId(2001);
+        tc1.setTeacherName("张老师");
+        // schedule: [(1, (2, (1,2)))] — 仅示例结构，请对照实体结构使用
+        // schedule 的结构： Pair<Pair<startWeek,endWeek>, Pair<weekday, Pair<startTime,endTime>>>
+        List<Pair<Pair<Integer,Integer>, Pair<Integer, Pair<Integer,Integer>>>> schedule1 = new ArrayList<>();
+        schedule1.add(new Pair<>(new Pair<>(1,16), new Pair<>(2, new Pair<>(1,2)))); // 周二 第1-2节
+        tc1.setSchedule(schedule1);
+        tc1.setPlace("教学楼A101");
+        tc1.setCapacity(60);
+        tc1.setSelectedCount(0);
+
+        TeachingClass tc2 = new TeachingClass();
+        tc2.setUuid(UUID.randomUUID());
+        tc2.setCourseUuid(c1.getUuid());
+        tc2.setTeacherId(2002);
+        tc2.setTeacherName("李老师");
+        List<Pair<Pair<Integer,Integer>, Pair<Integer, Pair<Integer,Integer>>>> schedule2 = new ArrayList<>();
+        schedule2.add(new Pair<>(new Pair<>(1,16), new Pair<>(2, new Pair<>(3,4)))); // 周三 第3-4节
+        tc2.setSchedule(schedule2);
+        tc2.setPlace("教学楼A102");
+        tc2.setCapacity(50);
+        tc2.setSelectedCount(0);
+
+        c1.setTeachingClasses(Arrays.asList(tc1, tc2));
+
+        // Course 2: 操作系统
+        Course c2 = new Course();
+        c2.setUuid(UUID.randomUUID());
+        c2.setCourseId("CS301");
+        c2.setCourseName("操作系统");
+        c2.setSchool("计算机学院");
+        c2.setCredit(4.0f);
+
+        TeachingClass tc3 = new TeachingClass();
+        tc3.setUuid(UUID.randomUUID());
+        tc3.setCourseUuid(c2.getUuid());
+        tc3.setTeacherId(2003);
+        tc3.setTeacherName("王老师");
+        List<Pair<Pair<Integer,Integer>, Pair<Integer, Pair<Integer,Integer>>>> schedule3 = new ArrayList<>();
+        schedule3.add(new Pair<>(new Pair<>(1,16), new Pair<>(2, new Pair<>(3,4)))); // 周二 第3-4节
+        tc3.setSchedule(schedule3);
+        tc3.setPlace("教学楼B201");
+        tc3.setCapacity(40);
+        tc3.setSelectedCount(0);
+
+        TeachingClass tc4 = new TeachingClass();
+        tc4.setUuid(UUID.randomUUID());
+        tc4.setCourseUuid(c2.getUuid());
+        tc4.setTeacherId(2004);
+        tc4.setTeacherName("赵老师");
+        List<Pair<Pair<Integer,Integer>, Pair<Integer, Pair<Integer,Integer>>>> schedule4 = new ArrayList<>();
+        schedule4.add(new Pair<>(new Pair<>(1,16), new Pair<>(5, new Pair<>(1,2)))); // 周五 第1-2节
+        tc4.setSchedule(schedule4);
+        tc4.setPlace("教学楼B202");
+        tc4.setCapacity(45);
+        tc4.setSelectedCount(0);
+
+        c2.setTeachingClasses(Arrays.asList(tc3, tc4));
+
+        // put into maps
+        courseMap.put(c1.getUuid(), c1);
+        courseMap.put(c2.getUuid(), c2);
+
+        for (TeachingClass tc : Arrays.asList(tc1, tc2, tc3, tc4)) {
+            classMap.put(tc.getUuid(), tc);
+            classSelectedCount.put(tc.getUuid(), 0);
+        }
+
+        // optional: 给某个用户预置一个已选（便于调试）
+        // if FakeRepository.getSelf() exists at startup it may be null; so skip preselect here
+    }
+
+    // --- API 方法，供前端 ViewModel 调用 ---
+
+    /**
+     * 获取当前用户已选的教学班（返回 TeachingClass 列表）
+     */
+    public static List<TeachingClass> getSelectedClasses() {
+        Student self = FakeRepository.getSelf();
+        if (self == null) return Collections.emptyList();
+        Integer card = self.getCardNumber();
+        Set<UUID> set = userSelections.getOrDefault(card, Collections.emptySet());
+
+        List<TeachingClass> result = new ArrayList<>();
+        for (UUID uuid : set) {
+            TeachingClass tc = classMap.get(uuid);
+            if (tc != null) {
+                // 复制一个实例以避免副作用（简单浅拷贝）
+                TeachingClass copy = shallowCopyTeachingClass(tc);
+                copy.setSelectedCount(classSelectedCount.getOrDefault(uuid, 0));
+                // note: selectRecord 留空（视前端逻辑而定）
+                result.add(copy);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取所有课程并附上教学班信息（Course.teachingClasses 已填）
+     */
+    public static List<Course> getSelectableCourses() {
+        // 返回 courses 的深拷贝集合（避免外部修改原始数据）
+        List<Course> list = new ArrayList<>();
+        for (Course c : courseMap.values()) {
+            Course copyCourse = new Course();
+            copyCourse.setUuid(c.getUuid());
+            copyCourse.setCourseId(c.getCourseId());
+            copyCourse.setCourseName(c.getCourseName());
+            copyCourse.setSchool(c.getSchool());
+            copyCourse.setCredit(c.getCredit());
+
+            List<TeachingClass> tcCopies = new ArrayList<>();
+            for (TeachingClass tc : c.getTeachingClasses()) {
+                TeachingClass copy = shallowCopyTeachingClass(tc);
+                copy.setSelectedCount(classSelectedCount.getOrDefault(tc.getUuid(), 0));
+                // 如果当前用户已选，则可以在 copy 上做标记（前端会通过 myClasses.selected 判断已选）
+                tcCopies.add(copy);
+            }
+            copyCourse.setTeachingClasses(tcCopies);
+            list.add(copyCourse);
+        }
+        return list;
+    }
+
+    /**
+     * 学生选择某教学班（返回 true 表示成功）
+     */
+    public static boolean chooseClass(UUID teachingClassUuid) {
+        Student self = FakeRepository.getSelf();
+        if (self == null) return false;
+        Integer card = self.getCardNumber();
+        TeachingClass tc = classMap.get(teachingClassUuid);
+        if (tc == null) return false;
+
+        synchronized (userSelections) {
+            Set<UUID> set = userSelections.computeIfAbsent(card, k -> Collections.synchronizedSet(new LinkedHashSet<>()));
+            if (set.contains(teachingClassUuid)) return true; // 已选则视为成功（幂等）
+            // 超额检查
+            int cur = classSelectedCount.getOrDefault(teachingClassUuid, 0);
+            if (cur >= tc.getCapacity()) return false; // 满员
+            set.add(teachingClassUuid);
+            classSelectedCount.put(teachingClassUuid, cur + 1);
+        }
+        return true;
+    }
+
+    /**
+     * 学生退选某教学班（返回 true 表示成功）
+     */
+    public static boolean dropClass(UUID teachingClassUuid) {
+        Student self = FakeRepository.getSelf();
+        if (self == null) return false;
+        Integer card = self.getCardNumber();
+        if (!userSelections.containsKey(card)) return false;
+
+        synchronized (userSelections) {
+            Set<UUID> set = userSelections.get(card);
+            if (set == null || !set.remove(teachingClassUuid)) return false;
+            classSelectedCount.put(teachingClassUuid, Math.max(0, classSelectedCount.getOrDefault(teachingClassUuid, 1) - 1));
+        }
+        return true;
+    }
+
+    /**
+     * 接收评教结果（简单保存到内存）
+     * evaluationResult: Pair<classUuid, Pair<List<Integer>, String>>
+     */
+    public static boolean sendEvaluationResult(Pair<UUID, Pair<List<Integer>, String>> evaluationResult) {
+        if (evaluationResult == null) return false;
+        UUID classUuid = evaluationResult.getFirst();
+        Pair<List<Integer>, String> pair = evaluationResult.getSecond();
+        if (classUuid == null || pair == null) return false;
+
+        evaluations.computeIfAbsent(classUuid, k -> Collections.synchronizedList(new ArrayList<>()))
+                .add(new Pair<>(pair.getFirst(), pair.getSecond()));
+        return true;
+    }
+
+    // --- 辅助方法 ---
+    private static TeachingClass shallowCopyTeachingClass(TeachingClass src) {
+        TeachingClass copy = new TeachingClass();
+        copy.setUuid(src.getUuid());
+        copy.setCourseUuid(src.getCourseUuid());
+        copy.setCourse(src.getCourse());
+        copy.setSelectRecord(src.getSelectRecord());
+        copy.setTeacherId(src.getTeacherId());
+        copy.setTeacherName(src.getTeacherName());
+        copy.setSchedule(src.getSchedule());
+        copy.setPlace(src.getPlace());
+        copy.setCapacity(src.getCapacity());
+        copy.setSelectedCount(src.getSelectedCount());
+        copy.setIsEvaluated(src.getIsEvaluated());
+        copy.setEvaluationResult(src.getEvaluationResult());
+        return copy;
+    }
+
+    // 暴露内部状态（仅用于调试）
+    public static Map<UUID, Integer> getClassSelectedCountSnapshot() {
+        return new HashMap<>(classSelectedCount);
+    }
+
+    public static Map<Integer, Set<UUID>> getUserSelectionsSnapshot() {
+        Map<Integer, Set<UUID>> snap = new HashMap<>();
+        userSelections.forEach((k, v) -> snap.put(k, new LinkedHashSet<>(v)));
+        return snap;
     }
 }

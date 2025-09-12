@@ -1,112 +1,94 @@
 package app.vcampus.client.gateway;
 
-import app.vcampus.client.net.NettyHandler;
-import app.vcampus.server.entity.CardTransaction;
-import app.vcampus.server.entity.FinanceCard;
-import app.vcampus.server.entity.IEntity;
-import app.vcampus.server.utility.Request;
-import app.vcampus.server.utility.Response;
-import lombok.extern.slf4j.Slf4j;
+import app.vcampus.client.util.CardInfo;
+import app.vcampus.client.util.ShopItem;
+import app.vcampus.client.util.DisplayableTransaction;
+import app.vcampus.client.util.ShopTransactionRecord;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@Slf4j
+//TODO make it a real net io
+
 public class FinanceClient extends BaseClient {
-    public static FinanceCard getMyCard(NettyHandler handler) {
-        Request request = new Request();
-        request.setUri("finance/card/getSelf");
 
+    // --- Mock Database for Card Management ---
+    private static final Map<String, CardInfo> cardDatabase = new ConcurrentHashMap<>();
 
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                String data = ((Map<String, String>) response.getData()).get("card");
-                return IEntity.fromJson(data, FinanceCard.class);
-            } else {
-                throw new RuntimeException("Failed to get card");
-            }
-        } catch (Exception e) {
-            log.warn("Fail to get card", e);
-            return null;
-        }
+    static {
+        // Populate with some mock data
+        cardDatabase.put("123456", new CardInfo("123456", "正常", 13221836.50));
+        cardDatabase.put("654321", new CardInfo("654321", "正常", 888.88));
+        cardDatabase.put("100000", new CardInfo("100000", "已冻结", 123.00));
+        cardDatabase.put("200000", new CardInfo("200000", "已冻结", 0.00));
     }
 
-    public static List<CardTransaction> getMyBills(NettyHandler handler) {
-        Request request = new Request();
-        request.setUri("finance/bills/getSelf");
-
+    /**
+     * Finds card information by card number.
+     *
+     * @param cardNumber The card number to search for.
+     * @return An Optional containing the CardInfo if found, otherwise empty.
+     */
+    public static Optional<CardInfo> findCardInfo(String cardNumber) {
+        // Simulate network delay
         try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                List<String> raw_data = (List<String>) response.getData();
-                List<CardTransaction> data = raw_data.stream().map(x -> IEntity.fromJson(x, CardTransaction.class)).collect(Collectors.toList());
-                data.sort((a, b) -> b.getTime().compareTo(a.getTime()));
-                return data;
-            } else {
-                throw new RuntimeException("Failed to get bills");
-            }
-        } catch (Exception e) {
-            log.warn("Fail to get bills", e);
-            return null;
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+        return Optional.ofNullable(cardDatabase.get(cardNumber));
     }
 
-    public static FinanceCard getByCardNumber(NettyHandler handler, String cardNumber) {
-        Request request = new Request();
-        request.setUri("finance/card/getByCardNumber");
-        request.setParams(Map.of("cardNumber", cardNumber));
-
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                String raw_data = ((Map<String, String>) response.getData()).get("card");
-                return IEntity.fromJson(raw_data, FinanceCard.class);
-            } else {
-                throw new RuntimeException("Failed to get card");
-            }
-        } catch (Exception e) {
-            log.warn("Fail to get card", e);
-            return null;
+    /**
+     * Recharges a card with a specified amount.
+     *
+     * @param cardNumber The card number to recharge.
+     * @param amount The amount to add.
+     * @return true if successful, false otherwise.
+     */
+    public static boolean recharge(String cardNumber, double amount) {
+        CardInfo card = cardDatabase.get(cardNumber);
+        if (card != null && amount > 0 && !"已冻结".equals(card.getStatus())) {
+            card.setBalance(card.getBalance() + amount);
+            return true;
         }
+        return false;
     }
 
-    public static FinanceCard updateCard(NettyHandler handler, FinanceCard card) {
-        Request request = new Request();
-        request.setUri("finance/card/update");
-        request.setParams(Map.of("card", card.toJson()));
-
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                String raw_data = ((Map<String, String>) response.getData()).get("card");
-                return IEntity.fromJson(raw_data, FinanceCard.class);
-            } else {
-                throw new RuntimeException("Failed to update card");
-            }
-        } catch (Exception e) {
-            log.warn("Fail to update card", e);
-            return null;
+    /**
+     * Updates the status of a card (e.g., "冻结", "挂失").
+     *
+     * @param cardNumber The card number to update.
+     * @param newStatus The new status.
+     * @return true if successful, false otherwise.
+     */
+    public static boolean updateCardStatus(String cardNumber, String newStatus) {
+        CardInfo card = cardDatabase.get(cardNumber);
+        if (card != null) {
+            card.setStatus(newStatus);
+            return true;
         }
+        return false;
     }
 
-    public static FinanceCard rechargeCard(NettyHandler handler, Integer cardNumber, Integer amount) {
-        Request request = new Request();
-        request.setUri("finance/card/recharge");
-        request.setParams(Map.of("cardNumber", cardNumber.toString(), "amount", amount.toString()));
 
-        try {
-            Response response = BaseClient.sendRequest(handler, request);
-            if (response.getStatus().equals("success")) {
-                String raw_data = ((Map<String, String>) response.getData()).get("card");
-                return IEntity.fromJson(raw_data, FinanceCard.class);
-            } else {
-                throw new RuntimeException("Failed to recharge card");
-            }
-        } catch (Exception e) {
-            log.warn("Fail to recharge card", e);
-            return null;
-        }
+    // --- Methods from previous implementation (Personal Finance) ---
+    public static double getBalance() {
+        return 13221836.50;
+    }
+
+    public static List<DisplayableTransaction> getTransactionHistory() {
+        ShopItem laptop = new ShopItem("笔记本电脑", 11000.00, "/images/laptop.png");
+        ShopItem mouse = new ShopItem("鼠标", 350.00, "/images/mouse.png");
+        // ... (rest of the method is unchanged)
+        return Arrays.asList(
+                new DisplayableTransaction(1725936059000L, "充值", 12345678.00),
+                new DisplayableTransaction(new ShopTransactionRecord(Arrays.asList(laptop, mouse), 11350.00))
+        );
     }
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.2"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.vcampus.client.scene.SubScene.CourseScene.ClassItemController"
+      fx:id="root"
+      spacing="6.0"
+      prefWidth="140" prefHeight="80"
+      styleClass="class-item">
+
+    <padding>
+        <Insets top="8" right="8" bottom="8" left="8"/>
+    </padding>
+
+    <children>
+        <Label fx:id="courseLabel" text="课程名" styleClass="class-item-course" />
+        <HBox spacing="8" styleClass="class-item-meta">
+            <Label fx:id="teacherLabel" text="教师" styleClass="class-item-teacher" />
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="placeLabel" text="教室" styleClass="class-item-place" />
+        </HBox>
+    </children>
+</VBox>

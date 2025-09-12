@@ -6,7 +6,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.util.Objects;
 
@@ -83,9 +82,18 @@ public class Main extends Application {
     }
 
     public static void showMainPanel() throws IOException {
+        // 1. 加载 FXML 布局
         Parent root = FXMLLoader.load(Objects.requireNonNull(Main.class.getResource("/app/vcampus/client/scene/MainScene.fxml")));
+
+        // 2. 创建场景 (Scene)
+        Scene scene = new Scene(root, 1400, 800);
+
+        // 3. 【核心Hack】将我们的全局样式表应用到这个场景上
+        scene.getStylesheets().add(Objects.requireNonNull(Main.class.getResource("/css/disable_focus_indicator.css")).toExternalForm());
+
+        // 4. 配置并显示舞台 (Stage)
         primaryStage.setTitle("VCampus");
-        primaryStage.setScene(new Scene(root, 1400, 800));
+        primaryStage.setScene(scene); // 将配置好样式的 scene 设置给 stage
         primaryStage.centerOnScreen();
         primaryStage.show();
         primaryStage.requestFocus();

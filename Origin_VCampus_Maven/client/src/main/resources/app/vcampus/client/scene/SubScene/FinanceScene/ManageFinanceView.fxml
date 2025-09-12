@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" prefHeight="700.0" prefWidth="900.0" spacing="20.0" style="-fx-background-color: #FAFAFA;"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="app.vcampus.client.scene.FinanceScene.ManageFinanceController">
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0"/>
+    </padding>
+    <children>
+        <Label style="-fx-font-size: 28px; -fx-font-weight: bold;" text="一卡通管理"/>
+        <Label style="-fx-font-size: 14px; -fx-text-fill: #666666;" text="充值 / 冻结 / 解冻"/>
+
+        <!-- Search Bar -->
+        <HBox alignment="CENTER_LEFT" maxWidth="500.0" spacing="10.0">
+            <children>
+                <JFXTextField fx:id="searchTextField" labelFloat="true" promptText="输入一卡通号" HBox.hgrow="ALWAYS"/>
+                <JFXButton fx:id="searchButton" buttonType="RAISED"
+                           style="-fx-background-color: #728748; -fx-text-fill: white;" text="搜索"/>
+            </children>
+        </HBox>
+
+        <!-- Status Message Label (replaces alerts) -->
+        <Label fx:id="statusLabel" style="-fx-font-size: 14px;"/>
+
+        <!-- Search Result and Actions Panel -->
+        <VBox fx:id="resultPane" managed="false" spacing="15.0"
+              style="-fx-padding: 20; -fx-border-color: #E0E0E0; -fx-border-width: 1; -fx-border-radius: 4;"
+              visible="false">
+            <children>
+                <!-- Card Info -->
+                <HBox alignment="CENTER_LEFT" spacing="20.0">
+                    <children>
+                        <Label fx:id="cardInfoLabel" style="-fx-font-size: 16px;"
+                               text="卡号: 123456    卡片状态: 正常    余额: 13221836.50 元"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <JFXButton fx:id="freezeButton" buttonType="RAISED"
+                                   style="-fx-background-color: #673AB7; -fx-text-fill: white;" text="冻结"/>
+                        <!-- The "Report Loss" button has been removed -->
+                    </children>
+                </HBox>
+                <!-- Separator -->
+                <Region prefHeight="1.0" style="-fx-background-color: #E0E0E0;"/>
+                <!-- Recharge Area -->
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <JFXTextField fx:id="rechargeTextField" labelFloat="true" promptText="充值金额" HBox.hgrow="ALWAYS"/>
+                        <JFXButton fx:id="rechargeButton" buttonType="RAISED"
+                                   style="-fx-background-color: #673AB7; -fx-text-fill: white;" text="充值"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</VBox>

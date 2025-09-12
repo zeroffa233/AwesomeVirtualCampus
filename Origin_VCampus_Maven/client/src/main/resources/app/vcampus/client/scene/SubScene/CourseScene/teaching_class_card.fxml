@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.vcampus.client.scene.SubScene.CourseScene.TeachingClassCardController"
+            prefWidth="240" prefHeight="220" styleClass="tc-card-root">
+
+    <children>
+        <VBox spacing="8" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+            </padding>
+
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label fx:id="teacherLabel" styleClass="tc-teacher" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="statusLabel" styleClass="tc-status" />
+            </HBox>
+
+            <Label fx:id="scheduleLabel" wrapText="true" />
+            <Label fx:id="placeLabel" />
+            <HBox spacing="6">
+                <Label text="容量：" styleClass="meta-label" />
+                <Label fx:id="capacityLabel" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label text="已选：" styleClass="meta-label" />
+                <Label fx:id="selectedCountLabel" />
+            </HBox>
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <HBox alignment="CENTER_RIGHT">
+                <ToggleButton fx:id="actionBtn" text="选择" styleClass="top-bar-menu-button" />
+            </HBox>
+        </VBox>
+    </children>
+</AnchorPane>
