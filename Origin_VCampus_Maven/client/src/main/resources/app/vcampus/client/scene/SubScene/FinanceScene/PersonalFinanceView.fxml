@@ -16,7 +16,7 @@
 
         <VBox style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
             <children>
-                <Label text="卡内余额" style="-fx-font-size: 16px; -fx-text-fill: #333333;" />
+                <Label text="卡内余额" style="-fx-font-size: 16px; -fx-text-fill: #607830DE;" />
                 <Label fx:id="balanceLabel" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #B2C926B2;" text="0.00 元">
                     <VBox.margin>
                         <Insets top="10.0" />
