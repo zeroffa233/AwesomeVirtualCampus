@@ -62,7 +62,14 @@ public class GptController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         viewModel = new GptViewModel();
+        final String inlineCss = """
+            .jfx-list-cell .jfx-rippler {
+                -jfx-rippler-fill: #B2C926B2;
+            }
+        """;
 
+        // 2. 创建Data URL并添加到ListView的样式表中
+        chatHistoryListView.getStylesheets().add("data:text/css," + inlineCss);
         loadAvatarImage();
         setupBindings();
         setupListeners();
@@ -115,6 +122,26 @@ public class GptController implements Initializable {
                 viewModel.sendMessage();
                 event.consume();
             }
+        });
+
+        viewModel.getChatHistory().addListener((javafx.collections.ListChangeListener.Change<? extends ChatSessionSummary> c) -> {
+            // 当列表被 setAll() 刷新后，这个监听器会触发
+            // 我们需要重新应用选中效果
+            Platform.runLater(() -> {
+                ChatSession activeSession = viewModel.getCurrentSession();
+                if (activeSession != null) {
+                    // 在更新后的列表中找到与当前活动会话匹配的项
+                    viewModel.getChatHistory().stream()
+                            .filter(summary -> summary.getId().equals(activeSession.getId()))
+                            .findFirst()
+                            .ifPresent(summaryToSelect -> {
+                                // 检查它是否已经是选中的项，以避免不必要的重绘或事件触发
+                                if (chatHistoryListView.getSelectionModel().getSelectedItem() != summaryToSelect) {
+                                    chatHistoryListView.getSelectionModel().select(summaryToSelect);
+                                }
+                            });
+                }
+            });
         });
     }
 
@@ -181,6 +208,8 @@ public class GptController implements Initializable {
 
         VBox nameAndBubbleVbox = new VBox(nameLabel, bubble);
         nameAndBubbleVbox.setAlignment(Pos.TOP_LEFT);
+        HBox.setHgrow(nameAndBubbleVbox, Priority.ALWAYS);
+        nameAndBubbleVbox.setFillWidth(true);
 
         container.getChildren().addAll(avatarView, nameAndBubbleVbox);
 
@@ -204,6 +233,9 @@ public class GptController implements Initializable {
         textNode.getStyleClass().add("text"); // Apply .text style from CSS
 
         TextFlow textFlow = new TextFlow(textNode);
+
+        textNode.wrappingWidthProperty().bind(textFlow.widthProperty());
+
         textFlow.getStyleClass().add("chat-bubble");
 
         switch (message.getSender()) {

@@ -5,6 +5,7 @@ import app.vcampus.client.util.DisplayableTransaction;
 import app.vcampus.client.viewmodel.PersonalFinanceViewModel;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
+import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -15,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.LinkedHashMap;
@@ -35,6 +37,25 @@ public class PersonalFinanceController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         balanceLabel.textProperty().bind(viewModel.balanceProperty().asString("%.2f 元"));
+
+        // --- 开始修改 ---
+        // 1. 将CSS规则定义为一个字符串
+        final String inlineCss = """
+            .jfx-list-cell:selected {
+                -fx-background-color: #B2C926B2;
+            }
+            .jfx-list-cell:selected .label {
+                -fx-text-fill: black;
+            }
+            .jfx-list-cell .jfx-rippler {
+                -jfx-rippler-fill: #728748;
+            }
+        """;
+
+        // 2. 创建Data URL并添加到ListView的样式表中
+        transactionsListView.getStylesheets().add("data:text/css," + inlineCss);
+        // --- 结束修改 ---
+
         transactionsListView.setCellFactory(param -> new TransactionListCell());
         transactionsListView.setItems(viewModel.getTransactionHistory());
         viewModel.loadData();
@@ -42,7 +63,7 @@ public class PersonalFinanceController implements Initializable {
 
     /**
      * Custom ListCell to display DisplayableTransaction objects.
-     * Supports expandable view for shop transactions.
+     * Supports expandable view for shop transactions with animation.
      */
     private static class TransactionListCell extends JFXListCell<DisplayableTransaction> {
         private final VBox layout = new VBox();
@@ -79,15 +100,61 @@ public class PersonalFinanceController implements Initializable {
             itemsContainer.setSpacing(5);
 
             layout.getChildren().addAll(summaryContent, itemsContainer);
-            expandButton.setOnAction(event -> toggleDetails());
+
+            // Handle expansion/collapse with animation on button click
+            expandButton.setOnAction(event -> toggleDetails(true));
+
+            // Add a listener to change background color on selection
+            selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
+                if (isNowSelected) {
+                    setStyle("-fx-background-color: #B2C926B2;");
+                } else {
+                    setStyle("-fx-background-color: transparent;");
+                }
+            });
         }
 
-        private void toggleDetails() {
-            boolean isExpanded = !itemsContainer.isManaged();
-            itemsContainer.setVisible(isExpanded);
-            itemsContainer.setManaged(isExpanded);
-            expandButton.setText(isExpanded ? "▲" : "▼");
+        /**
+         * Toggles the visibility of the details container, with an optional animation.
+         * @param animated true to use a fade transition, false for immediate change.
+         */
+        private void toggleDetails(boolean animated) {
+            boolean isExpanding = !itemsContainer.isManaged();
+
+            if (!animated) {
+                itemsContainer.setVisible(isExpanding);
+                itemsContainer.setManaged(isExpanding);
+                expandButton.setText(isExpanding ? "▲" : "▼");
+                if (!isExpanding) {
+                    itemsContainer.setOpacity(1.0); // Reset opacity for future animations
+                }
+                return;
+            }
+
+            if (isExpanding) {
+                // Expand with fade-in animation
+                itemsContainer.setOpacity(0.0);
+                itemsContainer.setVisible(true);
+                itemsContainer.setManaged(true);
+                FadeTransition ft = new FadeTransition(Duration.millis(300), itemsContainer);
+                ft.setFromValue(0.0);
+                ft.setToValue(1.0);
+                ft.play();
+                expandButton.setText("▲");
+            } else {
+                // Collapse with fade-out animation
+                FadeTransition ft = new FadeTransition(Duration.millis(300), itemsContainer);
+                ft.setFromValue(1.0);
+                ft.setToValue(0.0);
+                ft.setOnFinished(event -> {
+                    itemsContainer.setVisible(false);
+                    itemsContainer.setManaged(false);
+                });
+                ft.play();
+                expandButton.setText("▼");
+            }
         }
+
 
         @Override
         protected void updateItem(DisplayableTransaction item, boolean empty) {
@@ -95,8 +162,9 @@ public class PersonalFinanceController implements Initializable {
             if (empty || item == null) {
                 setGraphic(null);
             } else {
+                // Instantly collapse the cell if it's being recycled by the list view
                 if (itemsContainer.isManaged()) {
-                    toggleDetails();
+                    toggleDetails(false);
                 }
                 itemsContainer.getChildren().clear();
 
@@ -105,7 +173,7 @@ public class PersonalFinanceController implements Initializable {
 
                 if ("商店消费".equals(item.getType())) {
                     amountLabel.setText(String.format("-%.2f", item.getAmount()));
-                    amountLabel.setStyle("-fx-text-fill: red;"); // Black font for total price
+                    amountLabel.setStyle("-fx-text-fill: red;");
 
                     if (item.getItems() != null && !item.getItems().isEmpty()) {
                         expandButton.setVisible(true);

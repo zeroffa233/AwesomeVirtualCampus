@@ -12,6 +12,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.json.JSONObject;
+import java.util.Comparator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -101,18 +102,27 @@ public class GptViewModel {
     }
 
     public void loadSession(UUID sessionId) {
+        // 如果请求的会话已经是当前会话，则不执行任何操作
         if (currentSession != null && currentSession.getId().equals(sessionId)) {
             return;
         }
+        // 保存我们正在离开的会话中的任何待处理更改
         if (currentSession != null && currentSession.getMessageHistory().size() > 1) {
             saveCurrentSession();
         }
 
         try {
+            // 加载新会话
             ChatSession loadedSession = gptClient.loadChatSession(sessionId);
             if (loadedSession != null) {
                 currentSession = loadedSession;
-                rebuildChatDisplay();
+                rebuildChatDisplay(); // 更新聊天面板
+
+                // 【修改】将新加载的会话标记为最近使用的会话并保存
+                // saveCurrentSession 方法会方便地执行此操作并重新加载历史记录，
+                // 历史记录现在将进行正确排序
+                saveCurrentSession();
+
             } else {
                 throw new Exception("Session not found in client.");
             }
@@ -135,7 +145,10 @@ public class GptViewModel {
 
     private void loadChatHistorySummaries() {
         Platform.runLater(() -> {
-            chatHistory.setAll(gptClient.getChatHistorySummaries());
+            List<ChatSessionSummary> summaries = gptClient.getChatHistorySummaries();
+            // 【修改】按 lastModified 时间戳进行降序（最新优先）排序
+            summaries.sort(Comparator.comparing(ChatSession.ChatSessionSummary::getLastModified).reversed());
+            chatHistory.setAll(summaries);
         });
     }
 
@@ -274,5 +287,9 @@ public class GptViewModel {
                 streamingContent.set(streamingContent.get() + newContent);
             }
         }
+    }
+
+    public ChatSession getCurrentSession() {
+        return currentSession;
     }
 }

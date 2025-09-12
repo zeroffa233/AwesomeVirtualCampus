@@ -40,7 +40,7 @@
                                text="卡号: 123456    卡片状态: 正常    余额: 13221836.50 元"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <JFXButton fx:id="freezeButton" buttonType="RAISED"
-                                   style="-fx-background-color: #673AB7; -fx-text-fill: white;" text="冻结"/>
+                                   style="-fx-background-color: #728748; -fx-text-fill: white;" text="冻结"/>
                         <!-- The "Report Loss" button has been removed -->
                     </children>
                 </HBox>
@@ -51,7 +51,7 @@
                     <children>
                         <JFXTextField fx:id="rechargeTextField" labelFloat="true" promptText="充值金额" HBox.hgrow="ALWAYS"/>
                         <JFXButton fx:id="rechargeButton" buttonType="RAISED"
-                                   style="-fx-background-color: #673AB7; -fx-text-fill: white;" text="充值"/>
+                                   style="-fx-background-color: #728748; -fx-text-fill: white;" text="充值"/>
                     </children>
                 </HBox>
             </children>

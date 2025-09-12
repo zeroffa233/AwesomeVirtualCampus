@@ -86,7 +86,7 @@ public class ManageFinanceViewModel {
 
         statusMessage.set(""); // Clear previous message
         runAsyncTask(() -> {
-            var cardOpt = FinanceClient.findCardInfo(cardNumber);
+            var cardOpt = FinanceClient.findCardInfo(cardNumber,null);
             Platform.runLater(() -> {
                 if (cardOpt.isPresent()) {
                     foundCard.set(cardOpt.get());
@@ -109,7 +109,7 @@ public class ManageFinanceViewModel {
             }
 
             runAsyncTask(() -> {
-                boolean success = FinanceClient.recharge(foundCard.get().getCardNumber(), amount);
+                boolean success = FinanceClient.recharge(foundCard.get().getCardNumber(), amount,null);
                 Platform.runLater(() -> {
                     if (success) {
                         showStatusMessage("充值 " + String.format("%.2f", amount) + " 元成功！", false);
@@ -147,7 +147,7 @@ public class ManageFinanceViewModel {
         }
 
         runAsyncTask(() -> {
-            boolean success = FinanceClient.updateCardStatus(currentCard.getCardNumber(), newStatus);
+            boolean success = FinanceClient.updateCardStatus(currentCard.getCardNumber(), newStatus,null);
             Platform.runLater(() -> {
                 if (success) {
                     showStatusMessage("卡片已成功" + actionName + "！", false);
