@@ -71,28 +71,52 @@ public class TeachingAffairsViewModel {
             });
         }
 
-        public void chooseClass(UUID teachingClassUuid) {
-            executor.submit(() -> {
+        public CompletableFuture<Boolean> chooseClass(UUID teachingClassUuid) {
+//            return CompletableFuture.supplyAsync(() -> {
+//                try {
+//                    boolean ok = FakeRepository.chooseClass(teachingClassUuid);
+//                    // 刷新可选与已选（在后台线程触发，结果会在 Platform.runLater 中应用）
+//                    getSelectableCourses();
+//                    getSelectedClasses();
+//                    return ok;
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    return false;
+//                }
+//            }, executor);
+            return CompletableFuture.supplyAsync(() -> {
                 try {
-                    FakeRepository.chooseClass(teachingClassUuid);
+                    System.out.println("[DEBUG] chooseClass called for: " + teachingClassUuid);
+                    System.out.println("[DEBUG] FakeRepository.user = " + FakeRepository.user);
+                    System.out.println("[DEBUG] FakeRepository.getSelf() = " + FakeRepository.getSelf());
+                    boolean ok = FakeRepository.chooseClass(teachingClassUuid);
+                    System.out.println("[DEBUG] FakeRepository.chooseClass returned: " + ok);
+                    System.out.println("[DEBUG] Selections snapshot: " + FakeRepository.getUserSelectionsSnapshot());
+                    System.out.println("[DEBUG] Class counts snapshot: " + FakeRepository.getClassSelectedCountSnapshot());
+
+                    // 刷新可选与已选
                     getSelectableCourses();
                     getSelectedClasses();
+                    return ok;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    return false;
                 }
-            });
+            }, executor);
         }
 
-        public void dropClass(UUID teachingClassUuid) {
-            executor.submit(() -> {
+        public CompletableFuture<Boolean> dropClass(UUID teachingClassUuid) {
+            return CompletableFuture.supplyAsync(() -> {
                 try {
-                    FakeRepository.dropClass(teachingClassUuid);
+                    boolean ok = FakeRepository.dropClass(teachingClassUuid);
                     getSelectableCourses();
                     getSelectedClasses();
+                    return ok;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    return false;
                 }
-            });
+            }, executor);
         }
     }
 
