@@ -18,8 +18,8 @@ public class Main extends Application {
         primaryStage = stage;
         primaryStage.setResizable(false);
         // For UI debugging, call startForDebug(). For normal operation, call showLogin().
-        //showLogin();
-        startForDebug();
+        showLogin();
+        //startForDebug();
     }
 
     public static void startForDebug() {
@@ -39,13 +39,6 @@ public class Main extends Application {
                     debugUser.setRoleStr("library_staff");
                     debugUser.setCardNum(123456);
 
-                    app.vcampus.server.utility.Session session = new app.vcampus.server.utility.Session();
-                    session.setCardNum(123456);
-                    session.setRoles(new String[]{"library_staff"});
-                    app.vcampus.client.repository.FakeRepository.session = session;
-
-                    // Set other properties of the user as needed for UI testing
-                    app.vcampus.client.repository.FakeRepository.user = debugUser;
 
                 } catch (Exception e) {
                     System.err.println("Debug connection failed: " + e.getMessage());

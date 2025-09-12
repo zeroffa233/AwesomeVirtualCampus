@@ -44,7 +44,7 @@ public class ClassItemController {
 
         // 应用内联样式（渐变 + 圆角 + 边框阴影）
         String style = String.join(" ",
-                "-fx-background-color: linear-gradient(to bottom right, " + c1 + " 0%, " + c2 + " 100%);",
+                "-fx-background-color: " + c1 + ";",
                 "-fx-background-radius: 10;",
                 "-fx-padding: 8;"
         );

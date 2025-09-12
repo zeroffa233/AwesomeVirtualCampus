@@ -155,12 +155,12 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleTeachingAffairs() {
         setActiveButton(courseButton);
-        JFXButton courseSelectionButton = createSecondaryMenuButton("在线选课", "/app/vcampus/client/scene/SubScene/teachingaffairs/CourseSelectionView.fxml");
-        JFXButton gradesButton = createSecondaryMenuButton("成绩查询", "/app/vcampus/client/scene/SubScene/teachingaffairs/GradesView.fxml");
-        JFXButton scheduleButton = createSecondaryMenuButton("我的课表", "/app/vcampus/client/scene/SubScene/teachingaffairs/ScheduleView.fxml");
+        JFXButton courseSelectionButton = createSecondaryMenuButton("在线选课", "/app/vcampus/client/scene/SubScene/CourseScene/choose_class.fxml");
+        //JFXButton gradesButton = createSecondaryMenuButton("成绩查询", "/app/vcampus/client/scene/SubScene/teachingaffairs/GradesView.fxml");
+        JFXButton scheduleButton = createSecondaryMenuButton("我的课表", "/app/vcampus/client/scene/SubScene/CourseScene/MySchedule.fxml");
         courseSelectionButton.getStyleClass().add("active");
         // 初始加载的父视图
-        switchView("/app/vcampus/client/scene/SubScene/CourseScene/TeachingAffairsView.fxml", "教务系统", List.of(courseSelectionButton, gradesButton, scheduleButton));
+        switchView("/app/vcampus/client/scene/SubScene/CourseScene/TeachingAffairsView.fxml", "教务系统", List.of(courseSelectionButton, scheduleButton));
     }
 
     @FXML
