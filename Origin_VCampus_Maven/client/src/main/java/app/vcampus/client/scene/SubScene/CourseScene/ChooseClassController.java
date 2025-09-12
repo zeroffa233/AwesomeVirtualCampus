@@ -3,6 +3,7 @@ package app.vcampus.client.scene.SubScene.CourseScene;
 import app.vcampus.client.viewmodel.TeachingAffairsViewModel;
 import app.vcampus.server.entity.Course;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
@@ -21,7 +22,41 @@ public class ChooseClassController {
     @FXML private ScrollPane scrollPane;
     @FXML private VBox coursesContainer;
 
-    private final TeachingAffairsViewModel vm = new TeachingAffairsViewModel();
+    private TeachingAffairsViewModel vm;
+
+    public void setViewModel(TeachingAffairsViewModel vm) {
+        System.out.println("[ChooseClass] setViewModel vm=" + (vm == null ? "null" : vm.hashCode()));
+        this.vm = vm;
+        if (this.vm == null) return;
+
+        // 启动/初始化数据（幂等）
+        this.vm.myClasses.init();
+
+        // 初次填充（可能已有数据）
+        Platform.runLater(() -> populateCourses(this.vm.myClasses.allCourses));
+
+        // 订阅数据变化（当 allCourses 被填充时刷新 UI）
+        try {
+            this.vm.myClasses.allCourses.addListener((ListChangeListener<Course>) change -> {
+                Platform.runLater(() -> populateCourses(this.vm.myClasses.allCourses));
+            });
+        } catch (Exception ignored) {}
+
+        // 短期轮询备援：如果数据短时间内没来则再次检查（兼容性）
+        final ScheduledExecutorService poller = Executors.newSingleThreadScheduledExecutor();
+        final int[] tries = {0};
+        ScheduledFuture<?> future = poller.scheduleAtFixedRate(() -> {
+            tries[0]++;
+            List<Course> list = this.vm.myClasses.allCourses;
+            if (list != null && !list.isEmpty()) {
+                Platform.runLater(() -> populateCourses(list));
+                poller.shutdown();
+            } else if (tries[0] >= 6) {
+                poller.shutdown();
+            }
+        }, 150, 400, TimeUnit.MILLISECONDS);
+    }
+
 
     private final ScheduledExecutorService poller = Executors.newSingleThreadScheduledExecutor();
 
@@ -30,27 +65,6 @@ public class ChooseClassController {
         headingLabel.setText("选课");
         captionLabel.setText("选课系统");
 
-        // 初始化 viewModel（会触发后台加载）
-        vm.myClasses.init();
-
-        // 立即尝试填充（如果已有数据）
-        populateCourses(vm.myClasses.allCourses);
-
-        // 短期轮询，检测数据变化并刷新 UI（最多 6 次，间隔 400ms）
-        final int[] times = {0};
-        ScheduledFuture<?> future = poller.scheduleAtFixedRate(() -> {
-            times[0]++;
-            List<Course> list = vm.myClasses.allCourses;
-            // 当数据填充后，刷新 UI
-            if (!list.isEmpty()) {
-                Platform.runLater(() -> populateCourses(list));
-                // cancel polling after first fill
-                poller.shutdown();
-            } else if (times[0] >= 6) {
-                // 停止轮询（避免长期占用）
-                poller.shutdown();
-            }
-        }, 200, 400, TimeUnit.MILLISECONDS);
     }
 
     private void populateCourses(List<Course> courses) {
