@@ -15,7 +15,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -23,71 +22,40 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.UUID;
 
-//TODO autosave on quit
-
-/**
- * Controller for the GPT Chat interface.
- * Manages the display of chat messages, chat history, and user interactions.
- * Connects the view (FXML) with the GptViewModel.
- */
 public class GptController implements Initializable {
 
     // --- FXML UI Elements ---
-    @FXML private ScrollPane chatScrollPane;
-    @FXML private VBox chatDisplayArea;
-    @FXML private JFXTextArea userInputField;
-    @FXML private JFXButton sendButton;
-    @FXML private JFXListView<ChatSessionSummary> chatHistoryListView;
-    @FXML private JFXButton newChatButton;
+    @FXML
+    private ScrollPane chatScrollPane;
+    @FXML
+    private VBox chatDisplayArea;
+    @FXML
+    private JFXTextArea userInputField;
+    @FXML
+    private JFXButton sendButton;
+    @FXML
+    private JFXListView<ChatSessionSummary> chatHistoryListView;
+    @FXML
+    private JFXButton newChatButton;
 
     // --- ViewModel and State ---
     private GptViewModel viewModel;
     private final Map<UUID, HBox> displayedMessageNodes = new HashMap<>();
     private Image assistantAvatar;
 
-    // --- Constants for Styling and Layout ---
-    private static final double MESSAGE_MAX_WIDTH_PERCENT = 0.7;
-    private static final double MESSAGE_MIN_WIDTH = 50.0;
-    private static final Insets MESSAGE_PADDING = new Insets(5);
-    private static final Insets BUBBLE_PADDING = new Insets(8, 12, 8, 12);
+    // --- Constants for Layout ---
     private static final double AVATAR_SIZE = 30.0;
     private static final String ASSISTANT_NAME = "Assistant-DeepSeek";
-
-
-    // --- CSS Style Constants ---
-    private static final String GREEN = "#4EB052";
-    private static final String ASSISTANT_COLOR_GRAY = "#F5F5F5";
-
-    private static final String STYLE_MESSAGE_BUBBLE = "-fx-border-radius: 15px; -fx-background-radius: 15px;";
-    private static final String STYLE_USER_BUBBLE = STYLE_MESSAGE_BUBBLE + "-fx-background-color: " + GREEN + ";";
-    private static final String STYLE_ASSISTANT_BUBBLE = STYLE_MESSAGE_BUBBLE + "-fx-background-color: " + ASSISTANT_COLOR_GRAY + ";";
-    private static final String STYLE_SYSTEM_BUBBLE = "-fx-background-color: transparent;";
-
-    private static final String STYLE_USER_TEXT = "-fx-fill: white;";
-    private static final String STYLE_ASSISTANT_TEXT = "-fx-fill: black;";
-    private static final String STYLE_SYSTEM_TEXT = "-fx-fill: gray; -fx-font-style: italic;";
-    private static final String STYLE_ASSISTANT_NAME = "-fx-font-size: 10px; -fx-text-fill: #888888;";
-
-    // **【修改】减小删除按钮尺寸**
-    private static final String STYLE_MESSAGE_DELETE_BUTTON =
-            "-fx-background-color: #ff3b30;" + // iOS red
-                    "-fx-text-fill: white;" +
-                    "-fx-font-weight: bold;" +
-                    "-fx-padding: 0;" +
-                    "-fx-min-width: 15px; -fx-max-width: 15px;" +
-                    "-fx-min-height: 15px; -fx-max-height: 15px;" +
-                    "-fx-background-radius: 9;" +
-                    "-fx-border-radius: 9;";
-    private static final String STYLE_HISTORY_DELETE_BUTTON = STYLE_MESSAGE_DELETE_BUTTON;
 
     // --- Initialization ---
 
@@ -161,17 +129,14 @@ public class GptController implements Initializable {
         });
     }
 
-
     // --- Core UI Update Logic ---
 
     private void addMessageToDisplay(GptViewModel.Message message) {
         Platform.runLater(() -> {
-            String sender = message.getSender();
             TextFlow messageBubble = createMessageBubble(message);
             HBox messageContainer = new HBox();
-            messageContainer.setPadding(MESSAGE_PADDING);
 
-            switch (sender) {
+            switch (message.getSender()) {
                 case "user":
                     buildUserMessage(messageContainer, messageBubble, message);
                     break;
@@ -190,16 +155,18 @@ public class GptController implements Initializable {
     }
 
     private void buildUserMessage(HBox container, TextFlow bubble, GptViewModel.Message message) {
-        container.setAlignment(Pos.CENTER_RIGHT);
+        // Use a spacer to push content to the right, allowing the bubble to grow.
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
         if (message.isDeletable()) {
             JFXButton deleteButton = createDeleteButton(message.getId());
             HBox buttonWrapper = new HBox(deleteButton);
-            // **【修改】将按钮垂直对齐方式改为底部**
             buttonWrapper.setAlignment(Pos.BOTTOM_LEFT);
             buttonWrapper.setPadding(new Insets(0, 5, 0, 0));
-            container.getChildren().addAll(buttonWrapper, bubble);
+            container.getChildren().addAll(spacer, buttonWrapper, bubble);
         } else {
-            container.getChildren().add(bubble);
+            container.getChildren().addAll(spacer, bubble);
         }
     }
 
@@ -210,8 +177,7 @@ public class GptController implements Initializable {
         ImageView avatarView = createAvatarView();
 
         Label nameLabel = new Label(ASSISTANT_NAME);
-        nameLabel.setStyle(STYLE_ASSISTANT_NAME);
-        VBox.setMargin(nameLabel, new Insets(0, 0, 4, 0));
+        nameLabel.getStyleClass().add("assistant-name"); // Use style class
 
         VBox nameAndBubbleVbox = new VBox(nameLabel, bubble);
         nameAndBubbleVbox.setAlignment(Pos.TOP_LEFT);
@@ -221,7 +187,6 @@ public class GptController implements Initializable {
         if (message.isDeletable()) {
             JFXButton deleteButton = createDeleteButton(message.getId());
             HBox buttonWrapper = new HBox(deleteButton);
-            // **【修改】将按钮垂直对齐方式改为底部**
             buttonWrapper.setAlignment(Pos.BOTTOM_LEFT);
             buttonWrapper.setPadding(new Insets(0, 0, 0, 5));
             container.getChildren().add(buttonWrapper);
@@ -233,39 +198,24 @@ public class GptController implements Initializable {
         container.getChildren().add(bubble);
     }
 
-
     private TextFlow createMessageBubble(GptViewModel.Message message) {
         Text textNode = new Text();
         textNode.textProperty().bind(message.streamingContentProperty());
+        textNode.getStyleClass().add("text"); // Apply .text style from CSS
 
         TextFlow textFlow = new TextFlow(textNode);
-        textFlow.setPadding(BUBBLE_PADDING);
-        textFlow.setMaxWidth(chatDisplayArea.getWidth() * MESSAGE_MAX_WIDTH_PERCENT);
-        textFlow.setMinWidth(MESSAGE_MIN_WIDTH);
-
-        DropShadow dropShadow = new DropShadow();
-        dropShadow.setRadius(5.0);
-        dropShadow.setOffsetX(2.0);
-        dropShadow.setOffsetY(2.0);
-        dropShadow.setColor(Color.color(0, 0, 0, 0.2));
-
+        textFlow.getStyleClass().add("chat-bubble");
 
         switch (message.getSender()) {
             case "user":
-                textNode.setStyle(STYLE_USER_TEXT);
-                textFlow.setStyle(STYLE_USER_BUBBLE);
-                textFlow.setEffect(dropShadow);
+                textFlow.getStyleClass().add("user-bubble");
                 break;
             case "model":
             case "assistant":
-                textNode.setStyle(STYLE_ASSISTANT_TEXT);
-                textFlow.setStyle(STYLE_ASSISTANT_BUBBLE);
-                textFlow.setEffect(dropShadow);
+                textFlow.getStyleClass().add("gpt-bubble");
                 break;
             default: // "system" messages
-                textNode.setStyle(STYLE_SYSTEM_TEXT);
-                textFlow.setStyle(STYLE_SYSTEM_BUBBLE);
-                textFlow.setPadding(new Insets(0));
+                textFlow.getStyleClass().add("system-bubble");
                 break;
         }
         return textFlow;
@@ -273,13 +223,17 @@ public class GptController implements Initializable {
 
     private JFXButton createDeleteButton(UUID messageId) {
         JFXButton deleteButton = new JFXButton("×");
-        deleteButton.setStyle(STYLE_MESSAGE_DELETE_BUTTON);
-        // **【修改】移除凸起效果/阴影**
-        // deleteButton.setButtonType(JFXButton.ButtonType.RAISED);
+        deleteButton.getStyleClass().add("delete-button"); // Use style class
+
+        // Create a circular clip for the button
+        Circle clip = new Circle(11); // Radius is half the button's size (22px / 2)
+        clip.setCenterX(11);
+        clip.setCenterY(11);
+        deleteButton.setClip(clip);
+
         deleteButton.setOnAction(event -> viewModel.deleteMessage(messageId));
         return deleteButton;
     }
-
 
     private void removeMessageFromDisplay(UUID messageIdToDelete) {
         Platform.runLater(() -> {
@@ -292,7 +246,7 @@ public class GptController implements Initializable {
         });
     }
 
-    // --- 辅助方法 ---
+    // --- Helper Methods ---
 
     private void loadAvatarImage() {
         try {
@@ -317,7 +271,6 @@ public class GptController implements Initializable {
         return imageView;
     }
 
-
     // --- Inner Class for Chat History Cell ---
 
     private static class ChatHistoryCell extends JFXListCell<ChatSession.ChatSessionSummary> {
@@ -327,6 +280,7 @@ public class GptController implements Initializable {
         private final Region spacer = new Region();
         private final GptViewModel viewModel;
 
+        
         public ChatHistoryCell(GptViewModel viewModel) {
             super();
             this.viewModel = viewModel;
@@ -336,9 +290,13 @@ public class GptController implements Initializable {
             HBox.setHgrow(spacer, Priority.ALWAYS);
             hbox.getChildren().addAll(label, spacer, deleteButton);
 
-            deleteButton.setStyle(STYLE_HISTORY_DELETE_BUTTON);
-            // **【修改】移除凸起效果/阴影**
-            // deleteButton.setButtonType(JFXButton.ButtonType.RAISED);
+            deleteButton.getStyleClass().add("delete-button"); // Use style class
+
+            // Create a circular clip for the button
+            Circle clip = new Circle(11); // Radius is half the button's size (22px / 2)
+            clip.setCenterX(11);
+            clip.setCenterY(11);
+            deleteButton.setClip(clip);
         }
 
         @Override

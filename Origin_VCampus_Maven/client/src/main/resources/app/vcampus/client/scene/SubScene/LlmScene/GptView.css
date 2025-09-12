@@ -29,27 +29,48 @@
 .history-list-view .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: #2c3e50;
-    -fx-font-size: 14px;
-    -fx-padding: 12px;
+    -fx-font-size: 15px; /* Increased font size */
+    -fx-padding: 14px;
     -fx-border-color: transparent;
     -fx-background-insets: 0;
 }
 
 .history-list-view .list-cell:filled:hover {
     -fx-background-color: #E9EDF0;
-    -fx-background-radius: 6px;
+    -fx-background-radius: 8px;
 }
 
 .history-list-view .list-cell:filled:selected {
     -fx-background-color: #607830; /* SEU-Green */
     -fx-text-fill: white;
-    -fx-background-radius: 6px;
+    -fx-background-radius: 8px;
 }
+
+/* --- Delete 'x' Button in History --- */
+.delete-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 50em; /* Make it a circle */
+    -fx-text-fill: #95a5a6; /* A muted gray for the 'x' */
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 0; /* Reset padding for size-based centering */
+    /* Set size to match a line of text */
+    -fx-min-width: 22px;
+    -fx-max-width: 22px;
+    -fx-min-height: 22px;
+    -fx-max-height: 22px;
+}
+
+.delete-button:hover {
+    -fx-background-color: #E9EDF0; /* Same as list hover */
+    -fx-text-fill: #e74c3c; /* A soft red on hover */
+}
+
 
 .new-chat-button {
     -fx-background-color: #607830; /* SEU-Green */
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px; /* Increased font size */
     -fx-font-weight: bold;
     -fx-background-radius: 8px;
     -fx-padding: 16px;
@@ -79,11 +100,12 @@
 /* --- Chat Bubbles --- */
 
 .chat-bubble {
-    -fx-padding: 12px 16px;
-    -fx-background-radius: 12px;
+    -fx-padding: 14px 18px; /* Increased padding */
+    -fx-background-radius: 8px; /* Unified corner radius */
     -fx-max-width: 70%;
     -fx-wrap-text: true;
     -fx-font-size: 15px; /* Unified content font size */
+    -fx-effect: null; /* Ensure no shadow */
 }
 
 .chat-bubble .text {
@@ -101,7 +123,10 @@
 
 /* GPT's message bubble */
 .gpt-bubble {
-    -fx-background-color: #E9EDF0; /* Light gray for GPT response */
+    -fx-background-color: #FFFFFF; /* White background */
+    -fx-border-width: 1px;
+    -fx-border-color: #DDE1E5; /* Subtle border for flat design */
+    -fx-border-radius: 8px; /* Match background radius */
 }
 
 .gpt-bubble .text {
@@ -134,7 +159,7 @@
 .send-button {
     -fx-background-color: #607830; /* SEU-Green */
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px; /* Increased font size */
     -fx-font-weight: bold;
     -fx-background-radius: 8px;
     -fx-min-height: 50px;
