@@ -42,6 +42,7 @@ Main {
         router.addController(TeachingAffairsController.class);
         router.addController(FinanceController.class);
         router.addController(AdminController.class);
+        router.addController(GptController.class);
 
         // 读取数据库用户名 & 密码
         Console console = System.console();

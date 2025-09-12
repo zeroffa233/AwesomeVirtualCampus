@@ -1,13 +1,14 @@
 package app.vcampus.client.scene;
 
-import app.vcampus.client.util.ChatSession;
-import app.vcampus.client.util.ChatSession.ChatSessionSummary;
+import app.vcampus.server.utility.ChatSession;
+import app.vcampus.server.utility.ChatSession.ChatSessionSummary;
 import app.vcampus.client.viewmodel.GptViewModel;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextArea;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -19,10 +20,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
@@ -40,6 +38,9 @@ import java.util.*;
  * Connects the view (FXML) with the GptViewModel.
  */
 public class GptController implements Initializable {
+
+    @FXML private AnchorPane rootPane;
+
 
     // --- FXML UI Elements ---
     @FXML private ScrollPane chatScrollPane;
@@ -64,30 +65,20 @@ public class GptController implements Initializable {
 
 
     // --- CSS Style Constants ---
-    private static final String GREEN = "#4EB052";
-    private static final String ASSISTANT_COLOR_GRAY = "#F5F5F5";
+    private static final String GREEN = "#607830DE";
+    private static final String ASSISTANT_COLOR_GRAY = "#F5F5F5DE";
 
-    private static final String STYLE_MESSAGE_BUBBLE = "-fx-border-radius: 15px; -fx-background-radius: 15px;";
+    private static final String STYLE_MESSAGE_BUBBLE = "-fx-border-radius: 6px; -fx-background-radius: 6px;";
     private static final String STYLE_USER_BUBBLE = STYLE_MESSAGE_BUBBLE + "-fx-background-color: " + GREEN + ";";
     private static final String STYLE_ASSISTANT_BUBBLE = STYLE_MESSAGE_BUBBLE + "-fx-background-color: " + ASSISTANT_COLOR_GRAY + ";";
     private static final String STYLE_SYSTEM_BUBBLE = "-fx-background-color: transparent;";
 
-    private static final String STYLE_USER_TEXT = "-fx-fill: white;";
+    private static final String STYLE_USER_TEXT = "-fx-fill: #FFFFFFDE;";
     private static final String STYLE_ASSISTANT_TEXT = "-fx-fill: black;";
     private static final String STYLE_SYSTEM_TEXT = "-fx-fill: gray; -fx-font-style: italic;";
-    private static final String STYLE_ASSISTANT_NAME = "-fx-font-size: 10px; -fx-text-fill: #888888;";
+    private static final String STYLE_ASSISTANT_NAME = "-fx-font-size: 15px; -fx-text-fill: #888888;";
 
-    // **【修改】减小删除按钮尺寸**
-    private static final String STYLE_MESSAGE_DELETE_BUTTON =
-            "-fx-background-color: #ff3b30;" + // iOS red
-                    "-fx-text-fill: white;" +
-                    "-fx-font-weight: bold;" +
-                    "-fx-padding: 0;" +
-                    "-fx-min-width: 15px; -fx-max-width: 15px;" +
-                    "-fx-min-height: 15px; -fx-max-height: 15px;" +
-                    "-fx-background-radius: 9;" +
-                    "-fx-border-radius: 9;";
-    private static final String STYLE_HISTORY_DELETE_BUTTON = STYLE_MESSAGE_DELETE_BUTTON;
+    
 
     // --- Initialization ---
 
@@ -131,6 +122,25 @@ public class GptController implements Initializable {
     }
 
     private void setupListeners() {
+        // Listener to sync the UI selection with the ViewModel's current session
+        viewModel.currentSessionProperty().addListener((obs, oldSession, newSession) -> {
+            Platform.runLater(() -> {
+                if (newSession == null) {
+                    chatHistoryListView.getSelectionModel().clearSelection();
+                } else {
+                    chatHistoryListView.getItems().stream()
+                            .filter(summary -> summary.getId().equals(newSession.getId()))
+                            .findFirst()
+                            .ifPresent(summaryToSelect -> {
+                                if (!summaryToSelect.equals(chatHistoryListView.getSelectionModel().getSelectedItem())) {
+                                    chatHistoryListView.getSelectionModel().select(summaryToSelect);
+                                    chatHistoryListView.scrollTo(summaryToSelect); // Scroll to the selected item
+                                }
+                            });
+                }
+            });
+        });
+
         viewModel.getChatMessages().addListener((javafx.collections.ListChangeListener.Change<? extends GptViewModel.Message> change) -> {
             while (change.next()) {
                 if (change.wasRemoved()) {
@@ -146,6 +156,13 @@ public class GptController implements Initializable {
             if (event.getCode() == KeyCode.ENTER && event.isControlDown()) {
                 viewModel.sendMessage();
                 event.consume();
+            }
+        });
+        rootPane.sceneProperty().addListener((sceneObs, oldScene, newScene) -> {
+            if (newScene==null){
+                System.out.println("Quiting Gpt, Saving Context");
+                //TODO fix net io
+                //viewModel.saveData();
             }
         });
     }
@@ -273,9 +290,12 @@ public class GptController implements Initializable {
 
     private JFXButton createDeleteButton(UUID messageId) {
         JFXButton deleteButton = new JFXButton("×");
-        deleteButton.setStyle(STYLE_MESSAGE_DELETE_BUTTON);
-        // **【修改】移除凸起效果/阴影**
-        // deleteButton.setButtonType(JFXButton.ButtonType.RAISED);
+        deleteButton.getStyleClass().add("delete-button");
+
+        // Create a circular clip for the button
+        Circle clip = new Circle(11, 11, 11);
+        deleteButton.setClip(clip);
+
         deleteButton.setOnAction(event -> viewModel.deleteMessage(messageId));
         return deleteButton;
     }
@@ -336,9 +356,11 @@ public class GptController implements Initializable {
             HBox.setHgrow(spacer, Priority.ALWAYS);
             hbox.getChildren().addAll(label, spacer, deleteButton);
 
-            deleteButton.setStyle(STYLE_HISTORY_DELETE_BUTTON);
-            // **【修改】移除凸起效果/阴影**
-            // deleteButton.setButtonType(JFXButton.ButtonType.RAISED);
+            deleteButton.getStyleClass().add("delete-button");
+
+            // Create a circular clip for the button
+            Circle clip = new Circle(11, 11, 11);
+            deleteButton.setClip(clip);
         }
 
         @Override

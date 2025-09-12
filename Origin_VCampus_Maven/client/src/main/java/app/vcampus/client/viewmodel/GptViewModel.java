@@ -1,17 +1,15 @@
 package app.vcampus.client.viewmodel;
 
 import app.vcampus.client.gateway.GptClient;
-import app.vcampus.client.util.ChatSession;
-import app.vcampus.client.util.ChatSession.ChatSessionSummary;
-import app.vcampus.client.util.MessageEntry;
+import app.vcampus.server.utility.ChatSession;
+import app.vcampus.server.utility.ChatSession.ChatSessionSummary;
+import app.vcampus.server.utility.MessageEntry;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.json.JSONObject;
+import java.util.Comparator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -29,6 +27,7 @@ public class GptViewModel {
     private final ObservableList<Message> chatMessages = FXCollections.observableArrayList();
     private final BooleanProperty sendButtonDisabled = new SimpleBooleanProperty(false);
     private final ObservableList<ChatSessionSummary> chatHistory = FXCollections.observableArrayList();
+    private final ObjectProperty<ChatSession> currentSessionProperty = new SimpleObjectProperty<>();
 
     // API related constants
     private final String WELCOME_MESSAGE = "你好！我是AI助手，有什么可以帮你的吗？";
@@ -39,7 +38,6 @@ public class GptViewModel {
 
     // Data Gateway
     private final GptClient gptClient = GptClient.getInstance();
-    private ChatSession currentSession;
     private UUID currentStreamingMessageId;
 
 
@@ -53,29 +51,18 @@ public class GptViewModel {
         }
     }
 
-    /**
-     * Deletes a session from the gateway and updates the UI.
-     * If the deleted session is the one currently being viewed, it creates a new session.
-     *
-     * @param sessionIdToDelete The UUID of the session to delete.
-     */
     public void deleteSession(UUID sessionIdToDelete) {
         if (sessionIdToDelete == null) return;
 
-        boolean wasActiveSession = currentSession != null && currentSession.getId().equals(sessionIdToDelete);
+        boolean wasActiveSession = currentSessionProperty.get() != null && currentSessionProperty.get().getId().equals(sessionIdToDelete);
 
-        // 1. Delete from the data source
         gptClient.deleteChatSession(sessionIdToDelete);
 
-        // 2. Check if the deleted session was the active one
         if (wasActiveSession) {
-            // [FIX] Set currentSession to null BEFORE creating a new one.
-            // This prevents createNewSession() from saving the session we just deleted.
-            currentSession = null;
+            currentSessionProperty.set(null);
             createNewSession();
         }
 
-        // 3. Refresh the list of summaries in the UI
         loadChatHistorySummaries();
     }
 
@@ -83,35 +70,38 @@ public class GptViewModel {
     public StringProperty userInputProperty() { return userInput; }
     public ObservableList<Message> getChatMessages() { return chatMessages; }
     public BooleanProperty sendButtonDisabledProperty() { return sendButtonDisabled; }
-    public ObservableList<ChatSessionSummary> getChatHistory() { return chatHistory; }
+    public ObservableList<app.vcampus.server.utility.ChatSession.ChatSessionSummary> getChatHistory() { return chatHistory; }
+    public ReadOnlyObjectProperty<ChatSession> currentSessionProperty() { return currentSessionProperty; }
     // #endregion
 
     // #region Session Management Core Logic
     public void createNewSession() {
-        if (currentSession != null && currentSession.getMessageHistory().size() > 1) {
+        if (currentSessionProperty.get() != null && currentSessionProperty.get().getMessageHistory().size() > 1) {
             saveCurrentSession();
         }
 
-        currentSession = new ChatSession(UUID.randomUUID());
-        currentSession.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", SYSTEM_PROMPT)));
+        ChatSession newSession = new ChatSession(UUID.randomUUID());
+        newSession.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", SYSTEM_PROMPT)));
+        currentSessionProperty.set(newSession);
 
         rebuildChatDisplay();
         addMessage(new Message(UUID.randomUUID(), "system", WELCOME_MESSAGE, false));
-        loadChatHistorySummaries(); // Refresh list to show the new chat if user types and saves
+        loadChatHistorySummaries();
     }
 
     public void loadSession(UUID sessionId) {
-        if (currentSession != null && currentSession.getId().equals(sessionId)) {
+        if (currentSessionProperty.get() != null && currentSessionProperty.get().getId().equals(sessionId)) {
             return;
         }
-        if (currentSession != null && currentSession.getMessageHistory().size() > 1) {
+        if (currentSessionProperty.get() != null && currentSessionProperty.get().getMessageHistory().size() > 1) {
             saveCurrentSession();
         }
 
         try {
+            // 加载新会话
             ChatSession loadedSession = gptClient.loadChatSession(sessionId);
             if (loadedSession != null) {
-                currentSession = loadedSession;
+                currentSessionProperty.set(loadedSession);
                 rebuildChatDisplay();
             } else {
                 throw new Exception("Session not found in client.");
@@ -124,25 +114,29 @@ public class GptViewModel {
     }
 
     public void saveCurrentSession() {
-        if (currentSession == null || currentSession.getMessageHistory().size() <= 1) {
+        ChatSession session = currentSessionProperty.get();
+        if (session == null || session.getMessageHistory().size() <= 1) {
             return; // Don't save empty sessions
         }
-        currentSession.updateTitle();
-        currentSession.setLastModified(System.currentTimeMillis());
-        gptClient.saveChatSession(currentSession);
+        session.updateTitle();
+        session.setLastModified(System.currentTimeMillis());
+        gptClient.saveChatSession(session);
         loadChatHistorySummaries(); // Refresh the list with updated title/order
     }
 
     private void loadChatHistorySummaries() {
         Platform.runLater(() -> {
-            chatHistory.setAll(gptClient.getChatHistorySummaries());
+            List<ChatSessionSummary> summaries = gptClient.getChatHistorySummaries();
+            // 【修改】按 lastModified 时间戳进行降序（最新优先）排序
+            summaries.sort(Comparator.comparing(ChatSession.ChatSessionSummary::getLastModified).reversed());
+            chatHistory.setAll(summaries);
         });
     }
 
     private void rebuildChatDisplay() {
         Platform.runLater(() -> {
             chatMessages.clear();
-            List<MessageEntry> history = currentSession.getMessageHistory();
+            List<MessageEntry> history = currentSessionProperty.get().getMessageHistory();
             for (MessageEntry entry : history) {
                 JSONObject msgJson = entry.getMessage();
                 String role = msgJson.getString("role");
@@ -163,7 +157,7 @@ public class GptViewModel {
 
         UUID userMessageId = UUID.randomUUID();
         JSONObject userMessageJson = new JSONObject().put("role", "user").put("content", userMessageContent);
-        currentSession.addMessage(new MessageEntry(userMessageId, userMessageJson));
+        currentSessionProperty.get().addMessage(new MessageEntry(userMessageId, userMessageJson));
         addMessage(new Message(userMessageId, "user", userMessageContent, true));
         userInput.set("");
 
@@ -173,7 +167,7 @@ public class GptViewModel {
 
         new Thread(() -> {
             try {
-                List<JSONObject> apiMessages = currentSession.getMessageHistory().stream()
+                List<JSONObject> apiMessages = currentSessionProperty.get().getMessageHistory().stream()
                         .map(MessageEntry::getMessage)
                         .collect(Collectors.toList());
                 callApi(apiMessages);
@@ -189,7 +183,7 @@ public class GptViewModel {
 
     public void deleteMessage(UUID messageIdToDelete) {
         if (messageIdToDelete == null) return;
-        currentSession.removeMessage(messageIdToDelete);
+        currentSessionProperty.get().removeMessage(messageIdToDelete);
         chatMessages.removeIf(message -> message.getId().equals(messageIdToDelete));
     }
 
@@ -243,7 +237,7 @@ public class GptViewModel {
 
         if (fullModelResponse.length() > 0) {
             JSONObject modelMessageJson = new JSONObject().put("role", "assistant").put("content", fullModelResponse.toString());
-            currentSession.addMessage(new MessageEntry(currentStreamingMessageId, modelMessageJson));
+            currentSessionProperty.get().addMessage(new MessageEntry(currentStreamingMessageId, modelMessageJson));
             saveCurrentSession();
         }
     }

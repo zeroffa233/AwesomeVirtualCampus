@@ -85,6 +85,12 @@
             <version>5.9.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20250517</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

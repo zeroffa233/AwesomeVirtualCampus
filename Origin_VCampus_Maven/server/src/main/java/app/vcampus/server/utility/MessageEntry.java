@@ -1,4 +1,4 @@
-package app.vcampus.client.util;
+package app.vcampus.server.utility;
 
 import org.json.JSONObject;
 import java.util.UUID;

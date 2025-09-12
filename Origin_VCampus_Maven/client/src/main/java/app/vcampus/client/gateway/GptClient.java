@@ -1,27 +1,36 @@
 package app.vcampus.client.gateway;
 
-import app.vcampus.client.util.ChatSession;
-import app.vcampus.client.util.ChatSession.ChatSessionSummary;
-import app.vcampus.client.util.MessageEntry;
+import app.vcampus.client.net.NettyHandler;
+import app.vcampus.server.utility.ChatSession;
+import app.vcampus.server.utility.ChatSession.ChatSessionSummary;
+import app.vcampus.server.utility.MessageEntry;
+import com.google.gson.reflect.TypeToken;
 import org.json.JSONObject;
+import com.google.gson.Gson;
+import app.vcampus.server.utility.Request;
+import app.vcampus.server.utility.Response;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-//TODO real net io
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * GptClient provides a gateway to access GPT chat history.
  * Holding chat records in memory as a cache.
  */
+@Slf4j
 public class GptClient extends BaseClient {
-
-    private static final GptClient instance = new GptClient();
+    //TODO find the real handler
+    private static final GptClient instance = new GptClient(null);
 
     // In-memory store to simulate a remote database
-    private final Map<UUID, ChatSession> inMemoryStore = new ConcurrentHashMap<>();
+    private Map<UUID, ChatSession> inMemoryStore = new ConcurrentHashMap<>();
+    private NettyHandler handler;
 
-    private GptClient() {
-        // Pre-populate with some mock data for demonstration purposes
+    private GptClient(NettyHandler handler) {
+        this.handler = handler;
         initializeData();
     }
 
@@ -76,16 +85,50 @@ public class GptClient extends BaseClient {
     }
 
     private void initializeData() {
-        // TODO： make it real
+        // TODO realIO
+//        Gson gs = new Gson();
+//        Request request = new Request();
+//        request.setUri("gpt/pull");
+//        request.setParams(Map.of());
+//        Response response;
+//        String serStorage;
+//        try {
+//            response = BaseClient.sendRequest(handler, request);
+//            serStorage = ((Map<String, String>) response.getData()).get("context");
+//        } catch (InterruptedException e) {
+//            log.warn("Fail to pull context", e);
+//            return;
+//        }
+//
+//        Type mapType = new TypeToken<Map<UUID, ChatSession>>() {
+//        }.getType();
+//        inMemoryStore = gs.fromJson(serStorage, mapType);
+        //Mock for now
         UUID session2Id = UUID.fromString("fedcba98-7654-3210-fedc-ba9876543210");
         ChatSession session2 = new ChatSession(session2Id);
         session2.setTitle("规划一次旅行");
         session2.setLastModified(System.currentTimeMillis()); // Make it the newest
-        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", "你是一个旅行规划助手。")));
-        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "user").put("content", "我想去云南玩，有什么推荐吗？")));
-        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "assistant").put("content", "云南的旅游方案...")));
+        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", "你叫梁云龙，是梅园4C430宿舍的皇帝。")));
+        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "user").put("content", "我想在430里买一张床")));
+        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "assistant").put("content", "哈哈哈...")));
         inMemoryStore.put(session2Id, session2);
 
         System.out.println("[GptClient] Mock data initialized with " + inMemoryStore.size() + " sessions.");
     }
+
+    public void saveData() {
+        Gson gs = new Gson();
+        Request request = new Request();
+        request.setUri("gpt/push");
+        request.setParams(Map.of("context", gs.toJson(inMemoryStore)));
+        try {
+            Response response = BaseClient.sendRequest(handler, request);
+            if (!response.getStatus().equals("success")){throw new InterruptedException();}
+        } catch (InterruptedException e) {
+            log.warn("Fail to push context");
+        }
+    }
 }
+
+
+

@@ -1,7 +1,4 @@
-package app.vcampus.client.util;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+package app.vcampus.server.utility;
 
 import java.util.ArrayList;
 import java.util.List;

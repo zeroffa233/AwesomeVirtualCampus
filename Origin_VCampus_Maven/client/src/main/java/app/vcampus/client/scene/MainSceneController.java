@@ -9,6 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Paint;
 // import javafx.stage.Stage; // Stage 相关的导入已移除
 import javafx.util.Duration;
 
@@ -54,13 +55,52 @@ public class MainSceneController implements Initializable {
             sideBarController.setMainSceneController(this);
         }
 
+        // Programmatically set the ripple color to ensure it overrides any default styles.
+        menuButton.setRipplerFill(Paint.valueOf("#607830DE"));
+
     }
+
+//    // public void setStage(Stage stage) { ... } // 此方法已根据您的要求被完全移除
+//
+//    public void loadSubScene(String fxmlPath) {
+//        try {
+//            Node view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxmlPath)));
+//            FadeTransition fadeOut = new FadeTransition(Duration.millis(150), contentPane);
+//            fadeOut.setFromValue(1.0);
+//            fadeOut.setToValue(0.0);
+//            fadeOut.setOnFinished(event -> {
+//                contentPane.getChildren().setAll(view);
+//                FadeTransition fadeIn = new FadeTransition(Duration.millis(150), contentPane);
+//                fadeIn.setFromValue(0.0);
+//                fadeIn.setToValue(1.0);
+//                fadeIn.play();
+//            });
+//            fadeOut.play();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+// 共享的 ViewModel（应用级或 MainScene 级）
+    private final app.vcampus.client.viewmodel.TeachingAffairsViewModel sharedVm = new app.vcampus.client.viewmodel.TeachingAffairsViewModel();
 
     // public void setStage(Stage stage) { ... } // 此方法已根据您的要求被完全移除
 
     public void loadSubScene(String fxmlPath) {
         try {
-            Node view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxmlPath)));
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(fxmlPath)));
+            Node view = loader.load();
+            // 在这里拿到 controller 并尝试注入 sharedVm（如果 controller 支持）
+            Object controller = loader.getController();
+            if (controller != null) {
+                // 注入常见需要 ViewModel 的控制器
+                if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) controller).setViewModel(sharedVm);
+                } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) controller).setViewModel(sharedVm);
+                }
+                // 如果还有其它需要注入的 controller，按需在这里加入 instanceof 分支
+            }
+
             FadeTransition fadeOut = new FadeTransition(Duration.millis(150), contentPane);
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0.0);

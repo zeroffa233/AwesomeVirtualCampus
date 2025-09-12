@@ -1,7 +1,7 @@
 package app.vcampus.client.viewmodel;
 
 import app.vcampus.client.gateway.FinanceClient;
-import app.vcampus.client.util.DisplayableTransaction;
+import app.vcampus.server.utility.DisplayableTransaction;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -33,8 +33,8 @@ public class PersonalFinanceViewModel {
         // 建议在后台线程中执行网络请求
         new Thread(() -> {
             try {
-                double fetchedBalance = FinanceClient.getBalance();
-                var fetchedTransactions = FinanceClient.getTransactionHistory();
+                double fetchedBalance = FinanceClient.getBalance(null);
+                var fetchedTransactions = FinanceClient.getTransactionHistory(null);
 
                 // 更新UI需要在JavaFX应用线程中执行
                 Platform.runLater(() -> {

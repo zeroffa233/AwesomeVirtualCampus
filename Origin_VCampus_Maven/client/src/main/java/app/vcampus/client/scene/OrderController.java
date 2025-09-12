@@ -1,9 +1,8 @@
 package app.vcampus.client.scene;
 
-import app.vcampus.client.util.ShopItem;
-import app.vcampus.client.util.ShopTransactionRecord;
+import app.vcampus.server.utility.ShopItem;
+import app.vcampus.server.utility.ShopTransactionRecord;
 import javafx.fxml.FXML;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

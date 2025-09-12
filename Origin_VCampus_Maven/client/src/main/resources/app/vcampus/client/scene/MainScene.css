@@ -27,8 +27,6 @@ SEU-Green: #607830DE
     /* --- 关键属性 --- */
     /* JFoenix专属：这个属性定义了点击时“波纹”动效的颜色。 */
     /* 要修改点击动效的颜色，请直接修改下面的颜色值。 */
-    /*-jfx-rippler-fill: #4CAF50 !important;*/
-    -fx-background-color: transparent; /* Default transparent background */
     -fx-background-radius: 6px; /* A slightly more pronounced radius */
     -fx-border-radius: 6px;     /* Keep border and background radius in sync */
     -fx-text-fill: #333333;
@@ -41,12 +39,12 @@ SEU-Green: #607830DE
 }
 
 .menu-button:hover {
-    /*-fx-background-color: #f0f0f0; !* Light gray background on hover *!*/
+    -fx-background-color: #f0f0f0!important;
 }
 
 .menu-button:pressed {
     /*-fx-background-color: #4CAF50;*/
-    -fx-background-color: #607830DE; /* Solid accent color background */
+    -fx-background-color: #f0f0f0!important; /* Solid accent color background */
 }
 
 /* --- Secondary Menu Button Styling (Ultimate Version) --- */
