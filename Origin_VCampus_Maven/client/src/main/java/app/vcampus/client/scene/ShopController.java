@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javafx.scene.text.Text;
-import app.vcampus.client.util.ShopItem;
-import app.vcampus.client.util.ShopTransactionRecord;
+import app.vcampus.server.utility.ShopItem;
+import app.vcampus.server.utility.ShopTransactionRecord;
 import javafx.scene.shape.Rectangle;
 
 //TODO : 模糊搜索优化

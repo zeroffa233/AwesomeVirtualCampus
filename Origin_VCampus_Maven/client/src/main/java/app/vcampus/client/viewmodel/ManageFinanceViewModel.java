@@ -1,7 +1,7 @@
 package app.vcampus.client.viewmodel;
 
 import app.vcampus.client.gateway.FinanceClient;
-import app.vcampus.client.util.CardInfo;
+import app.vcampus.server.utility.CardInfo;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 

@@ -1,6 +1,4 @@
-package app.vcampus.client.util;
-
-import app.vcampus.client.util.ShopItem;
+package app.vcampus.server.utility;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -1,9 +1,9 @@
 package app.vcampus.client.viewmodel;
 
 import app.vcampus.client.gateway.GptClient;
-import app.vcampus.client.util.ChatSession;
-import app.vcampus.client.util.ChatSession.ChatSessionSummary;
-import app.vcampus.client.util.MessageEntry;
+import app.vcampus.server.utility.ChatSession;
+import app.vcampus.server.utility.ChatSession.ChatSessionSummary;
+import app.vcampus.server.utility.MessageEntry;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -70,7 +70,7 @@ public class GptViewModel {
     public StringProperty userInputProperty() { return userInput; }
     public ObservableList<Message> getChatMessages() { return chatMessages; }
     public BooleanProperty sendButtonDisabledProperty() { return sendButtonDisabled; }
-    public ObservableList<ChatSessionSummary> getChatHistory() { return chatHistory; }
+    public ObservableList<app.vcampus.server.utility.ChatSession.ChatSessionSummary> getChatHistory() { return chatHistory; }
     public ReadOnlyObjectProperty<ChatSession> currentSessionProperty() { return currentSessionProperty; }
     // #endregion
 

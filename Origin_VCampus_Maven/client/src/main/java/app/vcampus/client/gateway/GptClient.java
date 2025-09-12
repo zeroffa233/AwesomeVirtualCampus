@@ -1,18 +1,16 @@
 package app.vcampus.client.gateway;
 
-import app.vcampus.client.net.NettyClient;
 import app.vcampus.client.net.NettyHandler;
-import app.vcampus.client.util.ChatSession;
-import app.vcampus.client.util.ChatSession.ChatSessionSummary;
-import app.vcampus.client.util.MessageEntry;
-import app.vcampus.server.entity.IEntity;
-import app.vcampus.server.entity.User;
+import app.vcampus.server.utility.ChatSession;
+import app.vcampus.server.utility.ChatSession.ChatSessionSummary;
+import app.vcampus.server.utility.MessageEntry;
+import com.google.gson.reflect.TypeToken;
 import org.json.JSONObject;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
 import app.vcampus.server.utility.Request;
 import app.vcampus.server.utility.Response;
+
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -29,10 +27,11 @@ public class GptClient extends BaseClient {
 
     // In-memory store to simulate a remote database
     private Map<UUID, ChatSession> inMemoryStore = new ConcurrentHashMap<>();
+    private NettyHandler handler;
 
     private GptClient(NettyHandler handler) {
-        // Pre-populate with some mock data for demonstration purposes
-        initializeData(handler);
+        this.handler = handler;
+        initializeData();
     }
 
     public static GptClient getInstance() {
@@ -85,20 +84,22 @@ public class GptClient extends BaseClient {
         inMemoryStore.remove(sessionId);
     }
 
-    private void initializeData(NettyHandler handler) {
+    private void initializeData() {
         // TODO realIO
 //        Gson gs = new Gson();
 //        Request request = new Request();
 //        request.setUri("gpt/pull");
 //        request.setParams(Map.of());
 //        Response response;
+//        String serStorage;
 //        try {
 //            response = BaseClient.sendRequest(handler, request);
+//            serStorage = ((Map<String, String>) response.getData()).get("context");
 //        } catch (InterruptedException e) {
 //            log.warn("Fail to pull context", e);
 //            return;
 //        }
-//        String serStorage = ((Map<String, String>) response.getData()).get("context");
+//
 //        Type mapType = new TypeToken<Map<UUID, ChatSession>>() {
 //        }.getType();
 //        inMemoryStore = gs.fromJson(serStorage, mapType);
@@ -115,10 +116,10 @@ public class GptClient extends BaseClient {
         System.out.println("[GptClient] Mock data initialized with " + inMemoryStore.size() + " sessions.");
     }
 
-    private void saveData(NettyHandler handler) {
+    public void saveData() {
         Gson gs = new Gson();
         Request request = new Request();
-        request.setUri("gpt/pull");
+        request.setUri("gpt/push");
         request.setParams(Map.of("context", gs.toJson(inMemoryStore)));
         try {
             Response response = BaseClient.sendRequest(handler, request);

@@ -1,13 +1,14 @@
 package app.vcampus.client.scene;
 
-import app.vcampus.client.util.ChatSession;
-import app.vcampus.client.util.ChatSession.ChatSessionSummary;
+import app.vcampus.server.utility.ChatSession;
+import app.vcampus.server.utility.ChatSession.ChatSessionSummary;
 import app.vcampus.client.viewmodel.GptViewModel;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextArea;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -19,10 +20,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
@@ -40,6 +38,9 @@ import java.util.*;
  * Connects the view (FXML) with the GptViewModel.
  */
 public class GptController implements Initializable {
+
+    @FXML private AnchorPane rootPane;
+
 
     // --- FXML UI Elements ---
     @FXML private ScrollPane chatScrollPane;
@@ -155,6 +156,13 @@ public class GptController implements Initializable {
             if (event.getCode() == KeyCode.ENTER && event.isControlDown()) {
                 viewModel.sendMessage();
                 event.consume();
+            }
+        });
+        rootPane.sceneProperty().addListener((sceneObs, oldScene, newScene) -> {
+            if (newScene==null){
+                System.out.println("Quiting Gpt, Saving Context");
+                //TODO fix net io
+                //viewModel.saveData();
             }
         });
     }

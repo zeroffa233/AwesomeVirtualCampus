@@ -1,7 +1,7 @@
 package app.vcampus.client.viewmodel;
 
 import app.vcampus.client.gateway.FinanceClient;
-import app.vcampus.client.util.DisplayableTransaction;
+import app.vcampus.server.utility.DisplayableTransaction;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;

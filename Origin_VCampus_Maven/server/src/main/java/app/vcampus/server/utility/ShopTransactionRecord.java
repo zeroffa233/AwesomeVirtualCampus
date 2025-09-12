@@ -1,4 +1,4 @@
-package app.vcampus.client.util;
+package app.vcampus.server.utility;
 
 import java.util.ArrayList;
 import java.util.List;

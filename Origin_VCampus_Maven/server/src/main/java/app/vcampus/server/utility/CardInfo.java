@@ -1,4 +1,4 @@
-package app.vcampus.client.util;
+package app.vcampus.server.utility;
 
 /**
  * Represents the information of a campus card.

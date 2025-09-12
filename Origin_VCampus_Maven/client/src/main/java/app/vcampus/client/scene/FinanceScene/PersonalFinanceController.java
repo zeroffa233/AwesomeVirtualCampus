@@ -1,7 +1,7 @@
 package app.vcampus.client.scene.FinanceScene;
 
-import app.vcampus.client.util.ShopItem;
-import app.vcampus.client.util.DisplayableTransaction;
+import app.vcampus.server.utility.ShopItem;
+import app.vcampus.server.utility.DisplayableTransaction;
 import app.vcampus.client.viewmodel.PersonalFinanceViewModel;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
