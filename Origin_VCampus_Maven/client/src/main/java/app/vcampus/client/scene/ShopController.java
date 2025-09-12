@@ -107,7 +107,7 @@ public class ShopController {
 
     private void loadData() {
         // Simulating the items from the image
-        allItems.add(new ShopItem("正版 黑暗之魂官方艺术设定集 全套1-2-3册 DARK SOULS", 249.00, "/images/500.png"));
+        allItems.add(new ShopItem("正版 黑暗之魂官方艺术设定集 全套1-2-3册 DARK SOULS", 249.00, "/images/DARKSOULS.png"));
         allItems.add(new ShopItem("Sony/索尼 ECM-G1 枪型麦克风 大尺寸收音单元 清晰人声", 999.00, "/images/500.png"));
         allItems.add(new ShopItem("Apple/苹果 13 英寸 MacBook Air Apple M2 芯片 8 核中央处理器", 12699.00, "/images/500.png"));
         allItems.add(new ShopItem("C++ Primer Plus (第6版)", 89.50, "/images/500.png"));
