@@ -91,8 +91,6 @@ public class TeachingAffairsViewModel {
                     System.out.println("[DEBUG] FakeRepository.getSelf() = " + FakeRepository.getSelf());
                     boolean ok = FakeRepository.chooseClass(teachingClassUuid);
                     System.out.println("[DEBUG] FakeRepository.chooseClass returned: " + ok);
-                    System.out.println("[DEBUG] Selections snapshot: " + FakeRepository.getUserSelectionsSnapshot());
-                    System.out.println("[DEBUG] Class counts snapshot: " + FakeRepository.getClassSelectedCountSnapshot());
 
                     // 刷新可选与已选
                     getSelectableCourses();
