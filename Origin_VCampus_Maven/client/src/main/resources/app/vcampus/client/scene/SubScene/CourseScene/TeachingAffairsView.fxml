@@ -20,7 +20,7 @@
 
             <!-- 欢迎标题 -->
             <Label fx:id="titleLabel"
-                   style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #0d47a1;" />
+                   style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #333333;" />
 
             <!-- 副标题 -->
             <Label fx:id="subtitleLabel"

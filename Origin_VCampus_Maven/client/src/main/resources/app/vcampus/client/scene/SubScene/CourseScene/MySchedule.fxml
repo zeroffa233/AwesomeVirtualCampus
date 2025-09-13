@@ -14,8 +14,7 @@
             <Pane prefHeight="18"/>
 
             <!-- 标题区域 -->
-            <VBox fx:id="titleBox" spacing="4" styleClass="page-title"
-                  alignment="CENTER"> <!-- 居中对齐 -->
+            <VBox fx:id="titleBox" spacing="4" styleClass="page-title"> <!-- 居中对齐 -->
                 <padding>
                     <Insets top="12" right="24" bottom="12" left="24"/>
                 </padding>

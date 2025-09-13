@@ -141,18 +141,6 @@
     -fx-text-fill: #ffffff;        /* White text for contrast */
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 1);
 }
-/* Page title */
-.page-heading {
-    -fx-font-size: 34px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #212121;
-    -fx-font-family: "System";
-}
-.page-caption {
-    -fx-font-size: 16px;
-    -fx-text-fill: #616161;
-}
-
 /* timetable */
 .timetable-weekday {
     -fx-font-weight: 600;
@@ -191,7 +179,7 @@
 .page-heading {
     -fx-font-size: 20px;
     -fx-font-weight: 600;
-    -fx-text-fill: #1f3a63;
+    -fx-text-fill: #333333;
     -fx-padding: 8 0 4 0;
 }
 

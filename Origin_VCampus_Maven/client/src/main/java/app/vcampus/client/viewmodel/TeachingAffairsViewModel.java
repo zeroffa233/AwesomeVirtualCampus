@@ -23,8 +23,7 @@ public class TeachingAffairsViewModel {
     //public final List<String> identity = new ArrayList<>(FakeRepository.user.roles);
     public final MyClasses myClasses = new MyClasses(executor);
 
-    // 你可以按需启用/添加教师部分实例
-    // public final MyTeachingClasses myTeachingClasses = new MyTeachingClasses(executor);
+     public final MyTeachingClasses myTeachingClasses = new MyTeachingClasses(executor);
 
     // ---------------- 学生部分 ----------------
     public class MyClasses {
@@ -118,68 +117,71 @@ public class TeachingAffairsViewModel {
         }
     }
 
-    // ---------------- 教师部分（注释，按需启用） ----------------
-//    public class MyTeachingClasses {
-//        private final ExecutorService executor;
-//        public final List<TeachingClass> myClasses = new CopyOnWriteArrayList<>();
-//
-//        private boolean inited = false;
-//
-//        public MyTeachingClasses(ExecutorService executor) {
-//            this.executor = executor;
-//        }
-//
-//        public void init() {
-//            if (inited) return;
-//            inited = true;
-//            getMyTeachingClasses();
-//        }
-//
-//        public void getMyTeachingClasses() {
-//            executor.submit(() -> {
-//                try {
-//                    List<TeachingClass> result = FakeRepository.getMyTeachingClasses();
-//                    myClasses.clear();
-//                    myClasses.addAll(result);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            });
-//        }
-//
-//        public void saveStudentList(TeachingClass teachingClass, File file) {
-//            executor.submit(() -> {
-//                try {
-//                    String encoded = FakeRepository.exportStudentList(teachingClass);
-//                    Files.write(file.toPath(), Base64.getDecoder().decode(encoded));
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            });
-//        }
-//
-//        public void gradeTemplate(TeachingClass teachingClass, File file) {
-//            executor.submit(() -> {
-//                try {
-//                    String encoded = FakeRepository.exportGradeTemplate(teachingClass);
-//                    Files.write(file.toPath(), Base64.getDecoder().decode(encoded));
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            });
-//        }
-//
-//        public void importGrade(TeachingClass teachingClass, File file) {
-//            executor.submit(() -> {
-//                try {
-//                    String encodedFile = Base64.getEncoder().encodeToString(Files.readAllBytes(file.toPath()));
-//                    FakeRepository.importGrade(teachingClass, encodedFile);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            });
-//        }
-//    }
+    public class MyTeachingClasses {
+        private final ExecutorService executor;
+        public final javafx.collections.ObservableList<TeachingClass> myClasses = javafx.collections.FXCollections.observableArrayList();
+
+        private boolean inited = false;
+
+        public MyTeachingClasses(ExecutorService executor) {
+            this.executor = executor;
+        }
+
+        public void init() {
+            if (inited) return;
+            inited = true;
+            getMyTeachingClasses();
+        }
+
+        public void getMyTeachingClasses() {
+            executor.submit(() -> {
+                try {
+                    List<TeachingClass> result = FakeRepository.getMyTeachingClasses();
+                    Platform.runLater(() -> {
+                        myClasses.setAll(result);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        // saveStudentList / gradeTemplate / importGrade 不变
+
+
+    public void saveStudentList(TeachingClass teachingClass, File file) {
+            executor.submit(() -> {
+                try {
+                    String encoded = FakeRepository.exportStudentList(teachingClass);
+                    Files.write(file.toPath(), Base64.getDecoder().decode(encoded));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        public void gradeTemplate(TeachingClass teachingClass, File file) {
+            executor.submit(() -> {
+                try {
+                    String encoded = FakeRepository.exportGradeTemplate(teachingClass);
+                    Files.write(file.toPath(), Base64.getDecoder().decode(encoded));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        public void importGrade(TeachingClass teachingClass, File file) {
+            executor.submit(() -> {
+                try {
+                    String encodedFile = Base64.getEncoder().encodeToString(Files.readAllBytes(file.toPath()));
+                    FakeRepository.importGrade(teachingClass, encodedFile);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
 
     /**
      * 可选：在程序退出时调用，停止线程池，防止进程无法结束
