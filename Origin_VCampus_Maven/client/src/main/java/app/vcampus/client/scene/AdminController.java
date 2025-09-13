@@ -1,6 +1,6 @@
 package app.vcampus.client.scene;
 
-import app.vcampus.client.model.User;
+import app.vcampus.server.utility.User;
 import app.vcampus.client.viewmodel.AdminViewModel;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXPasswordField;

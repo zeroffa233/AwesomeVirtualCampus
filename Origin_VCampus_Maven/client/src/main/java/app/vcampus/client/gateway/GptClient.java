@@ -1,6 +1,7 @@
 package app.vcampus.client.gateway;
 
 import app.vcampus.client.net.NettyHandler;
+import app.vcampus.client.repository.FakeRepository;
 import app.vcampus.server.utility.ChatSession;
 import app.vcampus.server.utility.ChatSession.ChatSessionSummary;
 import app.vcampus.server.utility.MessageEntry;
@@ -23,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GptClient extends BaseClient {
     //TODO find the real handler
-    private static final GptClient instance = new GptClient(null);
+    private static final GptClient instance = new GptClient(FakeRepository.handler);
 
     // In-memory store to simulate a remote database
     private Map<UUID, ChatSession> inMemoryStore = new ConcurrentHashMap<>();

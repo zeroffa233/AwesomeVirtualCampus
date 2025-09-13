@@ -1,4 +1,4 @@
-package app.vcampus.client.model;
+package app.vcampus.server.utility;
 
 
 import javafx.beans.property.IntegerProperty;
