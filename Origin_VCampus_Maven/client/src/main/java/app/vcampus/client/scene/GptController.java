@@ -106,12 +106,6 @@ public class GptController implements Initializable {
         viewModel.createNewSession();
     }
 
-    public void shutdown() {
-        if (viewModel != null) {
-            viewModel.saveCurrentSession();
-            System.out.println("GptController shutdown hook executed, session saved.");
-        }
-    }
 
     // --- Private Setup Methods ---
 
@@ -162,7 +156,7 @@ public class GptController implements Initializable {
             if (newScene==null){
                 System.out.println("Quiting Gpt, Saving Context");
                 //TODO fix net io
-                //viewModel.saveData();
+                viewModel.gptClient.saveData();
             }
         });
     }

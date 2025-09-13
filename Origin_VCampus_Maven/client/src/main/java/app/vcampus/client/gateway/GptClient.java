@@ -87,34 +87,40 @@ public class GptClient extends BaseClient {
 
     private void initializeData() {
         // TODO realIO
-//        Gson gs = new Gson();
-//        Request request = new Request();
-//        request.setUri("gpt/pull");
-//        request.setParams(Map.of());
-//        Response response;
-//        String serStorage;
-//        try {
-//            response = BaseClient.sendRequest(handler, request);
-//            serStorage = ((Map<String, String>) response.getData()).get("context");
-//        } catch (InterruptedException e) {
-//            log.warn("Fail to pull context", e);
-//            return;
-//        }
-//
-//        Type mapType = new TypeToken<Map<UUID, ChatSession>>() {
-//        }.getType();
-//        inMemoryStore = gs.fromJson(serStorage, mapType);
-        //Mock for now
-        UUID session2Id = UUID.fromString("fedcba98-7654-3210-fedc-ba9876543210");
-        ChatSession session2 = new ChatSession(session2Id);
-        session2.setTitle("规划一次旅行");
-        session2.setLastModified(System.currentTimeMillis()); // Make it the newest
-        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", "你叫梁云龙，是梅园4C430宿舍的皇帝。")));
-        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "user").put("content", "我想在430里买一张床")));
-        session2.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "assistant").put("content", "哈哈哈...")));
-        inMemoryStore.put(session2Id, session2);
+        Gson gs = new Gson();
+        Request request = new Request();
+        request.setUri("gpt/pull");
+        request.setParams(Map.of());
+        Response response;
+        String serStorage=null;
+        try {
+            response = BaseClient.sendRequest(handler, request);
 
-        System.out.println("[GptClient] Mock data initialized with " + inMemoryStore.size() + " sessions.");
+            // 1. 获取最外层的 Map
+            Map<String, Object> responseData = (Map<String, Object>) response.getData();
+            if (responseData != null && responseData.containsKey("ctx")) {
+                // 2. 将 "ctx" 键对应的值作为字符串获取
+                String ctxJsonString = (String) responseData.get("ctx");
+
+                // 3. 使用 Gson 将这个字符串解析成一个新的 Map
+                Type ctxMapType = new TypeToken<Map<String, Object>>() {
+                }.getType();
+                Map<String, Object> ctxData = gs.fromJson(ctxJsonString, ctxMapType);
+
+                // 4. 现在可以从解析后的 ctxData Map 中安全地获取 "context"
+                if (ctxData != null && ctxData.containsKey("context")) {
+                    serStorage = (String) ctxData.get("context");
+                }
+            }
+        } catch (InterruptedException e) {
+            log.warn("Fail to pull context", e);
+            return;
+        }
+        Type mapType = new TypeToken<Map<UUID, ChatSession>>() {
+        }.getType();
+        inMemoryStore = gs.fromJson(serStorage, mapType);
+        if (inMemoryStore==null){inMemoryStore=new HashMap<>();        }
+        System.out.println("[GptClient] initialized with " + inMemoryStore.size() + " sessions.");
     }
 
     public void saveData() {
