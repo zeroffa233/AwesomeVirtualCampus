@@ -1,6 +1,6 @@
 package app.vcampus.client.scene;
 
-import app.vcampus.client.scene.components.SearchStudentCell;
+import app.vcampus.client.scene.components.*;
 import app.vcampus.client.viewmodel.StudentStatusViewModel;
 import app.vcampus.server.entity.Student;
 import com.jfoenix.controls.JFXButton;
@@ -47,6 +47,7 @@ public class StudentStatusManagementController implements Initializable {
         // 绑定数据源并自定义 Cell（你已有 SearchStudentCell）
         searchResultsList.setItems(viewModel.getSearchedStudents());
         searchResultsList.setCellFactory(lv -> new SearchStudentCell(viewModel, true));
+
 
         // 双击条目进入编辑对话框
         searchResultsList.setOnMouseClicked(evt -> {

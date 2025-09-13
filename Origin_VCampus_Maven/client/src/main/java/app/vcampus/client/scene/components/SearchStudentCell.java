@@ -131,10 +131,23 @@ public class SearchStudentCell extends ListCell<Student> {
         schoolField.setEditable(false);
 
         // layout rows
-        HBox row1 = new HBox(8, familyField, givenField, studentNumberField);
-        HBox row2 = new HBox(8, cardNumberField, genderField, birthDateField);
-        HBox row3 = new HBox(8, birthPlaceField, politicalStatusField, statusField);
-        HBox row4 = new HBox(8, majorField, schoolField);
+        HBox row1 = new HBox(10);
+        row1.getChildren().addAll(
+                new VBox(new Label("姓"), familyField),
+                new VBox(new Label("名"), givenField),
+                new VBox(new Label("学号"), studentNumberField),
+                new VBox(new Label("一卡通"), cardNumberField),
+                new VBox(new Label("性别"), genderField),
+                new VBox(new Label("出生日期"), birthDateField)
+        );
+        HBox row2 = new HBox(10);
+        row2.getChildren().addAll(
+                new VBox(new Label("籍贯"), birthPlaceField),
+                new VBox(new Label("政治面貌"), politicalStatusField),
+                new VBox(new Label("学籍状态"), statusField),
+                new VBox(new Label("专业"), majorField),
+                new VBox(new Label("学院"), schoolField)
+        );
 
         // buttons row
         HBox buttonRow = new HBox(8);
@@ -248,7 +261,7 @@ public class SearchStudentCell extends ListCell<Student> {
 
         buttonRow.getChildren().addAll(btnSpacer, editBtn, confirmBtn, cancelBtn);
 
-        detailsBox.getChildren().addAll(row1, row2, row3, row4, buttonRow);
+        detailsBox.getChildren().addAll(row1, row2, buttonRow);
 
         setGraphic(root);
     }

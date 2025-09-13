@@ -62,8 +62,6 @@ public class ChooseClassController {
 
     @FXML
     public void initialize() {
-        headingLabel.setText("选课");
-        captionLabel.setText("选课系统");
 
     }
 

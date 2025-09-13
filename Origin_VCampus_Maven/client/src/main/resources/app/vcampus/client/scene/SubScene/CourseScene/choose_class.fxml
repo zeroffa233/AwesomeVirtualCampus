@@ -11,13 +11,17 @@
             style="-fx-background-color: white;">
 
     <children>
-        <VBox spacing="16" AnchorPane.topAnchor="16" AnchorPane.leftAnchor="16" AnchorPane.rightAnchor="16" AnchorPane.bottomAnchor="16">
-            <!-- 顶部间距 -->
-            <Region prefHeight="1" />
+        <VBox spacing="16" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="16" AnchorPane.rightAnchor="16" AnchorPane.bottomAnchor="16">
             <!-- 标题区域 -->
-            <VBox spacing="4">
-                <Label fx:id="headingLabel" styleClass="page-heading" />
-                <Label fx:id="captionLabel" styleClass="page-caption" />
+            <VBox fx:id="titleBox" spacing="4" styleClass="page-title"> <!-- 居中对齐 -->
+                <padding>
+                    <Insets top="12" right="24" bottom="12" left="24"/>
+                </padding>
+                <children>
+                    <Label text="选课系统"
+                           styleClass="page-heading"
+                           style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                </children>
             </VBox>
 
             <!-- 列表：使用 ScrollPane 包裹 VBox -->

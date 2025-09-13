@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import com.jfoenix.controls.*?>
+<?import javafx.scene.control.Label?>
+
+<!-- 使用 fx:root，自定义控件由 Java 端注入 -->
+<fx:root type="HBox"
+         xmlns="http://javafx.com/javafx/20"
+         xmlns:fx="http://javafx.com/fxml/1"
+         spacing="10"
+         style="-fx-border-color: lightgray; -fx-border-radius: 4; -fx-padding: 10;">
+
+    <VBox spacing="5">
+        <HBox spacing="5">
+            <Label fx:id="courseNameLabel" style="-fx-font-weight: bold;"/>
+            <Label fx:id="courseIdLabel" style="-fx-text-fill: gray;"/>
+        </HBox>
+        <Label fx:id="scheduleLabel"/>
+        <Label fx:id="placeLabel"/>
+    </VBox>
+
+    <Pane HBox.hgrow="ALWAYS"/>
+    <JFXButton text="导出学生名单" fx:id="exportButton"/>
+</fx:root>

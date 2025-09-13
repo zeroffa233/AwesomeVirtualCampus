@@ -98,6 +98,9 @@ public class MainSceneController implements Initializable {
                 } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) {
                     ((app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) controller).setViewModel(sharedVm);
                 }
+                else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) controller).setViewModel(sharedVm);
+                }
                 // 如果还有其它需要注入的 controller，按需在这里加入 instanceof 分支
             }
 

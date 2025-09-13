@@ -178,12 +178,20 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleTeachingAffairs() {
         setActiveButton(courseButton);
-        JFXButton courseSelectionButton = createSecondaryMenuButton("在线选课", "/app/vcampus/client/scene/SubScene/CourseScene/choose_class.fxml");
-        //JFXButton gradesButton = createSecondaryMenuButton("成绩查询", "/app/vcampus/client/scene/SubScene/teachingaffairs/GradesView.fxml");
-        JFXButton scheduleButton = createSecondaryMenuButton("我的课表", "/app/vcampus/client/scene/SubScene/CourseScene/MySchedule.fxml");
-        courseSelectionButton.getStyleClass().add("active");
-        // 初始加载的父视图
-        switchView("/app/vcampus/client/scene/SubScene/CourseScene/TeachingAffairsView.fxml", "教务系统", List.of(courseSelectionButton, scheduleButton));
+
+        List<Node> menuItems = new ArrayList<>();
+        if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
+            JFXButton courseSelectionButton = createSecondaryMenuButton("在线选课", "/app/vcampus/client/scene/SubScene/CourseScene/choose_class.fxml");
+            //JFXButton gradesButton = createSecondaryMenuButton("成绩查询", "/app/vcampus/client/scene/SubScene/teachingaffairs/GradesView.fxml");
+            JFXButton scheduleButton = createSecondaryMenuButton("我的课表", "/app/vcampus/client/scene/SubScene/CourseScene/MySchedule.fxml");
+            menuItems.add(courseSelectionButton);
+            menuItems.add(scheduleButton);
+        }
+        if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("teacher")) {
+            JFXButton classButton = createSecondaryMenuButton("我的课堂", "/app/vcampus/client/scene/SubScene/CourseScene/MyClassSubscene.fxml");
+            menuItems.add(classButton);
+        }// 初始加载的父视图
+        switchView("/app/vcampus/client/scene/SubScene/CourseScene/TeachingAffairsView.fxml", "教务系统",menuItems);
     }
 
     @FXML
