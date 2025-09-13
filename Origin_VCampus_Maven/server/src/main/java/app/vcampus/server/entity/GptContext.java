@@ -12,6 +12,7 @@ public class GptContext implements IEntity {
     @Id
     public Integer cardNumber = 0;
 
+    @Lob
     @Column
     public String context;
 }

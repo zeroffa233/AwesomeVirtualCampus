@@ -6,6 +6,7 @@ import app.vcampus.server.utility.Database;
 import app.vcampus.server.utility.Request;
 import app.vcampus.server.utility.Response;
 import app.vcampus.server.utility.router.RouteMapping;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Transaction;
 
@@ -23,14 +24,13 @@ public class GptController {
     @RouteMapping(uri = "gpt/pull", role = "gpt_user")
     public Response postContext(Request request, org.hibernate.Session database) {
         Integer cardNumber = request.getSession().getCardNum();
-
         GptContext ctx = database.get(GptContext.class, cardNumber);
-
         if (ctx == null) {
+            Gson gs = new Gson();
             Transaction tx = database.beginTransaction();
             ctx = new GptContext();
             ctx.setCardNumber(cardNumber);
-            ctx.setContext("");
+            ctx.setContext("{}");
             database.persist(ctx);
             tx.commit();
         }
@@ -43,7 +43,6 @@ public class GptController {
         Integer cardNumber = request.getSession().getCardNum();
         String serStorage=request.getParams().get("context");
         GptContext ctx = database.get(GptContext.class, cardNumber);
-
         Transaction tx = database.beginTransaction();
         ctx.setContext(serStorage);
         database.merge(ctx);

@@ -37,7 +37,7 @@ public class GptViewModel {
     private final String API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
 
     // Data Gateway
-    private final GptClient gptClient = GptClient.getInstance();
+    public final GptClient gptClient = GptClient.getInstance();
     private UUID currentStreamingMessageId;
 
 
