@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import app.vcampus.server.utility.Request;
 
 public class SideBarController implements Initializable {
 
@@ -49,6 +50,25 @@ public class SideBarController implements Initializable {
         financeButton.setUserData("finance");
         adminButton.setUserData("administrator");
         gptButton.setUserData("llm");
+
+        // Bind managed property to visible property to remove from layout when not visible
+        adminButton.managedProperty().bind(adminButton.visibleProperty());
+        studentStatusButton.managedProperty().bind(studentStatusButton.visibleProperty());
+
+        // Default to hiding permissioned buttons
+        adminButton.setVisible(false);
+        studentStatusButton.setVisible(false);
+
+        // Set visibility based on user roles
+        if (FakeRepository.user != null) {
+            List<String> roles = Arrays.asList(FakeRepository.user.getRoles());
+            boolean isAdmin = roles.contains("admin");
+            boolean isStudent = roles.contains("student");
+
+            adminButton.setVisible(isAdmin);
+            studentStatusButton.setVisible(isAdmin || isStudent);
+        }
+
         if (homeButton != null) {
             setActiveButton(homeButton);
         }
@@ -145,12 +165,12 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleStudentStatus() {
         setActiveButton(studentStatusButton);
-        // if 的条件为用户是学生
-        if(true) {
+        // if a user is a student
+        if (FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
             switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml", "我的学籍", List.of());
         }
-        // if 的条件为用户是管理员
-        else{
+        // if a user is an administrator
+        else {
             switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusManagementView.fxml", "学籍管理", List.of());
         }
     }
@@ -225,8 +245,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleAdmin() {
         setActiveButton(adminButton);
-        // ... 创建二级菜单按钮
-        switchView("/app/vcampus/client/scene/SubScene/AdministratorScene/AdminView.fxml", "系统管理", List.of(/* ... 按钮列表 ... */));
+        JFXButton userManagementButton = createSecondaryMenuButton("用户管理", "/app/vcampus/client/scene/SubScene/AdminScene/AdminView.fxml");
+        userManagementButton.getStyleClass().add("active");
+        switchView("/app/vcampus/client/scene/SubScene/AdminScene/AdminView.fxml", "系统管理", List.of(userManagementButton));
     }
 
     @FXML

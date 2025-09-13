@@ -115,5 +115,31 @@ public class AdminController {
             return Response.Common.error(e.getMessage());
         }
     }
+
+    @RouteMapping(uri = "admin/user/delete", role = "admin")
+    public Response deleteUser(Request request, org.hibernate.Session database) {
+        try {
+            int cardNum = Integer.parseInt(request.getParams().get("cardNum"));
+
+            User user = database.get(User.class, cardNum);
+            if (user == null) {
+                return Response.Common.error("User not found");
+            }
+
+            Transaction tx = database.beginTransaction();
+            if (Arrays.stream(user.getRoles()).toList().contains("student")) {
+                Student student = database.get(Student.class, user.getCardNum());
+                if (student != null) {
+                    database.remove(student);
+                }
+            }
+            database.remove(user);
+            tx.commit();
+
+            return Response.Common.ok();
+        } catch (Exception e) {
+            return Response.Common.error(e.getMessage());
+        }
+    }
 }
 
