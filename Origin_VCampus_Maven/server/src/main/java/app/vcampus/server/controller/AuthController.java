@@ -28,7 +28,6 @@ public class AuthController {
             if (cardNum == null || password == null) {
                 return Response.Common.badRequest();
             }
-
             User user = database.get(User.class, Integer.parseInt(cardNum));
             boolean passwordCorrect = user != null && Password.verify(password, user.getPassword());
             log.info("Password verification for user {} result: {}", cardNum, passwordCorrect);

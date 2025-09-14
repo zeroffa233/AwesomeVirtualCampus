@@ -1,7 +1,7 @@
 package app.vcampus.client.viewmodel;
 
 import app.vcampus.client.gateway.AdminClient;
-import app.vcampus.client.model.User;
+import app.vcampus.server.utility.User;
 import app.vcampus.client.repository.FakeRepository;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
