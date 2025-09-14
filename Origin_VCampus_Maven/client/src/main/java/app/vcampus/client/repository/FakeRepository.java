@@ -17,7 +17,8 @@ import java.util.*;
  * Java 版 FakeRepository（基于你提供的 Kotlin 实现翻译）
  * 提供静态方法以兼容现有前端调用。
  */
-public final class FakeRepository {
+public final class FakeRepository
+{
     // Netty handler（需要外部注入/设置）
     public static NettyHandler handler;
     public static boolean isConnected = false;
@@ -194,4 +195,30 @@ public final class FakeRepository {
             return false;
         }
     }
+    // ... existing code ...
+
+    /**
+     * 模拟添加课程
+     */
+    public static boolean addCourse(String courseId, String courseName, String school, float credit) {
+        try {
+            return TeachingAffairsClient.addCourse(handler, courseId, courseName, school, credit);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 模拟添加教学班
+     */
+    public static boolean addTeachingClass(UUID courseUuid, int teacherId, String place, int capacity, List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule) {
+        try {
+            return TeachingAffairsClient.addTeachingClass(handler, courseUuid, teacherId, place, capacity, schedule);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

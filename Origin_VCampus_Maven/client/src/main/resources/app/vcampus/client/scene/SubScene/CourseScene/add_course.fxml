@@ -1,0 +1,48 @@
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.vcampus.client.scene.SubScene.CourseScene.AddCourseController"
+            prefWidth="900" prefHeight="720"
+            style="-fx-background-color: white;">
+
+    <children>
+        <VBox spacing="16" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="16" AnchorPane.rightAnchor="16" AnchorPane.bottomAnchor="16">
+            <!-- 标题区域 -->
+            <VBox fx:id="titleBox" spacing="4" styleClass="page-title">
+                <padding>
+                    <Insets top="12" right="24" bottom="12" left="24"/>
+                </padding>
+                <children>
+                    <Label text="添加课程" styleClass="page-heading"/>
+                </children>
+            </VBox>
+
+            <!-- 表单区域 -->
+            <VBox spacing="12">
+                <padding>
+                    <Insets top="16" right="16" bottom="16" left="16"/>
+                </padding>
+                <GridPane hgap="10" vgap="10">
+                    <Label text="课程代码:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="courseIdField" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="200"/>
+                    
+                    <Label text="课程名称:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="courseNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="200"/>
+                    
+                    <Label text="开课学院:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <TextField fx:id="schoolField" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="200"/>
+                    
+                    <Label text="学分:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <TextField fx:id="creditField" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="200"/>
+                </GridPane>
+                
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button fx:id="confirmButton" text="确认添加" onAction="#handleAddCourse"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </children>
+</AnchorPane>

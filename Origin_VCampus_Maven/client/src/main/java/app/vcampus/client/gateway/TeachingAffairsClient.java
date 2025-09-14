@@ -242,6 +242,67 @@ public class TeachingAffairsClient extends BaseClient {
             return false;
         }
     }
+    // ... existing code ...
+
+    /**
+     * Used to add a new course by admin.
+     * @param handler Netty handler
+     * @param courseId Course ID
+     * @param courseName Course name
+     * @param school School name
+     * @param credit Credit
+     * @return true if success
+     */
+    public static Boolean addCourse(NettyHandler handler, String courseId, String courseName, String school, float credit) {
+        Request request = new Request();
+        request.setUri("teaching/admin/addCourse");
+        request.setParams(Map.of(
+                "courseId", courseId,
+                "courseName", courseName,
+                "school", school,
+                "credit", String.valueOf(credit)
+        ));
+
+        try {
+            Response response = BaseClient.sendRequest(handler, request);
+            return response.getStatus().equals("success");
+        } catch (Exception e) {
+            log.warn("Fail to add course", e);
+            return false;
+        }
+    }
+
+    /**
+     * Used to add a new teaching class by admin.
+     * @param handler Netty handler
+     * @param courseUuid Course UUID
+     * @param teacherId Teacher ID
+     * @param place Classroom
+     * @param capacity Maximum students
+     * @param schedule Course schedule
+     * @return true if success
+     */
+    public static Boolean addTeachingClass(NettyHandler handler, UUID courseUuid, int teacherId, String place, int capacity, List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule) {
+        Request request = new Request();
+        request.setUri("teaching/admin/addTeachingClass");
+        request.setParams(Map.of(
+                "courseUuid", courseUuid.toString(),
+                "teacherId", String.valueOf(teacherId),
+                "place", place,
+                "capacity", String.valueOf(capacity),
+                "schedule", BaseClient.toJson(schedule)
+        ));
+
+        try {
+            Response response = BaseClient.sendRequest(handler, request);
+            return response.getStatus().equals("success");
+        } catch (Exception e) {
+            log.warn("Fail to add teaching class", e);
+            return false;
+        }
+    }
+
+
 
 //    public static Course addCourse(NettyHandler handler, String uuid, String courseName, String courseId, String school, String credit) {
 //        CountDownLatch latch = new CountDownLatch(1);

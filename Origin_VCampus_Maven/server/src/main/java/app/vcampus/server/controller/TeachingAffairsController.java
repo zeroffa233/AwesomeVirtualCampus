@@ -297,4 +297,63 @@ public class TeachingAffairsController {
             return Response.Common.error("Failed to import");
         }
     }
+    // ... existing code ...
+
+    @RouteMapping(uri = "teaching/admin/addCourse", role = "admin")
+    public Response addCourse(Request request, org.hibernate.Session database) {
+        try {
+            Transaction tx = database.beginTransaction();
+
+            // 创建新课程对象
+            Course course = new Course();
+            course.setUuid(UUID.randomUUID());
+            course.setCourseId(request.getParams().get("courseId"));
+            course.setCourseName(request.getParams().get("courseName"));
+            course.setSchool(request.getParams().get("school"));
+            course.setCredit(Float.parseFloat(request.getParams().get("credit")));
+
+            // 保存课程
+            database.persist(course);
+            tx.commit();
+
+            return Response.Common.ok(Map.of("course", course.toJson()));
+        } catch (Exception e) {
+            log.warn("Failed to add course", e);
+            return Response.Common.badRequest();
+        }
+    }
+
+// ... existing code ...
+
+    @RouteMapping(uri = "teaching/admin/addTeachingClass", role = "admin")
+    public Response addTeachingClass(Request request, org.hibernate.Session database) {
+        try {
+            Transaction tx = database.beginTransaction();
+
+            // 创建新教学班对象
+            TeachingClass teachingClass = new TeachingClass();
+            teachingClass.setUuid(UUID.randomUUID());
+            teachingClass.setCourseUuid(UUID.fromString(request.getParams().get("courseUuid")));
+            teachingClass.setTeacherId(Integer.parseInt(request.getParams().get("teacherId")));
+            teachingClass.setPlace(request.getParams().get("place"));
+            teachingClass.setCapacity(Integer.parseInt(request.getParams().get("capacity")));
+
+            // 解析课程表
+            Type scheduleType = new TypeToken<List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>>>() {}.getType();
+            List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule =
+                new Gson().fromJson(request.getParams().get("schedule"), scheduleType);
+            teachingClass.setSchedule(schedule);
+
+            // 保存教学班
+            database.persist(teachingClass);
+            tx.commit();
+
+            return Response.Common.ok(Map.of("teachingClass", teachingClass.toJson()));
+        } catch (Exception e) {
+            log.warn("Failed to add teaching class", e);
+            return Response.Common.badRequest();
+        }
+    }
+
+
 }

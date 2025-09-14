@@ -182,6 +182,61 @@ public class TeachingAffairsViewModel {
             });
         }
     }
+    // ... existing code ...
+
+    // ---------------- 管理员部分 ----------------
+    public final AdminTools adminTools = new AdminTools(executor);
+
+    public class AdminTools {
+        private final ExecutorService executor;
+
+        public AdminTools(ExecutorService executor) {
+            this.executor = executor;
+        }
+
+        /**
+         * 添加新课程
+         * @param courseId 课程代码
+         * @param courseName 课程名称
+         * @param school 开课学院
+         * @param credit 学分
+         * @return 操作结果的CompletableFuture
+         */
+        public CompletableFuture<Boolean> addCourse(String courseId, String courseName, String school, float credit) {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    boolean success = FakeRepository.addCourse(courseId, courseName, school, credit);
+                    return success;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }, executor);
+        }
+
+        /**
+         * 添加新教学班
+         * @param courseUuid 课程UUID
+         * @param teacherId 教师工号
+         * @param place 上课地点
+         * @param capacity 容量
+         * @param schedule 课程表
+         * @return 操作结果的CompletableFuture
+         */
+        public CompletableFuture<Boolean> addTeachingClass(UUID courseUuid, int teacherId, String place, int capacity, List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule) {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    boolean success = FakeRepository.addTeachingClass(courseUuid, teacherId, place, capacity, schedule);
+                    return success;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }, executor);
+        }
+    }
+
+// ... existing code ...
 
     /**
      * 可选：在程序退出时调用，停止线程池，防止进程无法结束

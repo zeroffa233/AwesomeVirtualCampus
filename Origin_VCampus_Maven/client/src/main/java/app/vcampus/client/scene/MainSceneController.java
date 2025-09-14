@@ -80,10 +80,7 @@ public class MainSceneController implements Initializable {
 //            e.printStackTrace();
 //        }
 //    }
-// 共享的 ViewModel（应用级或 MainScene 级）
     private final app.vcampus.client.viewmodel.TeachingAffairsViewModel sharedVm = new app.vcampus.client.viewmodel.TeachingAffairsViewModel();
-
-    // public void setStage(Stage stage) { ... } // 此方法已根据您的要求被完全移除
 
     public void loadSubScene(String fxmlPath) {
         try {
@@ -101,7 +98,12 @@ public class MainSceneController implements Initializable {
                 else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) {
                     ((app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) controller).setViewModel(sharedVm);
                 }
-                // 如果还有其它需要注入的 controller，按需在这里加入 instanceof 分支
+                else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.AddCourseController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.AddCourseController) controller).setViewModel(sharedVm);
+                }
+                else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.AddTeachingClassController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.AddTeachingClassController) controller).setViewModel(sharedVm);
+                }
             }
 
             FadeTransition fadeOut = new FadeTransition(Duration.millis(150), contentPane);
