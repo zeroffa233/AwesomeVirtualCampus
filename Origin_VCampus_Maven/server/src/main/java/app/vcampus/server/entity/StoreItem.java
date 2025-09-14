@@ -43,5 +43,4 @@ public class StoreItem implements IEntity {
 
     @Column(columnDefinition = "TEXT")
     public String description;
-
 }

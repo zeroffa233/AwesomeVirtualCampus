@@ -1,6 +1,8 @@
 package app.vcampus.client.scene;
 
-import app.vcampus.server.utility.ShopItem;
+import app.vcampus.client.gateway.StoreClient;
+import app.vcampus.client.util.ImageCache;
+import app.vcampus.server.entity.StoreItem;
 import app.vcampus.server.utility.ShopTransactionRecord;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -90,10 +92,10 @@ public class OrderController {
 
         // --- 商品列表 ---
         // 为了正确显示数量，我们需要对商品列表进行分组计数
-        Map<ShopItem, Long> itemCounts = transaction.getItems().stream()
+        Map<StoreItem, Long> itemCounts = transaction.getItems().stream()
                 .collect(Collectors.groupingBy(item -> item, Collectors.counting()));
 
-        for (Map.Entry<ShopItem, Long> entry : itemCounts.entrySet()) {
+        for (Map.Entry<StoreItem, Long> entry : itemCounts.entrySet()) {
             Node itemRow = createOrderItemRow(entry.getKey(), entry.getValue().intValue());
             cardVBox.getChildren().add(itemRow);
         }
@@ -102,7 +104,7 @@ public class OrderController {
     }
 
     // 辅助方法：为单个商品行创建UI（带数量）
-    private Node createOrderItemRow(ShopItem item, int quantity) {
+    private Node createOrderItemRow(StoreItem item, int quantity) {
         HBox itemHBox = new HBox(15);
         itemHBox.setAlignment(Pos.CENTER_LEFT);
         itemHBox.setPadding(new Insets(10, 0, 10, 0));
@@ -111,10 +113,18 @@ public class OrderController {
         // 图片
         ImageView imageView = new ImageView();
         try {
-            Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(item.getImagePath())));
+            // 尝试从缓存获取图片
+            Image image = ImageCache.getInstance().getImage(item.getPictureLink());
+            if (image.isError()) throw new Exception("Corrupted image data");
             imageView.setImage(image);
         } catch (Exception e) {
-            System.err.println("Could not load order image: " + item.getImagePath());
+            // 如果失败，优雅地降级到默认占位图
+            System.err.println("无法加载订单图片 '" + item.getPictureLink() + "', 使用默认图。");
+            try {
+                imageView.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png"))));
+            } catch (Exception fallbackEx) {
+                // 如果默认图也失败，imageView 将保持空白
+            }
         }
         imageView.setFitHeight(80);
         imageView.setFitWidth(80);
@@ -122,9 +132,9 @@ public class OrderController {
 
         // 名称和价格
         VBox nameAndPriceVBox = new VBox(5);
-        Text nameText = new Text(item.getName());
+        Text nameText = new Text(item.getItemName());
         nameText.setFont(Font.font(16));
-        Label priceLabel = new Label("¥ " + String.format("%.2f", item.getPrice()));
+        Label priceLabel = new Label(String.format("¥%.2f", item.getPrice().doubleValue() / 100.0));
         priceLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
         nameAndPriceVBox.getChildren().addAll(nameText, priceLabel);
 

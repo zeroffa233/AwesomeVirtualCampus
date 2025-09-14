@@ -2,7 +2,7 @@ package app.vcampus.client.gateway;
 
 import app.vcampus.client.net.NettyHandler;
 import app.vcampus.server.utility.CardInfo;
-import app.vcampus.server.utility.ShopItem;
+import app.vcampus.server.entity.StoreItem;
 import app.vcampus.server.utility.DisplayableTransaction;
 import app.vcampus.server.utility.ShopTransactionRecord;
 import lombok.extern.slf4j.Slf4j;
@@ -178,11 +178,9 @@ public class FinanceClient extends BaseClient {
         */
 
         // Mock for now
-        ShopItem laptop = new ShopItem("笔记本电脑", 11000.00, "/images/laptop.png");
-        ShopItem mouse = new ShopItem("鼠标", 350.00, "/images/mouse.png");
         return Arrays.asList(
                 new DisplayableTransaction(1725936059000L, "充值", 12345678.00),
-                new DisplayableTransaction(new ShopTransactionRecord(Arrays.asList(laptop, mouse, laptop), 11350.00)),
+                //new DisplayableTransaction(new ShopTransactionRecord(Arrays.asList(laptop, mouse, laptop), 11350.00)),
                 new DisplayableTransaction(1725937059000L, "充值", 13.00)
         );
     }

@@ -1,6 +1,6 @@
 package app.vcampus.client.scene.FinanceScene;
 
-import app.vcampus.server.utility.ShopItem;
+import app.vcampus.server.entity.StoreItem;
 import app.vcampus.server.utility.DisplayableTransaction;
 import app.vcampus.client.viewmodel.PersonalFinanceViewModel;
 import com.jfoenix.controls.JFXListCell;
@@ -195,10 +195,10 @@ public class PersonalFinanceController implements Initializable {
             }
         }
 
-        private void populateItemsContainer(List<ShopItem> items) {
+        private void populateItemsContainer(List<StoreItem> items) {
             Map<String, GroupedItem> groupedItems = new LinkedHashMap<>();
-            for (ShopItem shopItem : items) {
-                groupedItems.compute(shopItem.getName(), (name, grouped) -> {
+            for (StoreItem shopItem : items) {
+                groupedItems.compute(shopItem.getItemName(), (name, grouped) -> {
                     if (grouped == null) {
                         return new GroupedItem(name, 1, shopItem.getPrice());
                     } else {

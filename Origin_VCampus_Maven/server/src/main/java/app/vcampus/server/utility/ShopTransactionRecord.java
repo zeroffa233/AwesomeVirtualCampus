@@ -1,14 +1,15 @@
 package app.vcampus.server.utility;
 
+import app.vcampus.server.entity.StoreItem;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ShopTransactionRecord {
     private final long timestamp;
-    private final List<ShopItem> items;
+    private final List<StoreItem> items;
     private final double totalPrice;
 
-    public ShopTransactionRecord(List<ShopItem> items, double totalPrice) {
+    public ShopTransactionRecord(List<StoreItem> items, double totalPrice) {
         this.timestamp = System.currentTimeMillis();
         this.items = new ArrayList<>(items); // 创建副本
         this.totalPrice = totalPrice;
@@ -16,7 +17,7 @@ public class ShopTransactionRecord {
 
     // --- Getters ---
     public long getTimestamp() { return timestamp; }
-    public List<ShopItem> getItems() { return items; }
+    public List<StoreItem> getItems() { return items; }
     public double getTotalPrice() { return totalPrice; }
 
     @Override

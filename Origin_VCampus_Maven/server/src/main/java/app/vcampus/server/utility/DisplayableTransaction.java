@@ -1,5 +1,7 @@
 package app.vcampus.server.utility;
 
+import app.vcampus.server.entity.StoreItem;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -12,7 +14,7 @@ public class DisplayableTransaction {
     private final String date;
     private final String type;
     private final double amount;
-    private final List<ShopItem> items; // Only for shop transactions
+    private final List<StoreItem> items; // Only for shop transactions
 
     // Static formatter for date conversion
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
@@ -56,7 +58,7 @@ public class DisplayableTransaction {
         return amount;
     }
 
-    public List<ShopItem> getItems() {
+    public List<StoreItem> getItems() {
         return items;
     }
 }

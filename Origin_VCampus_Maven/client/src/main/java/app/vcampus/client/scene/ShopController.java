@@ -1,6 +1,7 @@
 package app.vcampus.client.scene;
 
 import app.vcampus.client.util.ImageCache;
+import app.vcampus.server.entity.ShopItemEntity;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import javafx.animation.*;
@@ -25,17 +26,24 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
+import javafx.application.Platform;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javafx.scene.text.Text;
-import app.vcampus.server.utility.ShopItem;
+
 import app.vcampus.server.utility.ShopTransactionRecord;
+
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath; // 确保导入
 import javafx.animation.Timeline; // 确保导入
+
+import app.vcampus.client.gateway.StoreClient; // 【重要】导入 StoreClient
+import app.vcampus.client.repository.FakeRepository; // 【重要】导入 FakeRepository
+import app.vcampus.server.entity.StoreItem; // 【重要】导入服务端的实体
+
 //TODO : 模糊搜索优化
 //TODO : 去掉 Cart 的自动换行
 
@@ -65,10 +73,10 @@ public class ShopController {
     private double lastKnownPrice = 0.0; // <<--- 在这里新增这一行
 
     // ViewModel / State Properties
-    private final ObservableList<ShopItem> allItems = FXCollections.observableArrayList();
-    private final ObservableList<ShopItem> displayedItems = FXCollections.observableArrayList();
+    private final ObservableList<StoreItem> allItems = FXCollections.observableArrayList();
+    private final ObservableList<StoreItem> displayedItems = FXCollections.observableArrayList();
+    private final ObservableList<StoreItem> chosenItems = FXCollections.observableArrayList();
 
-    private final ObservableList<ShopItem> chosenItems = FXCollections.observableArrayList();
     private final IntegerProperty chosenItemsCount = new SimpleIntegerProperty(0);
     private final DoubleProperty chosenItemsPrice = new SimpleDoubleProperty(0.0);
 
@@ -83,16 +91,28 @@ public class ShopController {
     // 【已重构】
     @FXML
     public void initialize() {
-        System.out.println("ShopController initialize");
-        loadData();
-        displayedItems.setAll(allItems);
+        System.out.println("ShopController: 正在启动后台数据加载...");
+
+        new Thread(() -> {
+            List<StoreItem> itemsFromServer = StoreClient.getAll(FakeRepository.handler);
+            Platform.runLater(() -> {
+                if (itemsFromServer != null) {
+                    allItems.setAll(itemsFromServer);
+                    System.out.println("后台任务完成：成功从服务器加载 " + allItems.size() + " 件商品。");
+                } else {
+                    System.err.println("后台任务完成：从服务器加载商品失败。");
+                    allItems.clear();
+                }
+                displayedItems.setAll(allItems);
+                populateItemsGrid();
+            });
+        }).start();
+
+        // 初始化【不】依赖于网络数据的本地组件
         setupBindings();
         setupListeners();
         createAndPlaySwipeHintAnimation();
-        populateItemsGrid();
 
-
-        // 【修复问题1】将支付按钮的 disable 属性与购物车是否为空进行绑定
         payButton.disableProperty().bind(Bindings.isEmpty(chosenItems));
 
         // 【修复问题2】不再绑定 cartView 的 maxHeight，让其自由生长
@@ -114,24 +134,6 @@ public class ShopController {
         cartContainer.setMouseTransparent(true);
         cartContainer.setCache(true);
         cartContainer.setCacheHint(javafx.scene.CacheHint.SPEED);
-    }
-
-    private void loadData() {
-        // Cache initialize
-        ImageCache.getInstance().addImage("/images/DARKSOULS.png" , new Image(getClass().getResourceAsStream("/images/500.png")));
-        ImageCache.getInstance().addImage("/images/500.png" , new Image(getClass().getResourceAsStream("/images/DARKSOULS.png")));
-
-        // Simulating the items from the image
-        allItems.add(new ShopItem("正版 黑暗之魂官方艺术设定集 全套1-2-3册 DARK SOULS", 249.00, "/images/DARKSOULS.png"));
-        allItems.add(new ShopItem("Sony/索尼 ECM-G1 枪型麦克风 大尺寸收音单元 清晰人声", 999.00, "/images/500.png"));
-        allItems.add(new ShopItem("Apple/苹果 13 英寸 MacBook Air Apple M2 芯片 8 核中央处理器", 12699.00, "/images/500.png"));
-        allItems.add(new ShopItem("C++ Primer Plus (第6版)", 89.50, "/images/500.png"));
-        allItems.add(new ShopItem("小米便携风扇", 59.00, "/images/500.png"));
-        allItems.add(new ShopItem("原神 | 刻晴手办", 888.00, "/images/500.png"));
-        allItems.add(new ShopItem("原神 | 可莉手办", 888.00, "/images/500.png"));
-        allItems.add(new ShopItem("原神 | 胡桃手办", 888.00, "/images/500.png"));
-        allItems.add(new ShopItem("原神 | 雷电将军手办", 888.00, "/images/500.png"));
-        allItems.add(new ShopItem("原神 | 甘雨手办", 888.00, "/images/500.png"));
     }
 
     @FXML
@@ -165,7 +167,7 @@ public class ShopController {
             swipeHintAnimation.play();
             swipeHintIcon.setVisible(true);
 
-            double currentPrice = chosenItems.stream().mapToDouble(ShopItem::getPrice).sum();
+            double currentPrice = chosenItems.stream().mapToDouble(StoreItem::getPrice).sum();
             playPriceScrollAnimation(currentPrice);
 
             cartTransition.setToY(rootPane.getHeight());
@@ -174,13 +176,18 @@ public class ShopController {
 
         cartAnimation = new ParallelTransition(cartTransition, overlayFade);
 
-        if (!isCartVisible) {
-            cartAnimation.setOnFinished(event -> {
-                overlayPane.setVisible(false);
-                cartView.setOpacity(1);
-                successOverlay.setVisible(false);
-                cartContainer.setMouseTransparent(true);
-            });
+        if (!isCartVisible) { // 当关闭购物车时
+            swipeHintAnimation.play();
+            swipeHintIcon.setVisible(true);
+
+            // 【核心修正】
+            double currentPriceInFen = chosenItems.stream()
+                    .mapToDouble(item -> item.price.doubleValue()) // 使用 item.price
+                    .sum();
+            playPriceScrollAnimation(currentPriceInFen / 100.0); // 传递“元”
+
+            cartTransition.setToY(rootPane.getHeight());
+            overlayFade.setToValue(0.0);
         } else {
             cartAnimation.setOnFinished(null);
         }
@@ -191,7 +198,7 @@ public class ShopController {
         itemsGrid.getChildren().clear();
         int col = 0;
         int row = 0;
-        for (ShopItem item : displayedItems) {
+        for (StoreItem item : displayedItems) {
             Node itemCard = createShopItemCard(item);
             itemsGrid.add(itemCard, col, row);
             col++;
@@ -202,7 +209,7 @@ public class ShopController {
         }
     }
 
-    private Node createShopItemCard(ShopItem item) {
+    private Node createShopItemCard(StoreItem item) {
         VBox card = new VBox(15);
         card.setPrefWidth(250);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 8;");
@@ -232,39 +239,59 @@ public class ShopController {
         // --- 修正结束 ---
 
         try {
-            Image image = ImageCache.getInstance().getImage(item.getImagePath());
+            // 步骤 1: 尝试从缓存获取理想的图片
+            Image image = ImageCache.getInstance().getImage(item.getPictureLink());
 
-            if (!image.isError()) {
-                ImageView imageView = new ImageView(image);
-                imageView.setPreserveRatio(true);
-
-                if (image.getWidth() < image.getHeight()) imageView.setFitWidth(VIEWPORT_SIZE);
-                else imageView.setFitHeight(VIEWPORT_SIZE);
-
-                imageContainer.getChildren().add(imageView);
-            } else {
-                throw new Exception("Image data is corrupted for path: " + item.getImagePath());
+            // 检查图片数据本身是否损坏
+            if (image.isError()) {
+                throw new Exception("Image data is corrupted for path: " + item.getPictureLink());
             }
 
-        } catch (Exception e) {
-            System.err.println(e.getMessage()); // 在控制台打印错误信息，便于调试
+            // 如果一切顺利，创建并显示这张理想的图片
+            ImageView imageView = new ImageView(image);
+            imageView.setPreserveRatio(true);
+            if (image.getWidth() < image.getHeight()) imageView.setFitWidth(VIEWPORT_SIZE);
+            else imageView.setFitHeight(VIEWPORT_SIZE);
+            imageContainer.getChildren().add(imageView);
 
-            Label errorLabel = new Label("X");
-            errorLabel.setFont(Font.font("System", FontWeight.BOLD, 48));
-            errorLabel.setTextFill(Color.RED);
-            imageContainer.getChildren().add(errorLabel);
+        } catch (Exception e) {
+            // 步骤 2: 【核心修改】如果 try 块失败，就在这里执行我们的“备用方案”
+            System.err.println("无法从缓存加载图片 '" + item.getPictureLink() + "', 正在使用默认占位图。原因: " + e.getMessage());
+
+            try {
+                // a. 尝试从本地资源加载我们的备用图片
+                Image fallbackImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png")));
+
+                // b. 显示这张备用图片
+                ImageView fallbackImageView = new ImageView(fallbackImage);
+                fallbackImageView.setPreserveRatio(true);
+                if (fallbackImage.getWidth() < fallbackImage.getHeight()) fallbackImageView.setFitWidth(VIEWPORT_SIZE);
+                else fallbackImageView.setFitHeight(VIEWPORT_SIZE);
+                imageContainer.getChildren().add(fallbackImageView);
+
+            } catch (Exception fallbackEx) {
+                // c. 【终极备用方案】如果连备用图片都加载失败了...
+                System.err.println("致命错误：默认占位图 /images/500.png 也无法加载！");
+                fallbackEx.printStackTrace();
+
+                // ...我们还是显示一个红色的 "X" 作为最后的提示
+                Label errorLabel = new Label("X");
+                errorLabel.setFont(Font.font("System", FontWeight.BOLD, 48));
+                errorLabel.setTextFill(Color.RED);
+                imageContainer.getChildren().add(errorLabel);
+            }
         }
 
         // --- 后面的代码保持完全不变 ---
         VBox textContent = new VBox(10);
         textContent.setAlignment(Pos.CENTER_LEFT);
 
-        Label nameLabel = new Label(item.getName());
+        Label nameLabel = new Label(item.getItemName());
         nameLabel.setWrapText(true);
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
         nameLabel.setTextFill(Color.web("#212121"));
 
-        Label priceLabel = new Label("¥ " + String.format("%.2f", item.getPrice()));
+        Label priceLabel = new Label("¥ " + String.format("%.2f", item.getPrice().doubleValue() / 100.0));
         priceLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
         priceLabel.setTextFill(Color.valueOf("#212121"));
 
@@ -285,12 +312,12 @@ public class ShopController {
 
     private void updateCartItemsList() {
         cartItemsContainer.getChildren().clear();
-        for (ShopItem item : chosenItems) {
+        for (StoreItem item : chosenItems) {
             cartItemsContainer.getChildren().add(createCartListItem(item));
         }
     }
 
-    private Node createCartListItem(ShopItem item) {
+    private Node createCartListItem(StoreItem item) {
         // --- 1. 创建 GridPane 根布局 (保持不变) ---
         GridPane listItem = new GridPane();
         listItem.setPadding(new Insets(16, 10, 16, 10));
@@ -305,14 +332,26 @@ public class ShopController {
         // --- 【核心修改】用我们统一的 ImageCache 逻辑替换旧的加载方式 ---
         ImageView imageView = new ImageView();
         try {
-            // 1. 统一地、高效地从缓存中获取图片
-            Image image = ImageCache.getInstance().getImage(item.getImagePath());
+            // 步骤 1: 尝试从缓存获取理想的图片
+            Image image = ImageCache.getInstance().getImage(item.getPictureLink());
+            if (image.isError()) {
+                throw new Exception("Image data is corrupted for path: " + item.getPictureLink());
+            }
             imageView.setImage(image);
 
         } catch (Exception e) {
-            // 2. 如果图片在预加载时失败，这里会捕获异常
-            System.err.println("Could not get cart image from cache: " + e.getMessage());
-            // imageView 将保持空白，或者你可以在这里设置一个错误占位符
+            // 步骤 2: 如果失败，执行“备用方案”
+            System.err.println("无法加载购物车图片 '" + item.getPictureLink() + "', 正在使用默认占位图。原因: " + e.getMessage());
+            try {
+                // a. 尝试从本地资源加载我们的备用图片
+                Image fallbackImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png")));
+                imageView.setImage(fallbackImage);
+
+            } catch (Exception fallbackEx) {
+                // b. 如果连备用图片都加载失败了，imageView 将保持空白，
+                //    在小尺寸的购物车视图里，这比显示一个 "X" 可能更不突兀。
+                System.err.println("致命错误：购物车的默认占位图 /images/500.png 也无法加载！");
+            }
         }
         // --- 修改结束 ---
 
@@ -326,12 +365,12 @@ public class ShopController {
         VBox nameAndPriceContainer = new VBox(4);
         nameAndPriceContainer.setAlignment(Pos.CENTER_LEFT);
 
-        Text nameText = new Text(item.getName());
+        Text nameText = new Text(item.getItemName());
         nameText.setFont(Font.font("System", FontWeight.NORMAL, 16));
         nameText.setFill(Color.web("#212121"));
         nameText.wrappingWidthProperty().bind(nameAndPriceContainer.widthProperty());
 
-        Label priceLabel = new Label(String.format("¥%.2f", item.getPrice()));
+        Label priceLabel = new Label(String.format("¥%.2f", item.getPrice().doubleValue() / 100.0));
         priceLabel.setTextFill(Color.web("#616161"));
         priceLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
 
@@ -364,36 +403,33 @@ public class ShopController {
                 Bindings.createStringBinding(() -> "已选择 " + chosenItemsCount.get() + " 项商品", chosenItemsCount)
         );
 
-        // 【核心修复】将下面这整个绑定语句删除或注释掉
-    /*
-    totalPriceLabel.textProperty().bind(
-        Bindings.createStringBinding(() -> "共 " + String.format("%.2f", chosenItemsPrice.get()) + " 元", chosenItemsPrice)
-    );
-    */
 
         // Bind cart view labels to properties
         cartItemCountLabel.textProperty().bind(
                 Bindings.createStringBinding(() -> "已选择 " + chosenItemsCount.get() + " 件商品", chosenItemsCount)
         );
         cartTotalPriceLabel.textProperty().bind(
-                // 注意：这里的绑定我们可能仍然需要，除非你也想让它滚动
-                // 暂时保留它，因为它控制的是购物车内部的标签
-                Bindings.createStringBinding(() -> "共 " + String.format("%.2f", chosenItems.stream().mapToDouble(ShopItem::getPrice).sum()) + " 元", chosenItemsCount)
+                Bindings.createStringBinding(() -> {
+                    double totalPriceInFen = chosenItems.stream()
+                            .mapToDouble(item -> item.price.doubleValue()) // 使用 item.price
+                            .sum();
+                    return "共 " + String.format("%.2f", totalPriceInFen / 100.0) + " 元";
+                }, chosenItems)
         );
     }
 
     private void setupListeners() {
-        chosenItems.addListener((ListChangeListener<ShopItem>) c -> {
-            double newPrice = chosenItems.stream().mapToDouble(ShopItem::getPrice).sum();
+        chosenItems.addListener((ListChangeListener<StoreItem>) c -> {
+            // 【核心修正】
+            double newPriceInFen = chosenItems.stream()
+                    .mapToDouble(item -> item.price.doubleValue()) // 使用 item.price
+                    .sum();
 
             chosenItemsCount.set(chosenItems.size());
-            chosenItemsPrice.set(chosenItems.stream().mapToDouble(ShopItem::getPrice).sum());
+            chosenItemsPrice.set(newPriceInFen); // chosenItemsPrice 存储的是分
 
-            if (!chosenItems.isEmpty()) {
-                playPriceScrollAnimation(newPrice);
-            }
+            playPriceScrollAnimation(newPriceInFen / 100.0); // 传递“元”
 
-            // 只有当弹窗可见时，才刷新列表内容
             if (isCartVisible) {
                 updateCartItemsList();
             }
@@ -408,9 +444,9 @@ public class ShopController {
         if (keyword.isEmpty()) {
             displayedItems.setAll(allItems);
         } else {
-            List<ShopItem> filteredList = new ArrayList<>();
-            for (ShopItem item : allItems) {
-                if (item.getName().toLowerCase().contains(keyword)) {
+            List<StoreItem> filteredList = new ArrayList<>();
+            for (StoreItem item : allItems) {
+                if (item.getItemName().toLowerCase().contains(keyword)) {
                     filteredList.add(item);
                 }
             }
