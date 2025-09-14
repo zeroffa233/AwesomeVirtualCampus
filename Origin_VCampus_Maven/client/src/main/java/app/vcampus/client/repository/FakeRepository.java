@@ -9,6 +9,7 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import app.vcampus.client.util.ImageCache; // 【重要】导入 ImageCache
 
 import java.awt.Window;
 import java.util.*;
@@ -65,6 +66,9 @@ public final class FakeRepository
                 logger.debug("login user: {}", u);
                 user = u;
                 isConnected = true;
+                System.out.println("[login] : ImageCache.getInstance() called");
+                ImageCache.getInstance();
+
                 return true;
             }
         } catch (Exception e) {

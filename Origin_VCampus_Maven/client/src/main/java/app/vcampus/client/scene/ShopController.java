@@ -83,11 +83,14 @@ public class ShopController {
     // 【已重构】
     @FXML
     public void initialize() {
+        System.out.println("ShopController initialize");
         loadData();
         displayedItems.setAll(allItems);
         setupBindings();
         setupListeners();
+        createAndPlaySwipeHintAnimation();
         populateItemsGrid();
+
 
         // 【修复问题1】将支付按钮的 disable 属性与购物车是否为空进行绑定
         payButton.disableProperty().bind(Bindings.isEmpty(chosenItems));
@@ -111,8 +114,6 @@ public class ShopController {
         cartContainer.setMouseTransparent(true);
         cartContainer.setCache(true);
         cartContainer.setCacheHint(javafx.scene.CacheHint.SPEED);
-
-        createAndPlaySwipeHintAnimation();
     }
 
     private void loadData() {

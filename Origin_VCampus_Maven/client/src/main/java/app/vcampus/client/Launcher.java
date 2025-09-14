@@ -6,7 +6,6 @@ package app.vcampus.client;
  */
 public class Launcher {
     public static void main(String[] args) {
-        // 调用您真正的 JavaFX Application 主类的 main 方法
         Main.main(args);
     }
 }

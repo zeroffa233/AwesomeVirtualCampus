@@ -45,15 +45,17 @@ git clone https://github.com/zeroffa233/AwesomeVirtualCampus.git
 
 > [!IMPORTANT]
 >
-> Serevr 是一个**命令行**程序，**请在终端中运行**。若在 `IDEA` 中尝试运行 Server ，会提示 “控制台不可用。请在终端中运行此程序！”。
+> Serevr 是一个**命令行**程序，**请在终端中运行**。若在 `IDEA` 中尝试运行 Server ，可能会提示 “控制台不可用。请在终端中运行此程序！”。
 
 ```bash
-java -jar path/vcampus-server-1.0.0.jar #请将这里的path替换为正确的路径
+xxxxxxxxxx java -jar path/vcampus-server-1.0.0.jar #请将这里的path替换为正确的路径 [database.sql](../../Origin_VCampus_Maven/database.sql)  
 ```
 
 > [!IMPORTANT]
 >
 > 在尝试运行 Server 之前，请确保启动了 MySQL Server 并配置好数据库。
+>
+> 注意本地数据库的名字**一定**要是vcampus！！！不要修改程序源代码。
 
 以下是相关命令
 
@@ -61,11 +63,8 @@ java -jar path/vcampus-server-1.0.0.jar #请将这里的path替换为正确的�
 mysql -u root -p
 mysql> CREATE DATABASE vcampus; # 注意，这里数据库的名称必须是 vcampus 
 mysql> USE vcampus;
-mysql> exit
-mysql -u root -p vcampus < path/to/your/file.sql
-mysql -u root -p
-mysql> USE vcampus;
-U
+mysql> SOURCE /path/to/file.sql;
+mysql> SHOW TABLES; # 检查
 ```
 
 ## 可能存在的问题
