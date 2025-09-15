@@ -160,7 +160,23 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleHome() {
         setActiveButton(homeButton);
-        switchView("/app/vcampus/client/scene/SubScene/HomeScene/HomeView.fxml", "主页", List.of());
+
+        String fxmlPath;
+        if (FakeRepository.user != null && FakeRepository.user.getRoles() != null) {
+            List<String> roles = Arrays.asList(FakeRepository.user.getRoles());
+            if (roles.contains("admin")) {
+                fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewAdmin.fxml";
+            } else if (roles.contains("teacher")) {
+                fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewTeacher.fxml";
+            } else {
+                fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewStudent.fxml";
+            }
+        } else {
+            // Default to student view if user is null for some reason
+            fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewStudent.fxml";
+        }
+
+        switchView(fxmlPath, "主页", List.of());
     }
 
     @FXML

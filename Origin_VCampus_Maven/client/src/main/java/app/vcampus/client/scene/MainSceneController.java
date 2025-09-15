@@ -49,7 +49,20 @@ public class MainSceneController implements Initializable {
         Platform.runLater(() -> {
             sideBar.setTranslateX(-sideBar.getWidth());
             sideBar.setOpacity(1);
-            switchView("/app/vcampus/client/scene/SubScene/HomeScene/HomeView.fxml", "主页", List.of());
+
+            String fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewStudent.fxml"; // Default
+            if (app.vcampus.client.repository.FakeRepository.user != null && app.vcampus.client.repository.FakeRepository.user.getRoles() != null) {
+                java.util.List<String> roles = java.util.Arrays.asList(app.vcampus.client.repository.FakeRepository.user.getRoles());
+                if (roles.contains("admin")) {
+                    fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewAdmin.fxml";
+                } else if (roles.contains("teacher")) {
+                    fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewTeacher.fxml";
+                }
+            }
+
+            // Use loadSubScene to ensure controller is initialized for the welcome message
+            loadSubScene(fxmlPath);
+            updateTitle("主页");
         });
         if (sideBarController != null) {
             sideBarController.setMainSceneController(this);
