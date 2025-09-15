@@ -1,0 +1,236 @@
+/* 学籍系统样式文件 */
+
+/* 全局字体设置 - 与系统其他模块统一 */
+* {
+    -fx-font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+}
+
+/* 主容器样式 */
+.student-status-root {
+    -fx-background-color: #f9fafc;
+    -fx-padding: 16px;
+}
+
+/* 内容面板样式 */
+.content-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-padding: 24px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 8, 0, 0, 2);
+}
+/* 新增：页面标题文本样式（与选课模块一致） */
+.page-heading {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111111;
+}
+
+/* 表单网格布局优化 */
+.form-grid {
+    -fx-hgap: 20px;
+    -fx-vgap: 16px;
+}
+
+/* 标签样式优化 */
+.form-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5a6872;
+    -fx-alignment: center-right;
+    -fx-padding: 0 8px 0 0;
+}
+
+/* JFXTextField 样式优化 */
+.jfx-text-field {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 6px;
+    -fx-padding: 8px 12px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50;
+    -fx-prompt-text-fill: #a0a0a0;
+}
+
+.jfx-text-field:focused {
+    -fx-border-color: #607830;
+    -fx-border-width: 1.5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(96, 120, 48, 0.2), 4, 0, 0, 2);
+}
+
+.jfx-text-field:disabled {
+    -fx-background-color: #f5f5f5;
+    -fx-text-fill: #a0a0a0;
+}
+
+/* 搜索框和按钮样式 */
+.search-container {
+    -fx-spacing: 12px;
+    -fx-padding: 16px 0;
+}
+
+.search-field {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px 16px;
+    -fx-font-size: 14px;
+}
+
+.search-button {
+    -fx-background-color: #607830;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-background-radius: 6px;
+    -fx-padding: 10px 24px;
+    -fx-cursor: hand;
+}
+
+.search-button:hover {
+    -fx-background-color: #4f6228;
+    -fx-effect: dropshadow(three-pass-box, rgba(96, 120, 48, 0.3), 4, 0, 0, 2);
+}
+
+.search-button:disabled {
+    -fx-background-color: #cccccc;
+    -fx-text-fill: #666666;
+    -fx-cursor: default;
+}
+
+/* ListView 样式优化 */
+.results-list {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8px;
+    -fx-padding: 8px;
+    -fx-pref-height: -1; /* 确保ListView高度不受限制 */
+}
+
+/* 重点：确保单元格没有任何固定高度限制 */
+.results-list .list-cell {
+    -fx-padding: 12px;
+    -fx-border-bottom-color: #f0f0f0;
+    -fx-border-bottom-width: 1px;
+    -fx-background-color: transparent;
+    -fx-pref-height: -1;
+    -fx-min-height: -1;
+    -fx-max-height: -1;
+}
+
+.results-list .list-cell:hover {
+    -fx-background-color: #f8f9fa;
+}
+
+.results-list .list-cell:selected {
+    -fx-background-color: #e8f5e9;
+    -fx-text-fill: #2e7d32;
+}
+/* 对话框样式优化 */
+.dialog-content {
+    -fx-background-color: white;
+    -fx-padding: 20px;
+    -fx-spacing: 16px;
+}
+
+.dialog-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.dialog-header {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5a6872;
+    -fx-padding: 0 0 12px 0;
+}
+
+/* 按钮样式优化 */
+.primary-button {
+    -fx-background-color: #607830;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-background-radius: 6px;
+    -fx-padding: 10px 24px;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #4f6228;
+    -fx-effect: dropshadow(three-pass-box, rgba(96, 120, 48, 0.3), 4, 0, 0, 2);
+}
+
+.secondary-button {
+    -fx-background-color: white;
+    -fx-text-fill: #5a6872;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-background-radius: 6px;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 6px;
+    -fx-padding: 10px 24px;
+    -fx-cursor: hand;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #f5f5f5;
+}
+
+/* 滚动条样式优化 */
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8px;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #d0d0d0;
+    -fx-background-radius: 4px;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #b0b0b0;
+}
+
+.scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .corner {
+    -fx-background-color: transparent;
+}
+
+/* 信息和错误提示样式 */
+.info-message {
+    -fx-background-color: #e3f2fd;
+    -fx-text-fill: #1976d2;
+    -fx-padding: 12px 16px;
+    -fx-background-radius: 6px;
+    -fx-font-size: 14px;
+}
+
+.error-message {
+    -fx-background-color: #ffebee;
+    -fx-text-fill: #c62828;
+    -fx-padding: 12px 16px;
+    -fx-background-radius: 6px;
+    -fx-font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .form-grid {
+        -fx-hgap: 16px;
+        -fx-vgap: 12px;
+    }
+
+    .page-title {
+        -fx-font-size: 20px;
+    }
+
+    .content-panel {
+        -fx-padding: 16px;
+    }
+}

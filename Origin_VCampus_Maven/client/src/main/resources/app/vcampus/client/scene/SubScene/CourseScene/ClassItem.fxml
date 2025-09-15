@@ -11,7 +11,8 @@
       fx:id="root"
       spacing="6.0"
       prefWidth="140" prefHeight="80"
-      styleClass="class-item">
+      styleClass="class-item"
+      stylesheets="@teachingaffairs.css">
 
     <padding>
         <Insets top="8" right="8" bottom="8" left="8"/>

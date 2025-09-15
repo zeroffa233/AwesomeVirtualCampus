@@ -7,7 +7,8 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController"
             prefWidth="1000" prefHeight="760"
-            styleClass="timetable-root">
+            styleClass="timetable-root"
+            stylesheets="@teachingaffairs.css">
 
     <children>
         <VBox spacing="12" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" styleClass="timetable-container">
@@ -21,7 +22,7 @@
                 <children>
                     <Label fx:id="headingLabel" text="我的课表"
                            styleClass="page-heading"
-                           style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                           />
                 </children>
             </VBox>
 

@@ -5,7 +5,8 @@
 <?import com.jfoenix.controls.JFXToggleButton?>
 <AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="app.vcampus.client.scene.SubScene.CourseScene.CourseListItemController"
-            styleClass="course-item-root" prefWidth="820" minHeight="80">
+            styleClass="course-item-root" prefWidth="820" minHeight="80"
+            stylesheets="@teachingaffairs.css">
 
     <children>
         <VBox spacing="8" AnchorPane.topAnchor="8" AnchorPane.leftAnchor="8" AnchorPane.rightAnchor="8" AnchorPane.bottomAnchor="8">

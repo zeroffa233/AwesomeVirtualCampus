@@ -1,16 +1,34 @@
-/* page title */
-.page-heading {
-    -fx-font-size: 34px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #111111;
-    -fx-font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+/* 全局字体设置 - 与系统其他模块统一 */
+* {
+    -fx-font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
 }
+
+/* 页面标题样式 - 统一设置为与Library模块一致 */
+.page-heading {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111111;
+}
+
+/* 页面说明文字 */
 .page-caption {
-    -fx-font-size: 16px;
+    -fx-font-size: 14px;
     -fx-text-fill: #666666;
 }
 
-/* course item card */
+/* 课程相关页面的统一样式 */
+.course-container {
+    -fx-background-color: white;
+}
+
+/* 标题区域样式 */
+.page-title {
+    -fx-background-color: #F8F8F8;
+    -fx-border-color: #EAEAEA;
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* 课程项目卡片 */
 .course-item-root {
     -fx-background-color: #ffffff;
     -fx-background-radius: 8;
@@ -20,17 +38,18 @@
     -fx-border-radius: 8;
 }
 
-/* course title */
+/* 课程标题 */
 .course-title {
     -fx-font-size: 18px;
-    -fx-font-weight: 700;
+    -fx-font-weight: bold;
 }
+
 .course-sub {
     -fx-font-size: 12px;
     -fx-text-fill: #777777;
 }
 
-/* tc card */
+/* 教学班卡片 */
 .tc-card-root {
     -fx-background-color: #fafafa;
     -fx-background-radius: 8;
@@ -39,10 +58,11 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 2);
 }
 
-/* text styles */
+/* 文本样式 */
 .tc-teacher {
-    -fx-font-weight: 700;
+    -fx-font-weight: bold;
 }
+
 .tc-status {
     -fx-font-size: 12px;
     -fx-text-fill: #ffffff;
@@ -51,21 +71,22 @@
     -fx-background-radius: 12;
 }
 
-/* meta labels */
+/* 元数据标签 */
 .meta-label {
     -fx-font-size: 12px;
     -fx-text-fill: #555555;
 }
-/* 横向滚动条美化（作用于 ScrollPane 内的 horizontal ScrollBar） */
+
+/* 横向滚动条美化 */
 .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
 
-/* horizontal scrollbar track */
 .scroll-bar:horizontal {
     -fx-padding: 2 4 2 4;
     -fx-background-color: transparent;
 }
+
 .scroll-bar:horizontal .track {
     -fx-background-color: rgba(0,0,0,0.04);
     -fx-background-insets: 0;
@@ -74,7 +95,6 @@
     -fx-pref-height: 8;
 }
 
-/* horizontal scrollbar thumb */
 .scroll-bar:horizontal .thumb {
     -fx-background-color: linear-gradient(#bdbdbd, #9e9e9e);
     -fx-background-radius: 6;
@@ -82,11 +102,12 @@
     -fx-pref-height: 8;
     -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.12) , 2, 0.0 , 0 , 1 );
 }
+
 .scroll-bar:horizontal .thumb:hover {
     -fx-background-color: linear-gradient(#9e9e9e, #757575);
 }
 
-/* remove arrows */
+/* 移除滚动条箭头 */
 .scroll-bar .increment-button, .scroll-bar .decrement-button {
     -fx-padding: 0;
     -fx-background-color: transparent;
@@ -94,11 +115,11 @@
     -fx-opacity: 0;
 }
 
-/* 教学班状态徽章：冲突（红）与已选（绿） */
+/* 教学班状态徽章 */
 .conflict-badge {
     -fx-font-size: 12px;
     -fx-text-fill: white;
-    -fx-background-color: #e74c3c; /* 红色 */
+    -fx-background-color: #e74c3c;
     -fx-padding: 3 10 3 10;
     -fx-background-radius: 12;
     -fx-font-weight: bold;
@@ -107,78 +128,52 @@
 .ok-badge {
     -fx-font-size: 12px;
     -fx-text-fill: white;
-    -fx-background-color: #508e54; /* 绿色 */
+    -fx-background-color: #508e54;
     -fx-padding: 3 10 3 10;
     -fx-background-radius: 12;
     -fx-font-weight: bold;
 }
 
-/* chip hover 微调（保留原 chip 样式） */
+/* 标签悬停效果 */
 .chip:hover {
     -fx-opacity: 0.95;
     -fx-cursor: hand;
 }
+
+/* 顶部菜单栏按钮 - 与MainScene.css保持一致 */
 .top-bar-menu-button {
-    -fx-background-color: transparent; /* Default transparent background */
-    -fx-background-radius: 6px; /* A slightly more pronounced radius */
-    -fx-border-radius: 6px;     /* Keep border and background radius in sync */
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
     -fx-text-fill: #333333;
     -fx-font-size: 16px;
-    -fx-font-weight: 600; /* Bolder text */
-    -fx-padding: 0 16px; /* Horizontal spacing */
+    -fx-font-weight: 600;
+    -fx-padding: 0 16px;
     -fx-cursor: hand;
     -fx-border-width: 1px;
-    -fx-border-color: transparent; /* No border by default */
+    -fx-border-color: transparent;
 }
 
 .top-bar-menu-button:hover {
-    -fx-background-color: #f0f0f0; /* Subtle background on hover */
+    -fx-background-color: #f0f0f0;
 }
 
-/* Active state now has a solid, block-like background */
 .top-bar-menu-button.active {
-    -fx-background-color: #607830DE; /* Solid accent color background */
-    -fx-text-fill: #ffffff;        /* White text for contrast */
+    -fx-background-color: #607830DE;
+    -fx-text-fill: #ffffff;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 1);
 }
-/* timetable */
-.timetable-weekday {
-    -fx-font-weight: 600;
-    -fx-padding: 6 0 6 0;
-}
-.timetable-section {
-    -fx-font-size: 12px;
-    -fx-text-fill: #666;
-}
 
-/* class item */
-.class-item {
-    -fx-background-radius: 6;
-    -fx-background-color: linear-gradient(to bottom right, #72b8a0, #4fb07f);
-    -fx-padding: 8;
-    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.12) , 4, 0, 0, 2 );
-}
-.class-item-course {
-    -fx-font-weight: 700;
-    -fx-text-fill: white;
-}
-.class-item-teacher, .class-item-place {
-    -fx-font-size: 12px;
-    -fx-text-fill: white;
-}
-/* timetable.css */
-
-/* 通用字体与根容器 */
+/* 时间表样式 */
 .timetable-root {
-    -fx-font-family: "Segoe UI", "Microsoft YaHei", "Arial";
     -fx-font-size: 13px;
     -fx-background-color: linear-gradient(to bottom, #f7fbff, #ffffff);
 }
 
-/* 页面标题 */
-.page-heading {
-    -fx-font-size: 20px;
-    -fx-font-weight: 600;
+/* 统一时间表标题样式 */
+.timetable-root .page-heading {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
     -fx-text-fill: #333333;
     -fx-padding: 8 0 4 0;
 }
@@ -187,34 +182,37 @@
 .week-controls {
     -fx-padding: 6 24 6 24;
 }
+
 .week-btn {
     -fx-background-radius: 8;
     -fx-background-color: #ecf2ff;
     -fx-border-color: transparent;
     -fx-cursor: hand;
 }
+
 .week-btn:hover {
     -fx-background-color: #d7e6ff;
 }
+
 .week-label {
     -fx-font-weight: 600;
     -fx-text-fill: #2c3e50;
 }
 
-/* Grid header weekday label */
+/* 时间表表头 */
 .timetable-weekday {
     -fx-font-weight: 600;
     -fx-text-fill: #2b5476;
     -fx-padding: 8 4;
 }
 
-/* left section row labels */
+/* 时间表左侧时间区域 */
 .timetable-section {
     -fx-font-size: 12px;
     -fx-text-fill: #6b7a86;
 }
 
-/* Grid styling (cells are created by controller; we style class-item inside grid) */
+/* 时间表网格 */
 .timetable-grid {
     -fx-padding: 8;
 }
@@ -229,40 +227,327 @@
     -fx-padding: 8;
 }
 
-/* 课程名 */
 .class-item-course {
     -fx-font-size: 13px;
-    -fx-font-weight: 700;
+    -fx-font-weight: bold;
     -fx-text-fill: #123753;
     -fx-text-overrun: ellipsis;
 }
 
-/* meta 行 */
 .class-item-meta .class-item-teacher {
     -fx-font-size: 12px;
     -fx-text-fill: #2f4a5a;
 }
+
 .class-item-meta .class-item-place {
     -fx-font-size: 12px;
     -fx-text-fill: #6b7a86;
 }
 
-/* 当鼠标悬停课程卡时强调 */
 .class-item:hover {
     -fx-scale-x: 1.01;
     -fx-scale-y: 1.01;
     -fx-effect: dropshadow(gaussian, rgba(10, 25, 40, 0.18), 10, 0.25, 0, 4);
 }
 
-/* 如果你想给 Grid 单元格底色，可为占位 Label 添加样式（controller 可创建空 Label） */
 .timetable-cell-empty {
     -fx-background-color: rgba(200,220,235,0.06);
     -fx-background-radius: 6;
 }
 
-/* 小屏截断与内边距 */
 .timetable-scroll {
     -fx-background-color: transparent;
     -fx-padding: 12 24;
 }
 
+/* 表单区域样式 */
+.form-container {
+    -fx-background-color: #FAFAFA;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);
+}
+
+/* 表单标签样式 */
+.form-label {
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-min-width: 100px;
+}
+
+/* 文本输入框样式 */
+.form-text-field {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 12px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50;
+    -fx-prompt-text-fill: #95a5a6;
+}
+
+.form-text-field:focused {
+    -fx-border-color: #607830DE;
+    -fx-outline: none;
+}
+
+/* 下拉框样式 */
+.form-combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 6px 12px;
+    -fx-font-size: 14px;
+}
+
+.form-combo-box:focused {
+    -fx-border-color: #607830DE;
+}
+
+/* 按钮样式 */
+.primary-button {
+    -fx-background-color: #607830DE;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 8px 20px;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+}
+
+.primary-button:hover {
+    -fx-background-color: #79953c;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #495a24;
+}
+
+/* 次要按钮样式 */
+.secondary-button {
+    -fx-background-color: #F5F5F5;
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 8px 20px;
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+    -fx-border-color: #E0E0E0;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #E0E0E0;
+}
+
+/* 表格样式 */
+.schedule-table {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.schedule-table .column-header {
+    -fx-background-color: #F8F8F8;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 0 0 1px 1px;
+    -fx-padding: 8px;
+}
+
+.schedule-table .table-cell {
+    -fx-border-color: #F0F0F0;
+    -fx-border-width: 0 1px 1px 0;
+    -fx-padding: 8px;
+}
+
+.schedule-table .table-row-cell:even {
+    -fx-background-color: #FAFAFA;
+}
+
+.schedule-table .table-row-cell:hover {
+    -fx-background-color: #F0F0F0;
+}
+
+/* TitledPane样式 */
+.schedule-titled-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
+.schedule-titled-pane > .title {
+    -fx-background-color: #F8F8F8;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 0 0 1px 0;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 8px 12px;
+}
+
+.schedule-titled-pane > .content {
+    -fx-background-color: white;
+    -fx-padding: 12px;
+}
+
+/* 我的课堂模块样式 - 扁平化设计 */
+.my-class-root {
+    -fx-background-color: #fafafa;
+}
+
+/* 页面容器 */
+.my-class-container {
+    -fx-padding: 24px;
+    -fx-spacing: 16px;
+}
+
+/* 页面标题区域 - 与Library模块一致 */
+.my-class-title-area {
+    -fx-padding: 16px 0;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.my-class-main-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+.my-class-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+    -fx-padding-top: 4px;
+}
+
+/* 滚动条样式 */
+.my-class-scrollpane {
+    -fx-background-color: transparent;
+}
+
+.my-class-scrollpane .viewport {
+    -fx-background-color: transparent;
+}
+
+.my-class-scrollpane .scroll-bar:vertical .track {
+    -fx-background-color: rgba(0,0,0,0.04);
+    -fx-background-insets: 0;
+    -fx-background-radius: 6;
+    -fx-pref-width: 8;
+}
+
+.my-class-scrollpane .scroll-bar:vertical .thumb {
+    -fx-background-color: linear-gradient(#bdbdbd, #9e9e9e);
+    -fx-background-radius: 6;
+    -fx-min-height: 24;
+    -fx-pref-width: 8;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.12) , 2, 0.0 , 0 , 1 );
+}
+
+.my-class-scrollpane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: linear-gradient(#9e9e9e, #757575);
+}
+
+.my-class-scrollpane .increment-button, .my-class-scrollpane .decrement-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-opacity: 0;
+}
+
+/* 班级列表容器 */
+.my-class-list-container {
+    -fx-spacing: 12px;
+    -fx-padding: 8px 0;
+}
+
+/* 班级列表项卡片 - 扁平化设计 */
+.class-item-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8px;
+    -fx-padding: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 4, 0, 0, 2);
+    -fx-cursor: hand;
+}
+
+.class-item-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 3);
+    -fx-border-color: #607830DE;
+}
+
+/* 班级信息区域 */
+.class-info-section {
+    -fx-spacing: 8px;
+}
+
+.class-header {
+    -fx-spacing: 8px;
+    -fx-alignment: center-left;
+}
+
+.class-course-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #333333;
+}
+
+.class-course-id {
+    -fx-font-size: 13px;
+    -fx-text-fill: #666666;
+    -fx-font-weight: 400;
+}
+
+.class-meta-info {
+    -fx-font-size: 13px;
+    -fx-text-fill: #555555;
+    -fx-spacing: 4px;
+}
+
+/* 导出按钮 - 采用统一的主色调 */
+.export-button {
+    -fx-background-color: #607830DE;
+    -fx-text-fill: white;
+    -fx-font-weight: 500;
+    -fx-background-radius: 6px;
+    -fx-padding: 6px 16px;
+    -fx-cursor: hand;
+    -fx-border-radius: 6px;
+    -fx-border-width: 0;
+}
+
+.export-button:hover {
+    -fx-background-color: #506828DE;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 2);
+}
+
+.export-button:pressed {
+    -fx-background-color: #405820DE;
+}
+
+/* 空状态和加载状态样式 */
+.empty-state {
+    -fx-alignment: center;
+    -fx-padding: 60px 20px;
+    -fx-spacing: 16px;
+}
+
+.empty-state-text {
+    -fx-font-size: 16px;
+    -fx-text-fill: #666666;
+}
+
+.loading-state {
+    -fx-alignment: center;
+    -fx-padding: 60px 20px;
+}
