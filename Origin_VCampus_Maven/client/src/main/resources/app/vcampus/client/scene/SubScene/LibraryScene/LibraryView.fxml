@@ -3,18 +3,29 @@
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXTextArea?>
 <?import com.jfoenix.controls.JFXTextField?>
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
+<?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 
 <VBox xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.LibraryViewController" spacing="15" style="-fx-background-color: #FFFFFF; -fx-padding: 25;">
+    <stylesheets>
+        <String fx:value="/css/library-table.css" />
+    </stylesheets>
     <children>
         <Label text="查询图书" textFill="#333333">
             <font>
@@ -30,48 +41,96 @@
                 </Label>
                 <Region HBox.hgrow="ALWAYS" />
                 <JFXTextField fx:id="searchTextField" prefWidth="250.0" promptText="输入关键字" />
-                <JFXButton fx:id="searchButton" prefHeight="30.0" prefWidth="80.0" style="-fx-background-color: #607830DE;" styleClass="button-raised" text="搜索" />
+                <JFXButton fx:id="searchButton" buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" prefHeight="40.0" prefWidth="40.0" style="-fx-background-radius: 50; -fx-background-color: #607830;">
+                    <graphic>
+                        <SVGPath content="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="WHITE" />
+                    </graphic>
+                </JFXButton>
             </children>
         </HBox>
 
-        <Label fx:id="resultCountLabel" text="" textFill="#555555">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </Label>
-
-        <HBox fx:id="detailsBox" spacing="20" VBox.vgrow="NEVER" managed="false" visible="false">
+        <StackPane VBox.vgrow="ALWAYS">
             <children>
-                <!-- Left Section: Basic Book Info -->
-                <VBox HBox.hgrow="ALWAYS" spacing="10" style="-fx-background-color: #FFFFFF; -fx-padding: 15; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
+                <VBox fx:id="emptyStateContainer" alignment="CENTER" spacing="20">
                     <children>
-                        <Label fx:id="bookNameLabel" text="书名:" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                        <Label fx:id="pressLabel" text="出版社:" style="-fx-font-size: 14px;"/>
-                        <Label fx:id="isbnLabel" text="ISBN:" style="-fx-font-size: 14px;"/>
-                        <Label text="简介:" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
-                        <JFXTextArea fx:id="descriptionArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS" style="-fx-font-size: 13px; -fx-background-color: #F8F9FA;"/>
+                        <ImageView fitHeight="900.0" fitWidth="900.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@/images/Library_Default.png" />
+                            </image>
+                        </ImageView>
+                        <Label text="输入关键词，开始探索图书馆的宝藏" style="-fx-font-size: 16px; -fx-text-fill: #888888;"/>
                     </children>
                 </VBox>
-
-                <!-- Right Section: Copies Info and Cover -->
-                <VBox alignment="TOP_CENTER" spacing="10" style="-fx-background-color: #FFFFFF; -fx-padding: 15; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
+                <VBox fx:id="resultsContainer" spacing="15">
                     <children>
-                        <Label fx:id="totalCopiesLabel" text="馆藏副本:" style="-fx-font-size: 14px;"/>
-                        <Label fx:id="availableCopiesLabel" text="可借副本:" style="-fx-font-size: 14px;"/>
-                        <ImageView fx:id="coverImageView" fitHeight="200.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true"/>
+                        <Label fx:id="resultCountLabel" text="" textFill="#555555">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Label>
+                        <HBox fx:id="detailsBox" spacing="20" VBox.vgrow="NEVER">
+                            <children>
+                                <!-- Left Section: Basic Book Info -->
+                                <VBox HBox.hgrow="ALWAYS" spacing="15" style="-fx-background-color: #FFFFFF; -fx-padding: 25; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
+                                    <children>
+                                        <!-- Suggestion 2: Emphasized Book Title -->
+                                        <Label fx:id="bookNameLabel" text="书名" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #212121;"/>
+
+                                        <!-- Suggestion 1: GridPane for organized key-value data -->
+                                        <GridPane hgap="10" vgap="8" style="-fx-padding: 10 0 10 0;">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="NEVER" />
+                                                <ColumnConstraints hgrow="ALWAYS" />
+                                            </columnConstraints>
+                                            <children>
+                                                <!-- Row 1: Press -->
+                                                <Label text="出版社" style="-fx-font-size: 14px; -fx-text-fill: #888888;" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                                <Label fx:id="pressLabel" text="-" style="-fx-font-size: 14px; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+                                                <!-- Row 2: ISBN -->
+                                                <Label text="ISBN" style="-fx-font-size: 14px; -fx-text-fill: #888888;" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                                                <Label fx:id="isbnLabel" text="-" style="-fx-font-size: 14px; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                                            </children>
+                                        </GridPane>
+
+                                        <!-- Suggestion 4: Separator -->
+                                        <Separator />
+
+                                        <!-- Suggestion 3: Redesigned Description Area with ScrollPane -->
+                                        <Label text="简介" style="-fx-font-size: 14px; -fx-font-weight: bold;" />
+                                        <ScrollPane fitToWidth="true" prefHeight="350.0" style="-fx-background-color: transparent; -fx-background-insets: 0;" VBox.vgrow="ALWAYS">
+                                            <content>
+                                                <Label fx:id="descriptionArea" wrapText="true" style="-fx-font-size: 13px; -fx-line-spacing: 4px;" />
+                                            </content>
+                                        </ScrollPane>
+                                    </children>
+                                </VBox>
+
+                                <!-- Right Section: Copies Info and Cover -->
+                                <VBox alignment="TOP_CENTER" spacing="10" style="-fx-background-color: #FFFFFF; -fx-padding: 15; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
+                                    <children>
+                                        <Label fx:id="totalCopiesLabel" text="馆藏副本:" style="-fx-font-size: 14px;"/>
+                                        <Label fx:id="availableCopiesLabel" text="可借副本:" style="-fx-font-size: 14px;"/>
+                                        <ImageView fx:id="coverImageView" fitHeight="200.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true"/>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+
+                        <!-- Table View for detailed copies -->
+                        <TableView fx:id="copiesTableView" VBox.vgrow="ALWAYS" styleClass="library-table" style="-fx-background-color: #FFFFFF; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
+                            <columns>
+                                <TableColumn fx:id="bookNameColumn" prefWidth="200.0" text="书名" />
+                                <TableColumn fx:id="pressColumn" prefWidth="150.0" text="出版社" />
+                                <TableColumn fx:id="callNumberColumn" prefWidth="150.0" text="索引书号" />
+                                <TableColumn fx:id="placeColumn" prefWidth="200.0" text="馆藏地" />
+                                <TableColumn fx:id="bookStatusColumn" prefWidth="100.0" text="书籍状态" />
+                            </columns>
+                            <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
+                        </TableView>
                     </children>
                 </VBox>
             </children>
-        </HBox>
-
-        <!-- Table View for detailed copies -->
-        <TableView fx:id="copiesTableView" VBox.vgrow="ALWAYS" style="-fx-background-color: #FFFFFF; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.5, 0, 0);">
-            <columns>
-                <TableColumn fx:id="callNumberColumn" prefWidth="150.0" text="索引书号" />
-                <TableColumn fx:id="placeColumn" prefWidth="200.0" text="馆藏地" />
-                <TableColumn fx:id="bookStatusColumn" prefWidth="100.0" text="书籍状态" />
-            </columns>
-            <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
-        </TableView>
+        </StackPane>
     </children>
 </VBox>

@@ -169,6 +169,17 @@ public class LibraryBookController {
         }
     }
 
+    @RouteMapping(uri = "library/all")
+    public Response all(Request request, org.hibernate.Session database) {
+        try {
+            List<LibraryBook> books = database.createQuery("from LibraryBook", LibraryBook.class).list();
+            return Response.Common.ok(books.stream().map(IEntity::toJson).collect(Collectors.toList()));
+        } catch (Exception e) {
+            log.error("Failed to get all books", e);
+            return Response.Common.error("Failed to get all books");
+        }
+    }
+
     @RouteMapping(uri = "library/searchForDeletion")
     public Response searchForDeletion(Request request, org.hibernate.Session database) {
         try {

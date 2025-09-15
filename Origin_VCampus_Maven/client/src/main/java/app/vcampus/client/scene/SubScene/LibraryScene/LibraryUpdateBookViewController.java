@@ -87,7 +87,7 @@ public class LibraryUpdateBookViewController {
         grid.setVgap(20);
         grid.setPadding(new Insets(30));
         // Set background to Gray, with a border to distinguish it from the main background
-        grid.setStyle("-fx-background-color: #F3EFF4; -fx-border-color: #BDBDBD; -fx-border-width: 1; -fx-border-radius: 8; -fx-font-size: 14px;");
+        grid.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #BDBDBD; -fx-border-width: 1; -fx-border-radius: 8; -fx-font-size: 14px;");
 
         ColumnConstraints labelCol = new ColumnConstraints();
         labelCol.setHgrow(Priority.NEVER);

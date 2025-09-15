@@ -1,0 +1,86 @@
+/* Scoped styling for the LibraryView copies table */
+.table-view.library-table {
+    -fx-table-cell-border-color: transparent; /* Remove inner cell borders */
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+/* Header background with subtle gradient, rounded top corners, bottom divider */
+.table-view.library-table .column-header-background {
+    -fx-background-color: linear-gradient(#F9FAFB, #EEF2F7);
+    -fx-background-radius: 8 8 0 0;
+    -fx-background-insets: 0;
+    -fx-border-color: #E5E7EB;
+    -fx-border-width: 0 0 1 0; /* bottom line */
+}
+
+/* Header row container to inherit rounded corners */
+.table-view.library-table .table-header-row {
+    -fx-background-insets: 0;
+    -fx-background-radius: 8 8 0 0;
+}
+
+/* Individual header cells: bold text, padding, and vertical separators */
+.table-view.library-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent #E5E7EB transparent transparent; /* right divider */
+    -fx-border-width: 0 1 0 0;
+}
+.table-view.library-table .column-header .label {
+    -fx-font-weight: 700;
+    -fx-font-size: 13px;
+    -fx-text-fill: #2B2F38;
+    -fx-padding: 12 14 12 14;
+    -fx-opacity: 0.95;
+}
+/* Header hover feedback */
+.table-view.library-table .column-header:hover {
+    -fx-background-color: rgba(96, 120, 48, 0.06);
+}
+
+/* Sorting arrow and order dot colors */
+.table-view.library-table .column-header .arrow {
+    -fx-background-color: #9AA4B2;
+}
+.table-view.library-table .column-header .sort-order {
+    -fx-background-color: #9AA4B2;
+}
+.table-view.library-table .column-header.sort-ascending .arrow,
+.table-view.library-table .column-header.sort-descending .arrow {
+    -fx-background-color: #607830; /* accent when sorted */
+}
+
+/* Filler area to match header */
+.table-view.library-table .filler {
+    -fx-background-color: linear-gradient(#F9FAFB, #EEF2F7);
+}
+
+/* Alternating Row Colors (Zebra Striping) */
+.table-view.library-table .table-row-cell:odd {
+    -fx-background-color: #F3EFF4DE; /* light pink */
+    -fx-background-insets: 0, 0 0 1 0;
+}
+.table-view.library-table .table-row-cell:even {
+    -fx-background-color: white;
+    -fx-background-insets: 0, 0 0 1 0;
+}
+
+/* Hover Effect */
+.table-view.library-table .table-row-cell:hover {
+    -fx-background-color: #60783044; /* translucent green on hover */
+}
+
+/* Selected row */
+.table-view.library-table .table-row-cell:selected {
+    -fx-background-color: #607830DE;
+}
+.table-view.library-table .table-row-cell:selected .text {
+    -fx-fill: white;
+}
+
+/* Cell text and padding */
+.table-view.library-table .table-cell {
+    -fx-padding: 10px;
+    -fx-font-size: 13px;
+}

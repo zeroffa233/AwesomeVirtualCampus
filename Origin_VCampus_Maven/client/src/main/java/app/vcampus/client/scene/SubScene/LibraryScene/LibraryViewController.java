@@ -4,7 +4,6 @@ import app.vcampus.client.gateway.LibraryClient;
 import app.vcampus.client.repository.FakeRepository;
 import app.vcampus.server.entity.LibraryBook;
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -15,7 +14,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +28,10 @@ public class LibraryViewController {
     @FXML
     private JFXButton searchButton;
     @FXML
+    private VBox emptyStateContainer;
+    @FXML
+    private VBox resultsContainer;
+    @FXML
     private Label resultCountLabel;
     @FXML
     private HBox detailsBox;
@@ -37,7 +42,7 @@ public class LibraryViewController {
     @FXML
     private Label isbnLabel;
     @FXML
-    private JFXTextArea descriptionArea;
+    private Label descriptionArea;
     @FXML
     private Label totalCopiesLabel;
     @FXML
@@ -52,94 +57,102 @@ public class LibraryViewController {
     private TableColumn<LibraryBook, String> placeColumn;
     @FXML
     private TableColumn<LibraryBook, String> bookStatusColumn;
+    @FXML
+    private TableColumn<LibraryBook, String> bookNameColumn;
+    @FXML
+    private TableColumn<LibraryBook, String> pressColumn;
 
     @FXML
     public void initialize() {
         // Initialize TableView columns
+        bookNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        pressColumn.setCellValueFactory(new PropertyValueFactory<>("press"));
         callNumberColumn.setCellValueFactory(new PropertyValueFactory<>("callNumber"));
         placeColumn.setCellValueFactory(new PropertyValueFactory<>("place"));
         bookStatusColumn.setCellValueFactory(new PropertyValueFactory<>("bookStatus"));
 
         searchButton.setOnAction(event -> searchBooks());
 
-        // Initially hide the details and table view
-        clearAndHideDetails();
+        // Initially hide the details and show empty state
+        showEmptyState();
     }
 
-    private void clearAndHideDetails() {
-        resultCountLabel.setText("");
-        detailsBox.setVisible(false);
-        detailsBox.setManaged(false);
-        copiesTableView.setVisible(false);
-        copiesTableView.setManaged(false);
+    private void showEmptyState() {
+        resultsContainer.setVisible(false);
+        resultsContainer.setManaged(false);
+        emptyStateContainer.setVisible(true);
+        emptyStateContainer.setManaged(true);
+    }
 
-        // Clear content
-        bookNameLabel.setText("书名:");
-        pressLabel.setText("出版社:");
-        isbnLabel.setText("ISBN:");
-        descriptionArea.clear();
-        totalCopiesLabel.setText("馆藏副本:");
-        availableCopiesLabel.setText("可借副本:");
-        coverImageView.setImage(null);
-        copiesTableView.getItems().clear();
+    private void showResults() {
+        emptyStateContainer.setVisible(false);
+        emptyStateContainer.setManaged(false);
+        resultsContainer.setVisible(true);
+        resultsContainer.setManaged(true);
+    }
+
+    private void processAndDisplayResults(List<LibraryBook> allCopies, boolean isAllBooks) {
+        if (allCopies == null || allCopies.isEmpty()) {
+            showEmptyState();
+            return;
+        }
+
+        showResults();
+
+        if (isAllBooks) {
+            detailsBox.setVisible(false);
+            detailsBox.setManaged(false);
+        } else {
+            detailsBox.setVisible(true);
+            detailsBox.setManaged(true);
+
+            resultCountLabel.setText("共检索到 " + allCopies.size() + " 个结果");
+
+            LibraryBook firstBook = allCopies.get(0);
+            bookNameLabel.setText(firstBook.getName());
+            pressLabel.setText(firstBook.getPress());
+            isbnLabel.setText(firstBook.getIsbn());
+            descriptionArea.setText(firstBook.getDescription());
+
+            if (firstBook.getCover() != null && !firstBook.getCover().isEmpty()) {
+                try {
+                    coverImageView.setImage(new Image(firstBook.getCover(), true));
+                } catch (Exception e) {
+                    coverImageView.setImage(null);
+                }
+            } else {
+                coverImageView.setImage(null);
+            }
+
+            long availableCount = allCopies.stream()
+                    .filter(book -> book.getBookStatus() == app.vcampus.server.enums.BookStatus.available)
+                    .count();
+            totalCopiesLabel.setText("馆藏副本: " + allCopies.size());
+            availableCopiesLabel.setText("可借副本: " + availableCount);
+        }
+
+        copiesTableView.getItems().setAll(allCopies);
     }
 
     private void searchBooks() {
         String keyword = searchTextField.getText();
+
         if (keyword == null || keyword.trim().isEmpty()) {
-            clearAndHideDetails();
-            resultCountLabel.setText("请输入搜索关键词。");
-            return;
+            // Path for "Get All Books"
+            new Thread(() -> {
+                List<LibraryBook> allBooks = LibraryClient.getAllBooks(FakeRepository.handler);
+                Platform.runLater(() -> processAndDisplayResults(allBooks, true));
+            }).start();
+        } else {
+            // Path for "Search by Keyword"
+            new Thread(() -> {
+                Map<String, List<LibraryBook>> booksMap = LibraryClient.searchBook(FakeRepository.handler, keyword);
+                List<LibraryBook> allCopies = (booksMap == null) ? Collections.emptyList() :
+                        booksMap.values().stream()
+                                .flatMap(List::stream)
+                                .collect(Collectors.toList());
+                Platform.runLater(() -> processAndDisplayResults(allCopies, false));
+            }).start();
         }
-
-        new Thread(() -> {
-            Map<String, List<LibraryBook>> booksMap = LibraryClient.searchBook(FakeRepository.handler, keyword);
-            Platform.runLater(() -> {
-                clearAndHideDetails();
-                if (booksMap == null || booksMap.isEmpty()) {
-                    resultCountLabel.setText("共检索到 0 个结果");
-                    return;
-                }
-
-                List<LibraryBook> allCopies = booksMap.values().stream()
-                        .flatMap(List::stream)
-                        .collect(Collectors.toList());
-
-                if (allCopies.isEmpty()) {
-                    resultCountLabel.setText("共检索到 0 个结果");
-                    return;
-                }
-
-                // Show the details and table view
-                detailsBox.setVisible(true);
-                detailsBox.setManaged(true);
-                copiesTableView.setVisible(true);
-                copiesTableView.setManaged(true);
-
-                resultCountLabel.setText("共检索到 " + allCopies.size() + " 个结果");
-
-                LibraryBook firstBook = allCopies.get(0);
-                bookNameLabel.setText("书名: " + firstBook.getName());
-                pressLabel.setText("出版社: " + firstBook.getPress());
-                isbnLabel.setText("ISBN: " + firstBook.getIsbn());
-                descriptionArea.setText(firstBook.getDescription());
-
-                if (firstBook.getCover() != null && !firstBook.getCover().isEmpty()) {
-                    try {
-                        coverImageView.setImage(new Image(firstBook.getCover(), true));
-                    } catch (Exception e) {
-                        coverImageView.setImage(null);
-                    }
-                }
-
-                long availableCount = allCopies.stream()
-                        .filter(book -> book.getBookStatus() == app.vcampus.server.enums.BookStatus.available)
-                        .count();
-                totalCopiesLabel.setText("馆藏副本: " + allCopies.size());
-                availableCopiesLabel.setText("可借副本: " + availableCount);
-
-                copiesTableView.getItems().setAll(allCopies);
-            });
-        }).start();
     }
 }
