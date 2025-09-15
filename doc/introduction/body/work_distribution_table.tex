@@ -66,3 +66,37 @@
         \hline
     \end{tabular}
 \end{table}
+
+\begin{table}[H]
+    \centering
+    % \setlength{\extrarowheight}{8pt} % 可选：增加一些额外的行高，让长文本有更多呼吸空间
+    \begin{tabular}{>{\centering\arraybackslash}m{4cm} p{12cm}} % 定义第一列左对齐，第二列为宽度12cm的段落
+        \hline
+        % --- 表头 ---
+        \rowcolor[HTML]{96FFFB}
+        第二周 & \multicolumn{1}{c}{\cellcolor[HTML]{96FFFB}9月1日 - 9月7日} \\
+        \hline
+        
+        % --- 内容区 ---
+        % 下面这一行是关键：
+        % 我们同时在第一列和第二列使用了 \multirow{4}{...}{...} 命令。
+        % 这意味着从这一行开始，每一列的单元格都会向下“占据”4行空间。
+        % 第一个 \multirow{4}{*}{进度} 的宽度由 "进度" 二字的自然宽度决定。
+        % 第二个 \multirow 的宽度我们手动设为 12cm，以匹配 p{12cm} 的列定义，确保文本能正确换行。
+        \multirow{4}{*}{进度} & \multirow{4}{12cm}{1. 彻底完成主界面 UI 及动画，实现图标切换等逻辑 \\2. 完成各功能模块的开发和测试，除去管理员模块} \\
+
+        % 下面这三行是“占位符”。
+        % 因为上面的 \multirow 已经定义了内容，所以我们只需要用空行来填充被占据的空间。
+        & \\
+        & \\
+        & \\
+        & \\
+        \hline
+        状态  & ，所以我们大部分功能都已实现，只剩下打磨细节和管理员模块（该模块需要整合多部分的后端代码） \\
+        %\hline
+        计划  & 在第四周完成软件开发，撰写详细的项目文档 \\
+        %\hline
+        建议  & 进入收尾阶段 \\
+        \hline
+    \end{tabular}
+\end{table}
