@@ -1,16 +1,19 @@
+//FinanceController.java
 package app.vcampus.server.controller;
 
 import app.vcampus.server.entity.CardTransaction;
 import app.vcampus.server.entity.FinanceCard;
-import app.vcampus.server.entity.IEntity;
+import app.vcampus.server.enums.CardStatus;
 import app.vcampus.server.enums.TransactionType;
-import app.vcampus.server.utility.Database;
 import app.vcampus.server.utility.Request;
 import app.vcampus.server.utility.Response;
 import app.vcampus.server.utility.router.RouteMapping;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -18,17 +21,167 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class FinanceController {
-    /**
-     *  solve client to get the user's financecard which contains cardNumber and balance
-     *   The constraint is the card != null
-     * @param request  from client with role and uri
-     * @param database datebase
-     * @return  it returns an “OK” response with a map containing a JSON string representing the finance card information
-     */
-    @RouteMapping(uri = "finance/card/getSelf", role = "finance_user")
-    public Response getSelfCard(Request request, org.hibernate.Session database) {
-        Integer cardNumber = request.getSession().getCardNum();
 
+    private final Gson gson = new Gson();
+
+    /**
+     * Handles the request for card information from a staff client.
+     * Corresponds to FinanceClient.findCardInfo
+     *
+     * @param request the request from the client
+     * @param database the database session
+     * @return a response containing the card info or an error
+     */
+    @RouteMapping(uri = "finance/info", role = "finance_staff")
+    public Response getCardInfo(Request request, org.hibernate.Session database) {
+        String cardNumberStr = request.getParams().get("cardNumber");
+        if (cardNumberStr == null) {
+            return Response.Common.error("Card number is required");
+        }
+
+        try {
+            Integer cardNumber = Integer.parseInt(cardNumberStr);
+            FinanceCard card = database.get(FinanceCard.class, cardNumber);
+
+            if (card == null) {
+                return Response.Common.error("Card not found");
+            }
+
+            // Use the label from the enum directly
+            Map<String, Object> cardInfo = Map.of(
+                    "cardNumber", card.getCardNumber().toString(),
+                    "status", card.getStatus().getLabel(), // Optimized
+                    "balance", card.getBalance() / 100.0 // Convert cents to yuan
+            );
+
+            return Response.Common.ok(cardInfo);
+        } catch (NumberFormatException e) {
+            return Response.Common.error("Invalid card number format");
+        }
+    }
+
+    /**
+     * Handles card recharge requests from a staff client.
+     * Corresponds to FinanceClient.recharge
+     *
+     * @param request the request from the client
+     * @param database the database session
+     * @return a success or error response
+     */
+    @RouteMapping(uri = "finance/recharge", role = "finance_staff")
+    public Response rechargeCard(Request request, org.hibernate.Session database) {
+        String cardNumberStr = request.getParams().get("cardNumber");
+        String amountStr = request.getParams().get("amount");
+
+        if (cardNumberStr == null || amountStr == null) {
+            return Response.Common.error("Card number and amount are required");
+        }
+
+        try {
+            Integer cardNumber = Integer.parseInt(cardNumberStr);
+            double amount = Double.parseDouble(amountStr);
+
+            if (amount <= 0) {
+                return Response.Common.error("Recharge amount must be positive");
+            }
+
+            FinanceCard card = database.get(FinanceCard.class, cardNumber);
+            if (card == null) {
+                return Response.Common.error("Card not found");
+            }
+            if (card.getStatus() == CardStatus.frozen) {
+                return Response.Common.error("Cannot recharge a frozen card");
+            }
+
+            Transaction tx = database.beginTransaction();
+            try {
+                int amountInCents = (int) Math.round(amount * 100);
+                card.setBalance(card.getBalance() + amountInCents);
+                database.merge(card);
+
+                CardTransaction transaction = new CardTransaction();
+                transaction.setCardNumber(cardNumber);
+                transaction.setAmount(amountInCents);
+                transaction.setTime(new Date());
+                transaction.setType(TransactionType.deposit);
+                transaction.setDescription("充值");
+                database.persist(transaction);
+
+                tx.commit();
+                return Response.Common.ok();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                log.error("Recharge failed for card: " + cardNumber, e);
+                return Response.Common.error("Recharge failed due to a server error");
+            }
+
+        } catch (NumberFormatException e) {
+            return Response.Common.error("Invalid number format for card number or amount");
+        }
+    }
+
+    /**
+     * Updates the status of a finance card.
+     * Corresponds to FinanceClient.updateCardStatus
+     *
+     * @param request the request from the client
+     * @param database the database session
+     * @return a success or error response
+     */
+    @RouteMapping(uri = "finance/updateStatus", role = "finance_staff")
+    public Response updateCardStatus(Request request, org.hibernate.Session database) {
+        String cardNumberStr = request.getParams().get("cardNumber");
+        String newStatusStr = request.getParams().get("newStatus");
+
+        if (cardNumberStr == null || newStatusStr == null) {
+            return Response.Common.error("Card number and new status are required");
+        }
+
+        try {
+            Integer cardNumber = Integer.parseInt(cardNumberStr);
+            FinanceCard card = database.get(FinanceCard.class, cardNumber);
+            if (card == null) {
+                return Response.Common.error("Card not found");
+            }
+
+            // Convert string status to CardStatus enum by matching label
+            CardStatus newStatus = Arrays.stream(CardStatus.values())
+                    .filter(status -> status.getLabel().equals(newStatusStr))
+                    .findFirst()
+                    .orElse(null);
+
+            if (newStatus == null) {
+                return Response.Common.error("Invalid status value: " + newStatusStr);
+            }
+
+            Transaction tx = database.beginTransaction();
+            try {
+                card.setStatus(newStatus);
+                database.merge(card);
+                tx.commit();
+                return Response.Common.ok();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                log.error("Failed to update status for card: " + cardNumber, e);
+                return Response.Common.error("Status update failed due to a server error");
+            }
+
+        } catch (NumberFormatException e) {
+            return Response.Common.error("Invalid card number format");
+        }
+    }
+
+    /**
+     * Gets the balance for the current user's card.
+     * Corresponds to FinanceClient.getBalance
+     *
+     * @param request the request from the client
+     * @param database the database session
+     * @return a response containing the balance
+     */
+    @RouteMapping(uri = "finance/balance", role = "finance_user")
+    public Response getBalance(Request request, org.hibernate.Session database) {
+        Integer cardNumber = request.getSession().getCardNum();
         FinanceCard card = database.get(FinanceCard.class, cardNumber);
 
         if (card == null) {
@@ -36,100 +189,40 @@ public class FinanceController {
             card = new FinanceCard();
             card.setCardNumber(cardNumber);
             card.setBalance(0);
+            card.setStatus(CardStatus.normal);
             database.persist(card);
             tx.commit();
         }
 
-        return Response.Common.ok(Map.of("card", card.toJson()));
+        return Response.Common.ok(Map.of("balance", card.getBalance() / 100.0));
     }
 
     /**
-     * solve client to get the user's financecard by cardNumber
-     * The constr
-     * @param request  from client with role and uri
-     * @param database datebase
-     * @return  it returns an “OK” response with a map containing a JSON string representing the finance card information
-     */
-    @RouteMapping(uri = "finance/card/getByCardNumber", role = "finance_staff")
-    public Response getByCardNumber(Request request, org.hibernate.Session database) {
-        Integer cardNumber = Integer.parseInt(request.getParams().get("cardNumber"));
-
-        FinanceCard card = database.get(FinanceCard.class, cardNumber);
-
-        if (card == null) {
-            return Response.Common.error("卡号不存在");
-        }
-
-        return Response.Common.ok(Map.of("card", card.toJson()));
-    }
-
-    /**
-     * update the Financecard
-     * @param request  from client with role and uri
-     * @param database database
-     * @return  it returns an “OK” response with a map containing a JSON string representing the finance card information
-     */
-    @RouteMapping(uri = "finance/card/update", role = "finance_staff")
-    public Response updateCard(Request request, org.hibernate.Session database) {
-        FinanceCard newCard = IEntity.fromJson(request.getParams().get("card"), FinanceCard.class);
-
-        if (newCard == null) {
-            return Response.Common.error("卡号不存在");
-        }
-
-        Transaction tx = database.beginTransaction();
-        database.merge(newCard);
-        tx.commit();
-
-        return Response.Common.ok(Map.of("card", newCard.toJson()));
-    }
-
-    /**
-     *  recharge the card with the request's cardNumber and amount
-     * @param request  from client with role and uri
-     * @param database database
-     * @return  it returns an “OK” response with a map containing a JSON string representing the finance card information
-     */
-    @RouteMapping(uri = "finance/card/recharge", role = "finance_staff")
-    public Response rechargeCard(Request request, org.hibernate.Session database) {
-        Integer cardNumber = Integer.parseInt(request.getParams().get("cardNumber"));
-        Integer amount = Integer.parseInt(request.getParams().get("amount"));
-
-        FinanceCard card = database.get(FinanceCard.class, cardNumber);
-
-        if (card == null) {
-            return Response.Common.error("卡号不存在");
-        }
-
-        Transaction tx = database.beginTransaction();
-        card.setBalance(card.getBalance() + amount);
-        database.persist(card);
-
-        CardTransaction transaction = new CardTransaction();
-        transaction.setCardNumber(cardNumber);
-        transaction.setAmount(amount);
-        transaction.setTime(new Date());
-        transaction.setType(TransactionType.deposit);
-        transaction.setDescription("充值");
-        database.persist(transaction);
-        tx.commit();
-
-        return Response.Common.ok(Map.of("card", card.toJson()));
-    }
-
-    /**
+     * Gets the transaction history for the current user's card.
+     * Corresponds to FinanceClient.getTransactionHistory
      *
-     * @param request
-     * @param database
-     * @return
+     * @param request the request from the client
+     * @param database the database session
+     * @return a response containing a list of transactions
      */
-    @RouteMapping(uri = "finance/bills/getSelf", role = "finance_user")
-    public Response getSelfBills(Request request, org.hibernate.Session database) {
+    @RouteMapping(uri = "finance/transactions", role = "finance_user")
+    public Response getTransactionHistory(Request request, org.hibernate.Session database) {
         int cardNumber = request.getSession().getCardNum();
 
-        List<CardTransaction> transactions = Database.getWhereString(CardTransaction.class, "cardNumber", Integer.toString(cardNumber), database);
+        String hql = "FROM CardTransaction WHERE cardNumber = :cardNumber ORDER BY time DESC";
+        Query<CardTransaction> query = database.createQuery(hql, CardTransaction.class);
+        query.setParameter("cardNumber", cardNumber);
+        List<CardTransaction> transactions = query.list();
 
-        return Response.Common.ok(transactions.stream().map(CardTransaction::toJson).collect(Collectors.toList()));
+        List<Map<String, Object>> displayableTransactions = transactions.stream().map(tx -> {
+            return Map.<String, Object>of(
+                    "time", tx.getTime().getTime(),
+                    "type", tx.getType().toString(),
+                    "amount", tx.getAmount() / 100.0,
+                    "description", tx.getDescription()
+            );
+        }).collect(Collectors.toList());
+
+        return Response.Common.ok(displayableTransactions);
     }
 }
-

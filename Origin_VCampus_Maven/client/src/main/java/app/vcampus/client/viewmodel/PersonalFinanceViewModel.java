@@ -33,8 +33,8 @@ public class PersonalFinanceViewModel {
         // 建议在后台线程中执行网络请求
         new Thread(() -> {
             try {
-                double fetchedBalance = FinanceClient.getBalance(null);
-                var fetchedTransactions = FinanceClient.getTransactionHistory(null);
+                double fetchedBalance = FinanceClient.getBalance();
+                var fetchedTransactions = FinanceClient.getTransactionHistory();
 
                 // 更新UI需要在JavaFX应用线程中执行
                 Platform.runLater(() -> {

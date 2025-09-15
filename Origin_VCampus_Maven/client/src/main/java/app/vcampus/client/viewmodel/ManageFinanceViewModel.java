@@ -21,7 +21,6 @@ public class ManageFinanceViewModel {
 
     // Properties for the toggle button
     public final StringProperty freezeButtonText = new SimpleStringProperty("冻结");
-    public final BooleanProperty freezeButtonDisabled = new SimpleBooleanProperty(true);
 
 
     public ManageFinanceViewModel() {
@@ -46,14 +45,11 @@ public class ManageFinanceViewModel {
     private void updateFreezeButtonState(String status) {
         if ("正常".equals(status)) {
             freezeButtonText.set("冻结");
-            freezeButtonDisabled.set(false);
-        } else if ("已冻结".equals(status)) {
+        } else if ("冻结".equals(status)) {
             freezeButtonText.set("解冻");
-            freezeButtonDisabled.set(false);
         } else {
             // Disable button for other statuses like "已挂失"
             freezeButtonText.set("冻结");
-            freezeButtonDisabled.set(true);
         }
     }
 
@@ -86,7 +82,7 @@ public class ManageFinanceViewModel {
 
         statusMessage.set(""); // Clear previous message
         runAsyncTask(() -> {
-            var cardOpt = FinanceClient.findCardInfo(cardNumber,null);
+            var cardOpt = FinanceClient.findCardInfo(cardNumber);
             Platform.runLater(() -> {
                 if (cardOpt.isPresent()) {
                     foundCard.set(cardOpt.get());
@@ -109,12 +105,19 @@ public class ManageFinanceViewModel {
             }
 
             runAsyncTask(() -> {
-                boolean success = FinanceClient.recharge(foundCard.get().getCardNumber(), amount,null);
+                boolean success = FinanceClient.recharge(foundCard.get().getCardNumber(), amount);
                 Platform.runLater(() -> {
                     if (success) {
                         showStatusMessage("充值 " + String.format("%.2f", amount) + " 元成功！", false);
                         // Manually update the balance in the ViewModel to refresh UI
                         CardInfo currentCard = foundCard.get();
+
+                        // 1. 【修复】先更新 ViewModel 中卡对象的余额
+                        double newBalance = currentCard.getBalance() + amount;
+                        currentCard.setBalance(newBalance);
+
+                        // 2. 再用更新后的对象去刷新UI
+                        updateCardInfoText(currentCard);
                         updateCardInfoText(currentCard);
                         rechargeAmount.set("");
                     } else {
@@ -134,11 +137,11 @@ public class ManageFinanceViewModel {
         String currentStatus = currentCard.getStatus();
         String newStatus;
         String actionName;
-
+        System.out.println(currentStatus);
         if ("正常".equals(currentStatus)) {
-            newStatus = "已冻结";
+            newStatus = "冻结";
             actionName = "冻结";
-        } else if ("已冻结".equals(currentStatus)) {
+        } else if ("冻结".equals(currentStatus)) {
             newStatus = "正常";
             actionName = "解冻";
         } else {
@@ -147,7 +150,7 @@ public class ManageFinanceViewModel {
         }
 
         runAsyncTask(() -> {
-            boolean success = FinanceClient.updateCardStatus(currentCard.getCardNumber(), newStatus,null);
+            boolean success = FinanceClient.updateCardStatus(currentCard.getCardNumber(), newStatus);
             Platform.runLater(() -> {
                 if (success) {
                     showStatusMessage("卡片已成功" + actionName + "！", false);
