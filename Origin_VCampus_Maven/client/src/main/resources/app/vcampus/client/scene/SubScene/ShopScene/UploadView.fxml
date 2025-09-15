@@ -6,23 +6,25 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.effect.DropShadow?> <!-- 【新增】导入阴影效果 -->
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?> <!-- 【新增】导入颜色 -->
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #FAFAFA;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.ShopScene.UploadController">
+<AnchorPane prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #F7F8FA;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.ShopScene.UploadController">
     <children>
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <content>
                 <VBox alignment="TOP_CENTER" spacing="20.0">
                     <children>
-                        <VBox fx:id="mainContainer" alignment="TOP_LEFT" maxWidth="1000.0" spacing="30.0">
+                        <VBox fx:id="mainContainer" alignment="TOP_LEFT" maxWidth="1000.0" spacing="20.0">
                             <children>
                                 <!-- 页面标题 -->
-                                <VBox spacing="10.0">
+                                <VBox spacing="10.0" VBox.vgrow="NEVER">
                                     <children>
                                         <Label text="添加商品">
                                             <font>
@@ -37,56 +39,77 @@
                                     </children>
                                 </VBox>
 
-                                <!-- 表单主体 GridPane -->
-                                <GridPane hgap="30.0" vgap="25.0"> <!-- 增大了 hgap -->
-                                    <columnConstraints>
-                                        <!-- 【核心修正】第一列（标签）：宽度由内容决定 -->
-                                        <ColumnConstraints hgrow="NEVER" />
-                                        <!-- 【核心修正】第二列（输入框）：占据所有剩余空间 -->
-                                        <ColumnConstraints hgrow="ALWAYS" />
-                                    </columnConstraints>
-
-                                    <!-- 商品名称 -->
-                                    <Label text="商品名称" GridPane.halignment="RIGHT" GridPane.rowIndex="0" />
-                                    <JFXTextField fx:id="itemNameField" labelFloat="true" promptText="请填写您的商品名称" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-                                    <!-- 商品价格 -->
-                                    <Label text="商品价格" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
-                                    <JFXTextField fx:id="priceField" labelFloat="true" promptText="请填写商品价格 (单位: 元)" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                                    <!-- 商品份数 (库存) -->
-                                    <Label text="商品份数" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
-                                    <JFXTextField fx:id="stockField" labelFloat="true" promptText="请输入你要添加的商品数量" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-                                    <!-- 商品条形码 -->
-                                    <Label text="商品条形码" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
-                                    <JFXTextField fx:id="barcodeField" labelFloat="true" promptText="请填写您要上传的商品的条形码" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-                                    <!-- 图片上传 -->
-                                    <Label text="商品图片" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
-                                    <HBox spacing="10.0" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                        <children>
-                                            <JFXTextField fx:id="imagePathField" labelFloat="true" promptText="点击右侧按钮选择本地图片" editable="false" style="-fx-font-size: 16px;" HBox.hgrow="ALWAYS" />
-                                            <JFXButton fx:id="chooseImageButton" onAction="#handleChooseImage" text="选择图片" styleClass="payment-action-button" />
-                                        </children>
-                                    </HBox>
-
-                                    <!-- 商品介绍 -->
-                                    <Label text="商品介绍" GridPane.halignment="RIGHT" GridPane.rowIndex="5" />
-                                    <JFXTextArea fx:id="descriptionArea" labelFloat="true" promptText="请介绍一下您的商品信息" prefHeight="120.0" wrapText="true" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                                </GridPane>
-
-                                <!-- 提交按钮 -->
-                                <HBox alignment="CENTER_RIGHT">
+                                <!-- 【核心修改】创建一个 VBox 作为“卡片”，包裹表单和按钮 -->
+                                <VBox style="-fx-background-color: white; -fx-background-radius: 16;" VBox.vgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+                                    </padding>
+                                    <effect>
+                                        <DropShadow blurType="GAUSSIAN" height="30.0" offsetY="4.0" radius="14.5" width="30.0">
+                                            <color>
+                                                <Color opacity="0.08" />
+                                            </color>
+                                        </DropShadow>
+                                    </effect>
                                     <children>
-                                        <JFXButton fx:id="submitButton" onAction="#handleSubmit" text="添加商品" styleClass="payment-action-button" />
+                                        <!-- 表单主体 GridPane (现在位于卡片内部) -->
+                                        <GridPane hgap="30.0" vgap="40.0">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="NEVER" />
+                                                <ColumnConstraints hgrow="ALWAYS" />
+                                            </columnConstraints>
+
+                                            <!-- 商品名称 -->
+                                            <Label text="商品名称" GridPane.halignment="RIGHT" GridPane.rowIndex="0" />
+                                            <JFXTextField fx:id="itemNameField" labelFloat="true" promptText="请填写您的商品名称" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                            <!-- 商品价格 -->
+                                            <Label text="商品价格" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+                                            <JFXTextField fx:id="priceField" labelFloat="true" promptText="请填写商品价格 (单位: 元)" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                            <!-- 商品份数 (库存) -->
+                                            <Label text="商品份数" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
+                                            <JFXTextField fx:id="stockField" labelFloat="true" promptText="请输入你要添加的商品数量" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                            <!-- 图片上传 -->
+                                            <Label text="商品图片" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+                                            <HBox spacing="10.0" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                                <children>
+                                                    <JFXTextField fx:id="imagePathField" labelFloat="true" promptText="点击右侧按钮选择本地图片" editable="false" style="-fx-font-size: 16px;" HBox.hgrow="ALWAYS" />
+                                                    <JFXButton fx:id="chooseImageButton" onAction="#handleChooseImage" text="选择图片" styleClass="payment-action-button" />
+                                                </children>
+                                            </HBox>
+
+                                            <!-- 商品介绍 -->
+                                            <Label text="商品介绍" GridPane.halignment="RIGHT" GridPane.rowIndex="4" />
+                                            <JFXTextArea fx:id="descriptionArea" labelFloat="true" promptText="请介绍一下您的商品信息" prefHeight="120.0" wrapText="true" style="-fx-font-size: 16px;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                        </GridPane>
+
+                                        <!-- 提交按钮 (现在位于卡片内部) -->
+                                        <!-- c. 提交按钮 -->
+                                        <HBox alignment="CENTER_RIGHT" spacing="15.0"> <!-- 【优化】增加 spacing -->
+                                            <children>
+                                                <!-- 【新增】这是我们用于显示“上传失败”的错误信息标签 -->
+                                                <Label fx:id="errorMessageLabel" text="上传失败，请检查表单！" textFill="RED" visible="false">
+                                                    <font>
+                                                        <Font name="System Bold" size="14.0" />
+                                                    </font>
+                                                </Label>
+
+                                                <!-- 您原来的提交按钮 -->
+                                                <JFXButton fx:id="submitButton" onAction="#handleSubmit" text="添加商品" styleClass="payment-action-button" />
+                                            </children>
+                                            <VBox.margin>
+                                                <Insets top="40.0" />
+                                            </VBox.margin>
+                                        </HBox>
                                     </children>
-                                </HBox>
+                                </VBox>
                             </children>
                         </VBox>
                     </children>
                     <padding>
-                        <Insets bottom="40.0" left="100.0" right="100.0" top="40.0" />
+                        <Insets bottom="60.0" left="100.0" right="100.0" top="40.0" />
                     </padding>
                 </VBox>
             </content>

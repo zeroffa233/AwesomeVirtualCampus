@@ -7,11 +7,22 @@ import app.vcampus.server.entity.StoreItem;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.UUID;
+import com.jfoenix.validation.RegexValidator;
+import com.jfoenix.validation.RequiredFieldValidator;
+import com.jfoenix.validation.base.ValidatorBase;
+import javafx.animation.Timeline;
+import javafx.scene.Node;
+import javafx.util.Duration;
 
 public class UploadController {
 
@@ -19,66 +30,92 @@ public class UploadController {
     @FXML private JFXTextField itemNameField;
     @FXML private JFXTextField priceField;
     @FXML private JFXTextField stockField;
-    @FXML private JFXTextField barcodeField;
     @FXML private JFXTextField imagePathField;
     @FXML private JFXButton chooseImageButton;
     @FXML private JFXTextArea descriptionArea;
     @FXML private JFXButton submitButton;
+    @FXML private Label errorMessageLabel;
 
     // 用于存储用户选择的图片文件的二进制数据
     private byte[] selectedImageData;
     private String imageKey; // 用于存储图片的哈希值 (Key)
+    private String selectedFileExtension;
 
     @FXML
     public void initialize() {
-        initializeColor();
-        // 在这里可以添加输入验证逻辑，例如只允许价格和库存输入数字
-        // ... (我们稍后可以添加)
-    }
-
-    private void initializeColor() {
-        // 【核心修改】在这里，我们用Java代码来定义和应用颜色
-
-        // 1. 定义我们想要的颜色
         final String focusColor = "#728748";
-        // 最好也定义一个非焦点颜色，否则线条会从绿色跳回默认的灰色
-        final String unfocusColor = "#BDBDBD"; // 一个标准的中性灰色
-
-        // 2. 将样式应用到每一个 JFoenix 输入控件上
-        itemNameField.setStyle(
-                "-jfx-focus-color: " + focusColor + "; " +
-                        "-jfx-unfocus-color: " + unfocusColor + ";"
-        );
-
-        priceField.setStyle(
-                "-jfx-focus-color: " + focusColor + "; " +
-                        "-jfx-unfocus-color: " + unfocusColor + ";"
-        );
-
-        stockField.setStyle(
-                "-jfx-focus-color: " + focusColor + "; " +
-                        "-jfx-unfocus-color: " + unfocusColor + ";"
-        );
-
-        barcodeField.setStyle(
-                "-jfx-focus-color: " + focusColor + "; " +
-                        "-jfx-unfocus-color: " + unfocusColor + ";"
-        );
-
-        imagePathField.setStyle(
-                "-jfx-focus-color: " + focusColor + "; " +
-                        "-jfx-unfocus-color: " + unfocusColor + ";"
-        );
-
-        descriptionArea.setStyle(
-                "-jfx-focus-color: " + focusColor + "; " +
-                        "-jfx-unfocus-color: " + unfocusColor + ";"
-        );
+        final String unfocusColor = "#BDBDBD";
+        initializeColor(focusColor, unfocusColor);
+        setupValidators();
     }
 
-    /**
-     * 当用户点击“选择图片”按钮时调用。
-     */
+    private void initializeColor(String focusColor, String unfocusColor) {
+        String style = "-jfx-focus-color: " + focusColor + "; -jfx-unfocus-color: " + unfocusColor + ";";
+        itemNameField.setStyle(style);
+        priceField.setStyle(style);
+        stockField.setStyle(style);
+        imagePathField.setStyle(style);
+        descriptionArea.setStyle(style);
+    }
+
+    private void setupValidators() {
+        // --- 通用验证器 ---
+        RequiredFieldValidator requiredValidator = new RequiredFieldValidator("此字段不能为空");
+
+        // --- 商品名称验证 ---
+        ValidatorBase nameLengthValidator = new ValidatorBase("商品名称不能超过30个字") {
+            @Override
+            protected void eval() {
+                // JFXTextField, JFXTextArea 都继承自 TextInputControl
+                javafx.scene.control.TextInputControl field = (javafx.scene.control.TextInputControl) srcControl.get();
+                if (field.getText() != null && field.getText().length() > 30) {
+                    hasErrors.set(true);
+                } else {
+                    hasErrors.set(false);
+                }
+            }
+        };
+        itemNameField.getValidators().addAll(requiredValidator, nameLengthValidator);
+
+        // --- 商品价格验证 ---
+        RegexValidator priceValidator = new RegexValidator("价格格式不正确 (例如: 99 或 99.99)");
+        priceValidator.setRegexPattern("^\\d+(\\.\\d{1,2})?$");
+        priceField.getValidators().addAll(requiredValidator, priceValidator);
+
+        // --- 商品数量验证 ---
+        RegexValidator stockNumberValidator = new RegexValidator("库存必须是大于0的整数");
+        stockNumberValidator.setRegexPattern("^[1-9]\\d*$");
+        stockField.getValidators().addAll(requiredValidator, stockNumberValidator);
+
+        // --- 商品图片验证 ---
+        ValidatorBase imageValidator = new ValidatorBase("必须选择一个 .png 格式的图片") {
+            @Override
+            protected void eval() {
+                // 检查文件是否被选择，并且扩展名是否是 "png"
+                if (selectedImageData == null || !"png".equalsIgnoreCase(selectedFileExtension)) {
+                    hasErrors.set(true);
+                } else {
+                    hasErrors.set(false);
+                }
+            }
+        };
+        imagePathField.getValidators().add(imageValidator);
+
+        // --- 添加监听器，在用户失去焦点时自动触发验证 ---
+        addFocusLostValidationListener(itemNameField);
+        addFocusLostValidationListener(priceField);
+        addFocusLostValidationListener(stockField);
+        // imagePathField 的验证由按钮点击触发，不需要焦点监听
+    }
+    private void addFocusLostValidationListener(JFXTextField field) {
+        field.focusedProperty().addListener((o, oldVal, newVal) -> {
+            if (!newVal) { // 当失去焦点时
+                field.validate();
+            }
+        });
+    }
+
+
     @FXML
     private void handleChooseImage() {
         FileChooser fileChooser = new FileChooser();
@@ -94,15 +131,20 @@ public class UploadController {
 
         if (selectedFile != null) {
             try {
-                // 1. 在UI上显示选择的文件路径
+                // ... (读取文件、计算哈希的代码不变)
                 imagePathField.setText(selectedFile.getAbsolutePath());
-
-                // 2. 读取文件的二进制数据并存储
                 selectedImageData = Files.readAllBytes(selectedFile.toPath());
-
-                // 3. 【核心】计算图片的哈希值作为 Key
                 imageKey = ImageClient.calculateSHA256(selectedImageData);
-                System.out.println("选择的图片 Key (SHA-256): " + imageKey);
+
+                // 【核心修正】在这里，我们从文件名中提取扩展名，并赋给我们的新成员变量
+                String name = selectedFile.getName();
+                // 确保文件名中有 . 符号，避免出错
+                if (name.lastIndexOf(".") != -1 && name.lastIndexOf(".") != 0) selectedFileExtension = name.substring(name.lastIndexOf(".") + 1);
+                else selectedFileExtension = "";
+
+
+                // 用户选择文件后，立即触发一次验证
+                imagePathField.validate();
 
             } catch (Exception e) {
                 // 处理文件读取错误
@@ -110,67 +152,77 @@ public class UploadController {
                 imagePathField.setText("文件读取错误！");
                 selectedImageData = null;
                 imageKey = null;
+                return;
             }
+            imagePathField.validate();
         }
     }
 
-    /**
-     * 当用户点击“添加商品”按钮时调用。
-     */
+
+
     @FXML
     private void handleSubmit() {
-        // 1. 输入验证 (简单示例)
-        if (itemNameField.getText().isEmpty() || priceField.getText().isEmpty() || selectedImageData == null) {
-            System.out.println("错误：商品名称、价格和图片不能为空！");
-            // 在这里可以显示一个错误提示对话框
-            return;
+        System.out.println("handleSubmit() called");
+        boolean isAllValid = itemNameField.validate() &
+                priceField.validate() &
+                stockField.validate() &
+                imagePathField.validate();
+
+        // 【第3步】【核心修改】如果验证失败，执行我们的新 feature
+        if (!isAllValid) {
+            System.out.println("Validation failed.");
+
+            // a. 抖动按钮
+            shakeNode(submitButton);
+
+            // b. 显示错误信息，并在3秒后自动隐藏
+            showAndHideErrorMessage();
+
+            return; // 立即终止方法，不执行后续上传逻辑
         }
 
-        // 2. 显示一个加载指示 (例如，禁用按钮)
+        // --- 只有在所有验证都通过后，才继续执行上传逻辑 ---
+        // ... (后续的后台上传逻辑，保持我们之前的版本不变)
+
+
         submitButton.setDisable(true);
         submitButton.setText("正在上传...");
 
-        // 3. 将上传操作放到一个后台线程中，以避免UI卡顿
         new Thread(() -> {
             try {
-                // a. 首先，上传图片到我们的图床系统
+                // a. 上传图片
                 boolean imageUploadSuccess = ImageClient.addOrUpdateImage(imageKey, selectedImageData);
                 if (!imageUploadSuccess) {
                     throw new Exception("图片上传到图床失败！");
                 }
 
-                // b. 图片上传成功后，创建一个新的 StoreItem 实体
+                // b. 创建 StoreItem 实体
                 StoreItem newItem = new StoreItem();
                 newItem.uuid = UUID.randomUUID();
                 newItem.itemName = itemNameField.getText();
-                // 【注意】价格处理：将用户输入的“元”转换为“分”存储
                 newItem.price = (int) (Double.parseDouble(priceField.getText()) * 100);
                 newItem.stock = Integer.parseInt(stockField.getText());
-                newItem.barcode = barcodeField.getText();
-                newItem.description = descriptionArea.getText();
-                newItem.pictureLink = imageKey; // 【核心】使用图片的哈希值作为链接
+                String description = descriptionArea.getText();
+                newItem.description = description.isEmpty() ? null : description;
+                newItem.pictureLink = imageKey;
+                // 注意：您的 StoreItem 实体还有一个 barcode 字段，这里我们先设为空字符串
+                newItem.barcode = "";
 
-                // c. 调用 StoreClient 将新的商品信息发送到服务器
+                // c. 【核心修正】调用 StoreClient.addItem 而不是 addOrUpdateImage
+                // addItem 是专门用于添加新商品的，更符合这里的业务逻辑
                 boolean itemAddSuccess = StoreClient.addItem(FakeRepository.handler, newItem);
                 if (!itemAddSuccess) {
                     throw new Exception("添加商品信息失败！");
                 }
 
-                // d. 在UI线程中报告成功并清空表单
-                javafx.application.Platform.runLater(() -> {
-                    System.out.println("商品添加成功！");
-                    // 在这里可以显示一个成功提示
-                    clearForm();
-                });
+                javafx.application.Platform.runLater(this::clearFormAndShowSuccess);
 
             } catch (Exception e) {
-                // e. 在UI线程中报告错误
                 javafx.application.Platform.runLater(() -> {
                     System.err.println("添加商品时出错: " + e.getMessage());
-                    // 在这里显示一个错误对话框
+                    // 在这里可以显示一个错误对话框
                 });
             } finally {
-                // f. 无论成功还是失败，最后都在UI线程中恢复按钮状态
                 javafx.application.Platform.runLater(() -> {
                     submitButton.setDisable(false);
                     submitButton.setText("添加商品");
@@ -179,17 +231,47 @@ public class UploadController {
         }).start();
     }
 
-    /**
-     * 一个清空所有输入字段的辅助方法。
-     */
+    private void clearFormAndShowSuccess() {
+        clearForm();
+        System.out.println("商品添加成功！");
+        // 这里可以弹出一个成功的提示框
+    }
+
     private void clearForm() {
         itemNameField.clear();
         priceField.clear();
         stockField.clear();
-        barcodeField.clear();
         imagePathField.clear();
         descriptionArea.clear();
         selectedImageData = null;
         imageKey = null;
+        selectedFileExtension = null;
+
+        // 重置所有验证状态
+        itemNameField.resetValidation();
+        priceField.resetValidation();
+        stockField.resetValidation();
+        imagePathField.resetValidation();
+    }
+
+    private void shakeNode(Node node) {
+        double SPEED = 1.2;
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.millis(0*SPEED), new KeyValue(node.translateXProperty(), 0)),
+                new KeyFrame(Duration.millis(50*SPEED), new KeyValue(node.translateXProperty(), -10)),
+                new KeyFrame(Duration.millis(100*SPEED), new KeyValue(node.translateXProperty(), 10)),
+                new KeyFrame(Duration.millis(150*SPEED), new KeyValue(node.translateXProperty(), -10)),
+                new KeyFrame(Duration.millis(200*SPEED), new KeyValue(node.translateXProperty(), 10)),
+                new KeyFrame(Duration.millis(250*SPEED), new KeyValue(node.translateXProperty(), 0))
+        );
+        timeline.play();
+    }
+
+    private void showAndHideErrorMessage() {
+        errorMessageLabel.setVisible(true);
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(3)); // 错误信息显示 3 秒
+        delay.setOnFinished(event -> errorMessageLabel.setVisible(false));
+        delay.play();
     }
 }
