@@ -50,7 +50,7 @@ public class ManageFinanceController implements Initializable {
 
         // Bind freeze/unfreeze toggle button
         freezeButton.textProperty().bind(viewModel.freezeButtonText);
-        freezeButton.disableProperty().bind(viewModel.freezeButtonDisabled);
+
 
         // Set button actions
         searchButton.setOnAction(event -> viewModel.search());

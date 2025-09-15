@@ -266,8 +266,9 @@ public class SideBarController implements Initializable {
         // ... 创建二级菜单按钮
         JFXButton shopButton = createSecondaryMenuButton("购物页面", "/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml");
         JFXButton orderButton = createSecondaryMenuButton("我的订单", "/app/vcampus/client/scene/SubScene/ShopScene/OrderView.fxml");
+        JFXButton uploadButton = createSecondaryMenuButton("上传商品", "/app/vcampus/client/scene/SubScene/ShopScene/UploadView.fxml");
         shopButton.getStyleClass().add("active");
-        switchView("/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml", "网上商店", List.of(shopButton, orderButton));
+        switchView("/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml", "网上商店", List.of(shopButton, orderButton, uploadButton));
     }
     
     @FXML
