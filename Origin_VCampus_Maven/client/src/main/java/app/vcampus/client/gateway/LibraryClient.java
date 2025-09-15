@@ -79,6 +79,25 @@ public class LibraryClient extends BaseClient {
         }
     }
 
+    public static List<LibraryBook> getAllBooks(NettyHandler handler) {
+        Request request = new Request();
+        request.setUri("library/all");
+
+        try {
+            Response response = BaseClient.sendRequest(handler, request);
+            if (response.getStatus().equals("success")) {
+                Type type = new TypeToken<List<String>>(){}.getType();
+                List<String> raw_data = new Gson().fromJson(new Gson().toJson(response.getData()), type);
+                return raw_data.stream().map(json -> IEntity.fromJson(json, LibraryBook.class)).toList();
+            } else {
+                throw new RuntimeException("Failed to get all books");
+            }
+        } catch (InterruptedException e) {
+            log.warn("Fail to get all books", e);
+            return null;
+        }
+    }
+
     public static List<LibraryBook> searchBookForDeletion(NettyHandler handler, String bookName) {
         Request request = new Request();
         request.setUri("library/searchForDeletion");
