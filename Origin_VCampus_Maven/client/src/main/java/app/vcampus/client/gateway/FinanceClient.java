@@ -1,42 +1,34 @@
 package app.vcampus.client.gateway;
 
 import app.vcampus.client.net.NettyHandler;
+import app.vcampus.client.repository.FakeRepository;
 import app.vcampus.server.utility.CardInfo;
-import app.vcampus.server.entity.StoreItem;
 import app.vcampus.server.utility.DisplayableTransaction;
 import app.vcampus.server.utility.ShopTransactionRecord;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
+import app.vcampus.server.utility.Request;
+import app.vcampus.server.utility.Response;
 
-import java.util.Arrays;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class FinanceClient extends BaseClient {
-
-    // --- Mock Database for Card Management ---
-    private static final Map<String, CardInfo> cardDatabase = new ConcurrentHashMap<>();
-
-    static {
-        // Populate with some mock data
-        cardDatabase.put("123456", new CardInfo("123456", "正常", 13221836.50));
-        cardDatabase.put("654321", new CardInfo("654321", "正常", 888.88));
-        cardDatabase.put("100000", new CardInfo("100000", "已冻结", 123.00));
-        cardDatabase.put("200000", new CardInfo("200000", "已冻结", 0.00));
-    }
+    private static final NettyHandler handler = FakeRepository.handler;
 
     /**
      * Finds card information by card number.
      *
      * @param cardNumber The card number to search for.
-     * @param handler The network handler for communication.
      * @return An Optional containing the CardInfo if found, otherwise empty.
      */
-    public static Optional<CardInfo> findCardInfo(String cardNumber, NettyHandler handler) {
-        // TODO: Real IO implementation
-        /*
+    public static Optional<CardInfo> findCardInfo(String cardNumber) {
         Gson gson = new Gson();
         Request request = new Request();
         request.setUri("finance/info");
@@ -45,22 +37,15 @@ public class FinanceClient extends BaseClient {
         try {
             Response response = BaseClient.sendRequest(handler, request);
             if (response.getStatus().equals("success")) {
-                CardInfo cardInfo = gson.fromJson(gson.toJson(response.getData()), CardInfo.class);
+                String json = gson.toJson(response.getData());
+                CardInfo cardInfo = gson.fromJson(json, CardInfo.class);
                 return Optional.ofNullable(cardInfo);
             }
         } catch (InterruptedException e) {
             log.warn("Failed to find card info for card: " + cardNumber, e);
-        }
-        return Optional.empty();
-        */
-
-        // Mock for now
-        try {
-            Thread.sleep(500); // Simulate network delay
-        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        return Optional.ofNullable(cardDatabase.get(cardNumber));
+        return Optional.empty();
     }
 
     /**
@@ -68,12 +53,9 @@ public class FinanceClient extends BaseClient {
      *
      * @param cardNumber The card number to recharge.
      * @param amount The amount to add.
-     * @param handler The network handler for communication.
      * @return true if successful, false otherwise.
      */
-    public static boolean recharge(String cardNumber, double amount, NettyHandler handler) {
-        // TODO: Real IO implementation
-        /*
+    public static boolean recharge(String cardNumber, double amount) {
         Request request = new Request();
         request.setUri("finance/recharge");
         request.setParams(Map.of("cardNumber", cardNumber, "amount", String.valueOf(amount)));
@@ -83,17 +65,9 @@ public class FinanceClient extends BaseClient {
             return response.getStatus().equals("success");
         } catch (InterruptedException e) {
             log.warn("Failed to recharge card: " + cardNumber, e);
+            Thread.currentThread().interrupt();
             return false;
         }
-        */
-
-        // Mock for now
-        CardInfo card = cardDatabase.get(cardNumber);
-        if (card != null && amount > 0 && !"已冻结".equals(card.getStatus())) {
-            card.setBalance(card.getBalance() + amount);
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -101,14 +75,11 @@ public class FinanceClient extends BaseClient {
      *
      * @param cardNumber The card number to update.
      * @param newStatus The new status.
-     * @param handler The network handler for communication.
      * @return true if successful, false otherwise.
      */
-    public static boolean updateCardStatus(String cardNumber, String newStatus, NettyHandler handler) {
-        // TODO: Real IO implementation
-        /*
+    public static boolean updateCardStatus(String cardNumber, String newStatus) {
         Request request = new Request();
-        request.setUri("finance/updateCard");
+        request.setUri("finance/updateStatus");
         request.setParams(Map.of("cardNumber", cardNumber, "newStatus", newStatus));
 
         try {
@@ -116,31 +87,23 @@ public class FinanceClient extends BaseClient {
             return response.getStatus().equals("success");
         } catch (InterruptedException e) {
             log.warn("Failed to update status for card: " + cardNumber, e);
+            Thread.currentThread().interrupt();
             return false;
         }
-        */
-
-        // Mock for now
-        CardInfo card = cardDatabase.get(cardNumber);
-        if (card != null) {
-            card.setStatus(newStatus);
-            return true;
-        }
-        return false;
     }
 
-
-    // --- Methods from previous implementation (Personal Finance) ---
-    public static double getBalance(NettyHandler handler) {
-        // TODO: Real IO implementation
-        /*
+    /**
+     * Gets the balance of the current user's card.
+     * @return the balance, or 0.0 if failed.
+     */
+    public static double getBalance() {
         Request request = new Request();
         request.setUri("finance/balance");
-        request.setParams(Map.of());
 
         try {
             Response response = BaseClient.sendRequest(handler, request);
             if (response.getStatus().equals("success") && response.getData() instanceof Map) {
+                @SuppressWarnings("unchecked")
                 Map<String, Object> data = (Map<String, Object>) response.getData();
                 Object balanceObj = data.get("balance");
                 if (balanceObj instanceof Number) {
@@ -149,45 +112,42 @@ public class FinanceClient extends BaseClient {
             }
         } catch (InterruptedException e) {
             log.warn("Failed to get balance", e);
+            Thread.currentThread().interrupt();
         }
         return 0.0;
-        */
-        // Mock for now
-        return 13221836.50;
     }
 
-    public static List<DisplayableTransaction> getTransactionHistory(NettyHandler handler) {
-        // TODO: Real IO implementation
-        /*
+    /**
+     * Gets the transaction history of the current user.
+     * @return A list of DisplayableTransaction, or empty list on failure.
+     */
+    public static List<DisplayableTransaction> getTransactionHistory() {
         Gson gson = new Gson();
         Request request = new Request();
         request.setUri("finance/transactions");
-        request.setParams(Map.of());
 
         try {
             Response response = BaseClient.sendRequest(handler, request);
             if (response.getStatus().equals("success")) {
                 String json = gson.toJson(response.getData());
-                Type listType = new TypeToken<List<DisplayableTransaction>>() {}.getType();
-                return gson.fromJson(json, listType);
+                Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
+                List<Map<String, Object>> rawTransactions = gson.fromJson(json, listType);
+
+                // FIX: Removed special handling for "payment" type.
+                // The server response shows that for all transaction types,
+                // the 'description' field is a simple string, not a JSON object.
+                // Therefore, we process all transactions uniformly.
+                return rawTransactions.stream().map(txMap -> {
+                    long time = ((Number) txMap.get("time")).longValue();
+                    double amount = ((Number) txMap.get("amount")).doubleValue();
+                    String description = (String) txMap.get("description");
+                    return new DisplayableTransaction(time, description, amount);
+                }).collect(Collectors.toList());
             }
         } catch (InterruptedException e) {
             log.warn("Failed to get transaction history", e);
+            Thread.currentThread().interrupt();
         }
         return List.of(); // Return empty list on failure
-        */
-
-        // Mock for now
-        StoreItem laptop = new StoreItem();
-        laptop.setItemName("笔记本电脑");
-        laptop.setPrice(11050);
-        StoreItem mouse = new StoreItem();
-        mouse.setItemName("鼠标");
-        mouse.setPrice(150);
-        return Arrays.asList(
-                new DisplayableTransaction(1725936059000L, "充值", 12345678.00),
-                new DisplayableTransaction(new ShopTransactionRecord(Arrays.asList(mouse, laptop, mouse), 11350.00)),
-                new DisplayableTransaction(1725937059000L, "充值", 13.00)
-        );
     }
 }

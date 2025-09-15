@@ -5,7 +5,8 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="app.vcampus.client.scene.SubScene.CourseScene.TeachingClassCardController"
-            prefWidth="240" prefHeight="220" styleClass="tc-card-root">
+            prefWidth="240" prefHeight="220" styleClass="tc-card-root"
+            stylesheets="@teachingaffairs.css">
 
     <children>
         <VBox spacing="8" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">

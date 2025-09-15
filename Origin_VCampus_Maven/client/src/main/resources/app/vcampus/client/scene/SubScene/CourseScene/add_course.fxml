@@ -1,15 +1,16 @@
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.*?>
+<?import javafx.scene.layout.*?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="app.vcampus.client.scene.SubScene.CourseScene.AddCourseController"
             prefWidth="900" prefHeight="720"
-            style="-fx-background-color: white;">
+            styleClass="course-container"
+            stylesheets="@teachingaffairs.css">
 
     <children>
-        <VBox spacing="16" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="16" AnchorPane.rightAnchor="16" AnchorPane.bottomAnchor="16">
+        <VBox spacing="24" AnchorPane.topAnchor="24" AnchorPane.leftAnchor="24" AnchorPane.rightAnchor="24" AnchorPane.bottomAnchor="24">
             <!-- 标题区域 -->
             <VBox fx:id="titleBox" spacing="4" styleClass="page-title">
                 <padding>
@@ -21,26 +22,26 @@
             </VBox>
 
             <!-- 表单区域 -->
-            <VBox spacing="12">
+            <VBox spacing="16" styleClass="form-container">
                 <padding>
-                    <Insets top="16" right="16" bottom="16" left="16"/>
+                    <Insets top="24" right="24" bottom="24" left="24"/>
                 </padding>
-                <GridPane hgap="10" vgap="10">
-                    <Label text="课程代码:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                    <TextField fx:id="courseIdField" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="200"/>
-                    
-                    <Label text="课程名称:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                    <TextField fx:id="courseNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="200"/>
-                    
-                    <Label text="开课学院:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                    <TextField fx:id="schoolField" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="200"/>
-                    
-                    <Label text="学分:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                    <TextField fx:id="creditField" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="200"/>
+                <GridPane hgap="16" vgap="16">
+                    <Label text="课程代码:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="form-label"/>
+                    <TextField fx:id="courseIdField" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="300" styleClass="form-text-field"/>
+
+                    <Label text="课程名称:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="form-label"/>
+                    <TextField fx:id="courseNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="300" styleClass="form-text-field"/>
+
+                    <Label text="开课学院:" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="form-label"/>
+                    <TextField fx:id="schoolField" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="300" styleClass="form-text-field"/>
+
+                    <Label text="学分:" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="form-label"/>
+                    <TextField fx:id="creditField" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="300" styleClass="form-text-field"/>
                 </GridPane>
-                
-                <HBox spacing="10" alignment="CENTER_RIGHT">
-                    <Button fx:id="confirmButton" text="确认添加" onAction="#handleAddCourse"/>
+
+                <HBox spacing="16" alignment="CENTER_RIGHT">
+                    <Button fx:id="confirmButton" text="确认添加" onAction="#handleAddCourse" styleClass="primary-button"/>
                 </HBox>
             </VBox>
         </VBox>

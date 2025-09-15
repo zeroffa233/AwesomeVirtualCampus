@@ -20,7 +20,7 @@
                 <children>
                     <Label text="选课系统"
                            styleClass="page-heading"
-                           style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                           />
                 </children>
             </VBox>
 

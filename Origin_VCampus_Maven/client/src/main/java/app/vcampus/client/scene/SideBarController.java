@@ -182,14 +182,19 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleStudentStatus() {
         setActiveButton(studentStatusButton);
+        List<Node> menuItems = new ArrayList<>();
         // if a user is a student
         if (FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
-            switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml", "我的学籍", List.of());
-        }
+            JFXButton studentButton = createSecondaryMenuButton("我的学籍", "/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml");
+            menuItems.add(studentButton);
+            studentButton.getStyleClass().add("active");
+            }
         // if a user is an administrator
-        else {
-            switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusManagementView.fxml", "学籍管理", List.of());
+        if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
+            JFXButton studentmButton = createSecondaryMenuButton("修改学籍", "/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusManagementView.fxml");
+            menuItems.add(studentmButton);
         }
+        switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml", "我的学籍", menuItems);
     }
 
     @FXML
@@ -261,8 +266,9 @@ public class SideBarController implements Initializable {
         // ... 创建二级菜单按钮
         JFXButton shopButton = createSecondaryMenuButton("购物页面", "/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml");
         JFXButton orderButton = createSecondaryMenuButton("我的订单", "/app/vcampus/client/scene/SubScene/ShopScene/OrderView.fxml");
+        JFXButton uploadButton = createSecondaryMenuButton("上传商品", "/app/vcampus/client/scene/SubScene/ShopScene/UploadView.fxml");
         shopButton.getStyleClass().add("active");
-        switchView("/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml", "网上商店", List.of(shopButton, orderButton));
+        switchView("/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml", "网上商店", List.of(shopButton, orderButton, uploadButton));
     }
     
     @FXML

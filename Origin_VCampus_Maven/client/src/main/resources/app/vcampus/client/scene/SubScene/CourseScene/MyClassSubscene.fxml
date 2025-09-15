@@ -1,28 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import com.jfoenix.controls.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <AnchorPane xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController">
+            fx:controller="app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController"
+            styleClass="my-class-root"
+            stylesheets="@teachingaffairs.css">
     <children>
-        <VBox fx:id="rootVBox" spacing="10.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <VBox fx:id="rootVBox" spacing="16.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" styleClass="my-class-container">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
+                <Insets top="24" right="24" bottom="24" left="24"/>
             </padding>
 
             <!-- 标题区域 -->
-            <VBox spacing="5">
-                <Label text="我的课堂" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
-                <Label text="查看教学班信息" style="-fx-text-fill: gray;" />
+            <VBox spacing="5" styleClass="my-class-title-area">
+                <Label text="我的课堂" styleClass="my-class-main-title" />
             </VBox>
 
             <!-- 列表容器 -->
-            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="my-class-scrollpane">
+                <padding>
+                    <Insets top="8" right="0" bottom="8" left="0"/>
+                </padding>
                 <content>
-                    <VBox fx:id="classListVBox" spacing="10"/>
+                    <VBox fx:id="classListVBox" spacing="12" styleClass="my-class-list-container"/>
                 </content>
             </ScrollPane>
 

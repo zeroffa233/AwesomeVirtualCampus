@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import com.jfoenix.controls.*?>
 <?import javafx.scene.control.Label?>
@@ -7,18 +6,20 @@
 <fx:root type="HBox"
          xmlns="http://javafx.com/javafx/20"
          xmlns:fx="http://javafx.com/fxml/1"
-         spacing="10"
-         style="-fx-border-color: lightgray; -fx-border-radius: 4; -fx-padding: 10;">
+         spacing="16"
+         styleClass="class-item-card">
 
-    <VBox spacing="5">
-        <HBox spacing="5">
-            <Label fx:id="courseNameLabel" style="-fx-font-weight: bold;"/>
-            <Label fx:id="courseIdLabel" style="-fx-text-fill: gray;"/>
+    <VBox spacing="8" styleClass="class-info-section">
+        <HBox spacing="8" styleClass="class-header">
+            <Label fx:id="courseNameLabel" styleClass="class-course-name"/>
+            <Label fx:id="courseIdLabel" styleClass="class-course-id"/>
         </HBox>
-        <Label fx:id="scheduleLabel"/>
-        <Label fx:id="placeLabel"/>
+        <VBox spacing="4" styleClass="class-meta-info">
+            <Label fx:id="scheduleLabel"/>
+            <Label fx:id="placeLabel"/>
+        </VBox>
     </VBox>
 
     <Pane HBox.hgrow="ALWAYS"/>
-    <JFXButton text="导出学生名单" fx:id="exportButton"/>
+    <JFXButton text="导出学生名单" fx:id="exportButton" styleClass="export-button"/>
 </fx:root>

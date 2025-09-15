@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class GptClient extends BaseClient {
-    //TODO find the real handler
     private static final GptClient instance = new GptClient(FakeRepository.handler);
 
     // In-memory store to simulate a remote database
@@ -86,7 +85,6 @@ public class GptClient extends BaseClient {
     }
 
     private void initializeData() {
-        // TODO realIO
         Gson gs = new Gson();
         Request request = new Request();
         request.setUri("gpt/pull");

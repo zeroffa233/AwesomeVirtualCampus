@@ -48,4 +48,5 @@ bin/
 *.fdb_latexmk
 *.toc
 *.fls
+*.xdv
 **.jar

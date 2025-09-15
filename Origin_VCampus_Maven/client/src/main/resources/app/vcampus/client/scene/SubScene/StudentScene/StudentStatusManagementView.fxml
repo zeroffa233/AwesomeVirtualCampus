@@ -1,40 +1,46 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import com.jfoenix.controls.*?>
 <?import javafx.geometry.Insets?>
 
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="app.vcampus.client.scene.StudentStatusManagementController"
-            prefWidth="1100.0" prefHeight="800.0">
+            prefWidth="1100.0" prefHeight="800.0"
+            styleClass="student-status-root"
+            stylesheets="@StudentScene.css">
 
     <!-- 中央内容区：使用 StackPane 切换子页面 -->
     <center>
-        <StackPane fx:id="contentPane" style="-fx-background-color: white;">
+        <StackPane fx:id="contentPane" styleClass="content-panel">
 
             <!-- 修改学籍信息页面（管理界面，默认显示） -->
             <AnchorPane fx:id="modifyPane" visible="true"
-                        prefWidth="800.0" prefHeight="600.0">
+                        prefWidth="800.0">
                 <children>
                     <VBox spacing="16.0" AnchorPane.topAnchor="0.0"
                           AnchorPane.leftAnchor="0.0"
                           AnchorPane.rightAnchor="0.0"
                           AnchorPane.bottomAnchor="0.0">
                         <padding>
-                            <Insets top="24" right="24" bottom="24" left="24"/>
+                            <Insets top="24" right="24" bottom="24" left="24" />
                         </padding>
 
-                        <Label text="修改学籍信息" style="-fx-font-size:24px; -fx-font-weight:600;"/>
+                        <Label text="修改学籍信息" styleClass="page-heading" />
 
-                        <HBox spacing="12.0">
-                            <JFXTextField fx:id="searchField" promptText="搜索学生（模糊搜索）" HBox.hgrow="ALWAYS"/>
-                            <JFXButton fx:id="searchBtn" text="搜索" />
+                        <HBox spacing="12.0" styleClass="search-container">
+                            <JFXTextField fx:id="searchField" promptText="搜索学生（模糊搜索）" HBox.hgrow="ALWAYS" styleClass="search-field" />
+                            <JFXButton fx:id="searchBtn" text="搜索" styleClass="search-button" />
                         </HBox>
 
-                        <Label text="搜索到的学生学籍信息"/>
+                        <Label text="搜索到的学生学籍信息" style="-fx-font-size: 14px; -fx-text-fill: #5a6872;" />
 
+                        <!-- 移除固定高度限制，并添加适当的样式类 -->
                         <ListView fx:id="searchResultsList"
-                                  VBox.vgrow="ALWAYS" prefHeight="500.0"/>
+                                  VBox.vgrow="ALWAYS" styleClass="results-list" />
                     </VBox>
                 </children>
             </AnchorPane>

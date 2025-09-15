@@ -1,17 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import com.jfoenix.controls.*?>
 <?import javafx.geometry.Insets?>
 
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="app.vcampus.client.scene.StudentStatusController"
             prefWidth="1100.0" prefHeight="800.0"
-            style="-fx-background-color: #f9fafc;"> <!-- 浅灰背景 -->
+            styleClass="student-status-root"
+            stylesheets="@StudentScene.css">
 
     <!-- 中央内容区 -->
     <center>
-        <StackPane fx:id="contentPane" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24;">
+        <StackPane fx:id="contentPane" styleClass="content-panel">
             <!-- 学籍信息展示（默认可见） -->
             <AnchorPane fx:id="studentInfoPane" visible="true">
                 <children>
@@ -20,67 +25,84 @@
                                 style="-fx-background-color: transparent;">
                         <content>
                             <VBox spacing="20.0">
-                                <Label text="个人学籍信息"
-                                       style="-fx-font-size:24px; -fx-font-weight:bold; -fx-text-fill:#2c3e50;"
-                                       alignment="CENTER"/>
+                                <!-- 标题部分 - 独立的标题组件 -->
+                                <VBox styleClass="page-title">
+                                    <padding>
+                                        <Insets top="12" right="24" bottom="12" left="24"/>
+                                    </padding>
+                                    <children>
+                                        <Label text="个人学籍信息"
+                                               styleClass="page-heading"/>
+                                    </children>
+                                </VBox>
 
-                                <GridPane hgap="16" vgap="16">
-                                    <columnConstraints>
-                                        <ColumnConstraints halignment="RIGHT" percentWidth="20"/>
-                                        <ColumnConstraints percentWidth="30"/>
-                                        <ColumnConstraints halignment="RIGHT" percentWidth="20"/>
-                                        <ColumnConstraints percentWidth="30"/>
-                                    </columnConstraints>
+                                <!-- 表单部分 - 添加独立的表单容器 -->
+                                <VBox styleClass="form-container">
+                                    <padding>
+                                        <Insets top="0" right="24" bottom="24" left="24"/>
+                                    </padding>
+                                    <children>
+                                        <GridPane hgap="16" vgap="16" styleClass="form-grid">
+                                            <columnConstraints>
+                                                <ColumnConstraints halignment="RIGHT" percentWidth="20" />
+                                                <ColumnConstraints percentWidth="30" />
+                                                <ColumnConstraints halignment="RIGHT" percentWidth="20" />
+                                                <ColumnConstraints percentWidth="30" />
+                                            </columnConstraints>
 
-                                    <!-- 姓 名 -->
-                                    <Label text="姓" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                                    <JFXTextField fx:id="familyNameField"  labelFloat="true"
-                                                  GridPane.rowIndex="0" GridPane.columnIndex="1" editable="false"/>
+                                            <!-- 姓 名 -->
+                                            <Label text="姓" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="form-label" />
+                                            <JFXTextField fx:id="familyNameField" labelFloat="true"
+                                                          GridPane.rowIndex="0" GridPane.columnIndex="1" editable="false" styleClass="jfx-text-field" />
 
-                                    <Label text="名" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-                                    <JFXTextField fx:id="givenNameField"  labelFloat="true"
-                                                  GridPane.rowIndex="0" GridPane.columnIndex="3" editable="false"/>
+                                            <!-- 其他字段保持不变 -->
+                                            <Label text="名" GridPane.rowIndex="0" GridPane.columnIndex="2" styleClass="form-label" />
+                                            <JFXTextField fx:id="givenNameField" labelFloat="true"
+                                                          GridPane.rowIndex="0" GridPane.columnIndex="3" editable="false" styleClass="jfx-text-field" />
 
-                                    <!-- 性别 出生日期 -->
-                                    <Label text="性别" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                                    <JFXTextField fx:id="genderField" labelFloat="true"
-                                                  GridPane.rowIndex="1" GridPane.columnIndex="1" editable="false"/>
+                                            <!-- 以下代码保持不变 -->
+                                            <!-- 性别 出生日期 -->
+                                            <Label text="性别" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="form-label" />
+                                            <JFXTextField fx:id="genderField" labelFloat="true"
+                                                          GridPane.rowIndex="1" GridPane.columnIndex="1" editable="false" styleClass="jfx-text-field" />
 
-                                    <Label text="出生日期" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
-                                    <JFXTextField fx:id="birthDateField" labelFloat="true"
-                                                  GridPane.rowIndex="1" GridPane.columnIndex="3" editable="false"/>
+                                            <Label text="出生日期" GridPane.rowIndex="1" GridPane.columnIndex="2" styleClass="form-label" />
+                                            <JFXTextField fx:id="birthDateField" labelFloat="true"
+                                                          GridPane.rowIndex="1" GridPane.columnIndex="3" editable="false" styleClass="jfx-text-field" />
 
-                                    <!-- 籍贯 政治面貌 学籍状态 -->
-                                    <Label text="籍贯" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                                    <JFXTextField fx:id="birthPlaceField" labelFloat="true"
-                                                  GridPane.rowIndex="2" GridPane.columnIndex="1" editable="false"/>
+                                            <!-- 籍贯 政治面貌 学籍状态 -->
+                                            <Label text="籍贯" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="form-label" />
+                                            <JFXTextField fx:id="birthPlaceField" labelFloat="true"
+                                                          GridPane.rowIndex="2" GridPane.columnIndex="1" editable="false" styleClass="jfx-text-field" />
 
-                                    <Label text="政治面貌" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
-                                    <JFXTextField fx:id="politicalStatusField" labelFloat="true"
-                                                  GridPane.rowIndex="2" GridPane.columnIndex="3" editable="false"/>
+                                            <Label text="政治面貌" GridPane.rowIndex="2" GridPane.columnIndex="2" styleClass="form-label" />
+                                            <JFXTextField fx:id="politicalStatusField" labelFloat="true"
+                                                          GridPane.rowIndex="2" GridPane.columnIndex="3" editable="false" styleClass="jfx-text-field" />
 
-                                    <Label text="学籍状态" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                                    <JFXTextField fx:id="statusField" labelFloat="true"
-                                                  GridPane.rowIndex="3" GridPane.columnIndex="1" editable="false"/>
+                                            <Label text="学籍状态" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="form-label" />
+                                            <JFXTextField fx:id="statusField" labelFloat="true"
+                                                          GridPane.rowIndex="3" GridPane.columnIndex="1" editable="false" styleClass="jfx-text-field" />
 
-                                    <!-- 专业 学院 -->
-                                    <Label text="专业" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                                    <JFXTextField fx:id="majorField" labelFloat="true"
-                                                  GridPane.rowIndex="4" GridPane.columnIndex="1" editable="false"/>
+                                            <!-- 专业 学院 -->
+                                            <Label text="专业" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="form-label" />
+                                            <JFXTextField fx:id="majorField" labelFloat="true"
+                                                          GridPane.rowIndex="4" GridPane.columnIndex="1" editable="false" styleClass="jfx-text-field" />
 
-                                    <Label text="学院" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
-                                    <JFXTextField fx:id="schoolField" labelFloat="true"
-                                                  GridPane.rowIndex="4" GridPane.columnIndex="3" editable="false"/>
+                                            <Label text="学院" GridPane.rowIndex="4" GridPane.columnIndex="2" styleClass="form-label" />
+                                            <JFXTextField fx:id="schoolField" labelFloat="true"
+                                                          GridPane.rowIndex="4" GridPane.columnIndex="3" editable="false" styleClass="jfx-text-field" />
 
-                                    <!-- 学号 一卡通号 -->
-                                    <Label text="学号" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                                    <JFXTextField fx:id="studentNumberField" labelFloat="true"
-                                                  GridPane.rowIndex="5" GridPane.columnIndex="1" editable="false"/>
+                                            <!-- 学号 一卡通号 -->
+                                            <Label text="学号" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="form-label" />
+                                            <JFXTextField fx:id="studentNumberField" labelFloat="true"
+                                                          GridPane.rowIndex="5" GridPane.columnIndex="1" editable="false" styleClass="jfx-text-field" />
 
-                                    <Label text="一卡通号" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
-                                    <JFXTextField fx:id="cardNumberField" labelFloat="true"
-                                                  GridPane.rowIndex="5" GridPane.columnIndex="3" editable="false"/>
-                                </GridPane>
+                                            <Label text="一卡通号" GridPane.rowIndex="5" GridPane.columnIndex="2" styleClass="form-label" />
+                                            <JFXTextField fx:id="cardNumberField" labelFloat="true"
+                                                          GridPane.rowIndex="5" GridPane.columnIndex="3" editable="false" styleClass="jfx-text-field" />
+                                        </GridPane>
+                                    </children>
+                                </VBox>
                             </VBox>
                         </content>
                     </ScrollPane>
