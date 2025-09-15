@@ -38,9 +38,12 @@
 
                         <Label text="搜索到的学生学籍信息" style="-fx-font-size: 14px; -fx-text-fill: #5a6872;" />
 
-                        <!-- 移除固定高度限制，并添加适当的样式类 -->
-                        <ListView fx:id="searchResultsList"
-                                  VBox.vgrow="ALWAYS" styleClass="results-list" />
+                        <!-- 使用VBox和ScrollPane替代ListView -->
+                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="results-scroll-pane">
+                            <content>
+                                <VBox fx:id="searchResultsContainer" spacing="8.0" styleClass="results-container" />
+                            </content>
+                        </ScrollPane>
                     </VBox>
                 </children>
             </AnchorPane>

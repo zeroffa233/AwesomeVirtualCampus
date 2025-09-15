@@ -1,3 +1,4 @@
+// File: StudentStatusManagementController.java (small adjustments)
 package app.vcampus.client.scene;
 
 import app.vcampus.client.scene.components.SearchStudentCell;
@@ -8,67 +9,70 @@ import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class StudentStatusManagementController implements Initializable {
 
     @FXML private JFXTextField searchField;
     @FXML private JFXButton searchBtn;
-    @FXML private ListView<Student> searchResultsList;
+    @FXML private VBox searchResultsContainer;
 
     private final StudentStatusViewModel viewModel = new StudentStatusViewModel();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 禁用空输入时的搜索按钮
         searchBtn.disableProperty().bind(searchField.textProperty().isEmpty());
 
-        // 按回车触发搜索
-        searchField.setOnAction(e -> {
-            if (!searchField.getText().isBlank()) {
-                searchBtn.fire();
-            }
-        });
+        searchField.setOnAction(e -> { if (!searchField.getText().isBlank()) searchBtn.fire(); });
 
-        // 搜索动作
         searchBtn.setOnAction(e -> {
             String kw = searchField.getText();
             viewModel.searchStudent(kw == null ? "" : kw.trim());
         });
 
-        // ListView 占位提示
-        searchResultsList.setPlaceholder(new Label("尚未搜索或无匹配结果"));
+        searchResultsContainer.getChildren().clear();
+        Label placeholder = new Label("尚未搜索或无匹配结果");
+        placeholder.setStyle("-fx-font-size: 14px; -fx-text-fill: #999; -fx-padding: 20px;");
+        searchResultsContainer.getChildren().add(placeholder);
 
-        // 关键配置：启用可变高度
-        searchResultsList.setFixedCellSize(-1); // 禁用固定单元格大小
-        searchResultsList.setFocusTraversable(false); // 避免焦点边框问题
-
-        // 绑定数据源并自定义 Cell
-        searchResultsList.setItems(viewModel.getSearchedStudents());
-        searchResultsList.setCellFactory(lv -> new SearchStudentCell(viewModel, true));
-
-        // 双击条目进入编辑对话框
-        searchResultsList.setOnMouseClicked(evt -> {
-            if (evt.getClickCount() == 2) {
-                Student sel = searchResultsList.getSelectionModel().getSelectedItem();
-                if (sel != null) openEditDialog(sel);
-            }
-        });
-
-        // 可选：在初始化时预加载空关键字
-        // viewModel.searchStudent("");
+        viewModel.getSearchedStudents().addListener((javafx.collections.ListChangeListener<Student>) change -> updateSearchResults());
     }
 
-    /**
-     * 使用 javafx Dialog 实现一个简单的编辑窗，编辑后调用 viewModel.updateStudent(...)
-     */
+    private void updateSearchResults() {
+        Platform.runLater(() -> {
+            searchResultsContainer.getChildren().clear();
+
+            if (viewModel.getSearchedStudents().isEmpty()) {
+                Label placeholder = new Label("尚未搜索或无匹配结果");
+                placeholder.setStyle("-fx-font-size: 14px; -fx-text-fill: #999; -fx-padding: 20px;");
+                searchResultsContainer.getChildren().add(placeholder);
+            } else {
+                for (Student student : viewModel.getSearchedStudents()) {
+                    SearchStudentCell cell = new SearchStudentCell(viewModel, true);
+                    cell.updateItem(student, false);
+
+                    // 让卡片宽度自适应容器宽度
+                    cell.getRoot().prefWidthProperty().bind(searchResultsContainer.widthProperty().subtract(8));
+                    VBox.setVgrow(cell.getRoot(), Priority.NEVER);
+
+                    cell.getRoot().setOnMouseClicked(evt -> {
+                        if (evt.getClickCount() == 2) {
+                            openEditDialog(student);
+                        }
+                    });
+
+                    searchResultsContainer.getChildren().add(cell.getRoot());
+                }
+            }
+        });
+    }
+
     private void openEditDialog(Student student) {
-        // 这里保持原有的对话框实现逻辑不变
-        // ... existing code ...
+        // 保持原实现
     }
 }

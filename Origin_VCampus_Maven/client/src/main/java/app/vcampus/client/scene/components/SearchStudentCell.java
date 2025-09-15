@@ -1,3 +1,4 @@
+// File: SearchStudentCell.java (modified to use ExpandCollapseUtil)
 package app.vcampus.client.scene.components;
 
 import app.vcampus.client.viewmodel.StudentStatusViewModel;
@@ -9,6 +10,8 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.*;
+import javafx.util.Duration;
+import lombok.Getter;
 
 import java.util.Objects;
 
@@ -20,12 +23,13 @@ public class SearchStudentCell extends ListCell<Student> {
     private final StudentStatusViewModel viewModel;
     private final boolean editable;
 
-    // UI
-    private final VBox root = new VBox(8);
-    private final HBox header = new HBox(8);
-    private final VBox detailsBox = new VBox(8);
+    // UI组件
+    @Getter
+    private final VBox root = new VBox(12);
+    private final HBox header = new HBox(12);
+    private final VBox detailsBox = new VBox(12);
 
-    // fields (will be recreated per update to keep state simple)
+    // 状态字段
     private boolean expanded = false;
     private boolean isEditing = false;
 
@@ -36,17 +40,51 @@ public class SearchStudentCell extends ListCell<Student> {
     }
 
     private void initUI() {
-        root.setPadding(new Insets(8));
-        root.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e8edf2; -fx-border-radius: 8;");
-        header.setPadding(new Insets(4, 0, 0, 0));
-        detailsBox.setPadding(new Insets(6, 0, 0, 0));
+        root.setPadding(new Insets(16));
+        root.setStyle(
+                "-fx-background-color: white;"
+                        + "-fx-background-radius: 12px;"
+                        + "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 2);"
+                        + "-fx-border-color: #f0f2f5;"
+                        + "-fx-border-radius: 12px;"
+                        + "-fx-border-width: 1px;"
+        );
+
+        header.setPadding(new Insets(0));
+
+        // 详情区域：初始为不可管理并隐藏（避免占位）
+        detailsBox.setPadding(new Insets(8, 0, 0, 0));
         detailsBox.setVisible(false);
+        detailsBox.setManaged(false);
+        detailsBox.setMaxHeight(0);
 
         root.getChildren().addAll(header, detailsBox);
+
+        root.setOnMouseEntered(e -> {
+            root.setStyle(
+                    "-fx-background-color: white;"
+                            + "-fx-background-radius: 12px;"
+                            + "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 10, 0, 0, 4);"
+                            + "-fx-border-color: #e6e9ed;"
+                            + "-fx-border-radius: 12px;"
+                            + "-fx-border-width: 1px;"
+            );
+        });
+
+        root.setOnMouseExited(e -> {
+            root.setStyle(
+                    "-fx-background-color: white;"
+                            + "-fx-background-radius: 12px;"
+                            + "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 2);"
+                            + "-fx-border-color: #f0f2f5;"
+                            + "-fx-border-radius: 12px;"
+                            + "-fx-border-width: 1px;"
+            );
+        });
     }
 
     @Override
-    protected void updateItem(Student item, boolean empty) {
+    public void updateItem(Student item, boolean empty) {
         super.updateItem(item, empty);
 
         if (empty || item == null) {
@@ -55,122 +93,105 @@ public class SearchStudentCell extends ListCell<Student> {
             return;
         }
 
-        // reset
         header.getChildren().clear();
         detailsBox.getChildren().clear();
         expanded = false;
         isEditing = false;
         detailsBox.setVisible(false);
+        detailsBox.setManaged(false);
+        detailsBox.setMaxHeight(0);
 
-        // Header: school/major | spacer | name | id/card | expandBtn
-        Label title = new Label((item.getSchool() == null ? "" : item.getSchool()) + "  " + (item.getMajor() == null ? "" : item.getMajor()));
-        title.setStyle("-fx-font-size:13px; -fx-font-weight:600;");
+        Label title = new Label((item.getSchool() == null ? "" : item.getSchool()) + "  " +
+                (item.getMajor() == null ? "" : item.getMajor()));
+        title.setStyle("-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #333;");
 
         Label name = new Label(nullSafe(item.getFamilyName()) + " " + nullSafe(item.getGivenName()));
-        name.setStyle("-fx-font-size:12px;");
+        name.setStyle("-fx-font-size: 13px; -fx-text-fill: #444;");
 
-        Label idCard = new Label("学号: " + nullSafe(item.getStudentNumber()) + "  一卡通: " + (item.getCardNumber() == null ? "" : item.getCardNumber().toString()));
-        idCard.setStyle("-fx-font-size:11px; -fx-text-fill:#666;");
+        Label idCard = new Label("学号: " + nullSafe(item.getStudentNumber()) + "  一卡通: " +
+                (item.getCardNumber() == null ? "" : item.getCardNumber().toString()));
+        idCard.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         JFXButton expandBtn = new JFXButton("展开");
+        expandBtn.setStyle("-fx-background-color: #f0f2f5; -fx-text-fill: #444; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 6 12 6 12;");
+
+        expandBtn.setOnMouseEntered(e -> expandBtn.setStyle("-fx-background-color: #e6e9ed; -fx-text-fill: #333; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 6 12 6 12;"));
+        expandBtn.setOnMouseExited(e -> expandBtn.setStyle("-fx-background-color: #f0f2f5; -fx-text-fill: #444; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 6 12 6 12;"));
+
         expandBtn.setOnAction(e -> {
             expanded = !expanded;
-            detailsBox.setVisible(expanded);
             expandBtn.setText(expanded ? "收起" : "展开");
+            // 使用工具类进行动画，动画结束时请求父容器布局
+            ExpandCollapseUtil.animate(detailsBox, expanded, Duration.millis(300), () -> {
+                if (getListView() != null) getListView().requestLayout();
+            });
         });
 
         header.getChildren().addAll(title, spacer, name, idCard, expandBtn);
 
-        // details (same fields as StudentStatusView) - initially readonly
-        // create controls for each field
-        JFXTextField familyField = new JFXTextField(nullSafe(item.getFamilyName()));
-        familyField.setPromptText("姓");
-        familyField.setEditable(false);
+        // 详情字段（与原实现相同）
+        JFXTextField familyField = createTextField(nullSafe(item.getFamilyName()), "姓");
+        JFXTextField givenField = createTextField(nullSafe(item.getGivenName()), "名");
+        JFXTextField studentNumberField = createTextField(nullSafe(item.getStudentNumber()), "学号");
+        JFXTextField cardNumberField = createTextField(item.getCardNumber() == null ? "" : item.getCardNumber().toString(), "一卡通");
+        JFXTextField genderField = createTextField(item.getGender() == null ? "" : item.getGender().getLabel(), "性别");
+        JFXTextField birthDateField = createTextField(item.getBirthDate() == null ? "" :
+                app.vcampus.server.utility.DateUtility.fromDate(item.getBirthDate()), "出生日期");
+        JFXTextField birthPlaceField = createTextField(nullSafe(item.getBirthPlace()), "籍贯");
+        JFXTextField politicalStatusField = createTextField(item.getPoliticalStatus() == null ? "" :
+                item.getPoliticalStatus().getLabel(), "政治面貌");
+        JFXTextField statusField = createTextField(item.getStatus() == null ? "" :
+                item.getStatus().getLabel(), "学籍状态");
+        JFXTextField majorField = createTextField(nullSafe(item.getMajor()), "专业");
+        JFXTextField schoolField = createTextField(nullSafe(item.getSchool()), "学院");
 
-        JFXTextField givenField = new JFXTextField(nullSafe(item.getGivenName()));
-        givenField.setPromptText("名");
-        givenField.setEditable(false);
-
-        JFXTextField studentNumberField = new JFXTextField(nullSafe(item.getStudentNumber()));
-        studentNumberField.setPromptText("学号");
-        studentNumberField.setEditable(false);
-
-        JFXTextField cardNumberField = new JFXTextField(item.getCardNumber() == null ? "" : item.getCardNumber().toString());
-        cardNumberField.setPromptText("一卡通");
-        cardNumberField.setEditable(false);
-
-        JFXTextField genderField = new JFXTextField(item.getGender() == null ? "" : item.getGender().getLabel());
-        genderField.setPromptText("性别");
-        genderField.setEditable(false);
-
-        JFXTextField birthDateField = new JFXTextField(item.getBirthDate() == null ? "" : app.vcampus.server.utility.DateUtility.fromDate(item.getBirthDate()));
-        birthDateField.setPromptText("出生日期");
-        birthDateField.setEditable(false);
-
-        JFXTextField birthPlaceField = new JFXTextField(nullSafe(item.getBirthPlace()));
-        birthPlaceField.setPromptText("籍贯");
-        birthPlaceField.setEditable(false);
-
-        JFXTextField politicalStatusField = new JFXTextField(item.getPoliticalStatus() == null ? "" : item.getPoliticalStatus().getLabel());
-        politicalStatusField.setPromptText("政治面貌");
-        politicalStatusField.setEditable(false);
-
-        JFXTextField statusField = new JFXTextField(item.getStatus() == null ? "" : item.getStatus().getLabel());
-        statusField.setPromptText("学籍状态");
-        statusField.setEditable(false);
-
-        JFXTextField majorField = new JFXTextField(nullSafe(item.getMajor()));
-        majorField.setPromptText("专业");
-        majorField.setEditable(false);
-
-        JFXTextField schoolField = new JFXTextField(nullSafe(item.getSchool()));
-        schoolField.setPromptText("学院");
-        schoolField.setEditable(false);
-
-        // layout rows
-        HBox row1 = new HBox(10);
+        HBox row1 = new HBox(16);
         row1.getChildren().addAll(
-                new VBox(new Label("姓"), familyField),
-                new VBox(new Label("名"), givenField),
-                new VBox(new Label("学号"), studentNumberField),
-                new VBox(new Label("一卡通"), cardNumberField),
-                new VBox(new Label("性别"), genderField),
-                new VBox(new Label("出生日期"), birthDateField)
-        );
-        HBox row2 = new HBox(10);
-        row2.getChildren().addAll(
-                new VBox(new Label("籍贯"), birthPlaceField),
-                new VBox(new Label("政治面貌"), politicalStatusField),
-                new VBox(new Label("学籍状态"), statusField),
-                new VBox(new Label("专业"), majorField),
-                new VBox(new Label("学院"), schoolField)
+                createFieldVBox("姓", familyField),
+                createFieldVBox("名", givenField),
+                createFieldVBox("学号", studentNumberField),
+                createFieldVBox("一卡通", cardNumberField),
+                createFieldVBox("性别", genderField),
+                createFieldVBox("出生日期", birthDateField)
         );
 
-        // buttons row
-        HBox buttonRow = new HBox(8);
+        HBox row2 = new HBox(16);
+        row2.getChildren().addAll(
+                createFieldVBox("籍贯", birthPlaceField),
+                createFieldVBox("政治面貌", politicalStatusField),
+                createFieldVBox("学籍状态", statusField),
+                createFieldVBox("专业", majorField),
+                createFieldVBox("学院", schoolField)
+        );
+
+        HBox buttonRow = new HBox(12);
         Region btnSpacer = new Region();
         HBox.setHgrow(btnSpacer, Priority.ALWAYS);
 
         JFXButton editBtn = new JFXButton("修改");
+        editBtn.setStyle("-fx-background-color: #f0f2f5; -fx-text-fill: #444; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 8 16 8 16;");
         JFXButton confirmBtn = new JFXButton("确认");
+        confirmBtn.setStyle("-fx-background-color: #1890ff; -fx-text-fill: white; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 8 16 8 16;");
         JFXButton cancelBtn = new JFXButton("取消");
+        cancelBtn.setStyle("-fx-background-color: #f0f2f5; -fx-text-fill: #444; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 8 16 8 16;");
 
-        // initial visibility/state
+        addButtonHoverEffects(editBtn, "#f0f2f5", "#e6e9ed");
+        addButtonHoverEffects(confirmBtn, "#1890ff", "#40a9ff");
+        addButtonHoverEffects(cancelBtn, "#f0f2f5", "#e6e9ed");
+
         editBtn.setVisible(editable);
         confirmBtn.setVisible(false);
         cancelBtn.setVisible(false);
 
-        // edit action: enable editing
         editBtn.setOnAction(e -> {
             if (!editable) return;
             isEditing = true;
             familyField.setEditable(true);
             givenField.setEditable(true);
             studentNumberField.setEditable(true);
-            // card number usually shouldn't be editable, keep it read-only
             majorField.setEditable(true);
             schoolField.setEditable(true);
             genderField.setEditable(true);
@@ -179,12 +200,22 @@ public class SearchStudentCell extends ListCell<Student> {
             politicalStatusField.setEditable(true);
             statusField.setEditable(true);
 
+            setEditableFieldStyle(familyField);
+            setEditableFieldStyle(givenField);
+            setEditableFieldStyle(studentNumberField);
+            setEditableFieldStyle(majorField);
+            setEditableFieldStyle(schoolField);
+            setEditableFieldStyle(genderField);
+            setEditableFieldStyle(birthDateField);
+            setEditableFieldStyle(birthPlaceField);
+            setEditableFieldStyle(politicalStatusField);
+            setEditableFieldStyle(statusField);
+
             editBtn.setVisible(false);
             confirmBtn.setVisible(true);
             cancelBtn.setVisible(true);
         });
 
-        // cancel: restore original values
         cancelBtn.setOnAction(e -> {
             isEditing = false;
             familyField.setText(nullSafe(item.getFamilyName()));
@@ -194,53 +225,43 @@ public class SearchStudentCell extends ListCell<Student> {
             majorField.setText(nullSafe(item.getMajor()));
             schoolField.setText(nullSafe(item.getSchool()));
             genderField.setText(item.getGender() == null ? "" : item.getGender().getLabel());
-            birthDateField.setText(item.getBirthDate() == null ? "" : app.vcampus.server.utility.DateUtility.fromDate(item.getBirthDate()));
+            birthDateField.setText(item.getBirthDate() == null ? "" :
+                    app.vcampus.server.utility.DateUtility.fromDate(item.getBirthDate()));
             birthPlaceField.setText(nullSafe(item.getBirthPlace()));
-            politicalStatusField.setText(item.getPoliticalStatus() == null ? "" : item.getPoliticalStatus().getLabel());
+            politicalStatusField.setText(item.getPoliticalStatus() == null ? "" :
+                    item.getPoliticalStatus().getLabel());
             statusField.setText(item.getStatus() == null ? "" : item.getStatus().getLabel());
 
-            familyField.setEditable(false);
-            givenField.setEditable(false);
-            studentNumberField.setEditable(false);
-            majorField.setEditable(false);
-            schoolField.setEditable(false);
-            genderField.setEditable(false);
-            birthDateField.setEditable(false);
-            birthPlaceField.setEditable(false);
-            politicalStatusField.setEditable(false);
-            statusField.setEditable(false);
+            resetTextFieldStyle(familyField);
+            resetTextFieldStyle(givenField);
+            resetTextFieldStyle(studentNumberField);
+            resetTextFieldStyle(majorField);
+            resetTextFieldStyle(schoolField);
+            resetTextFieldStyle(genderField);
+            resetTextFieldStyle(birthDateField);
+            resetTextFieldStyle(birthPlaceField);
+            resetTextFieldStyle(politicalStatusField);
+            resetTextFieldStyle(statusField);
 
             editBtn.setVisible(editable);
             confirmBtn.setVisible(false);
             cancelBtn.setVisible(false);
         });
 
-        // confirm: build updated Student, call viewModel.updateStudent(...)
         confirmBtn.setOnAction(e -> {
-            // build updated copy: preserve cardNumber and other identity fields
             Student updated = new Student();
-            // preserve identification fields if present
-            try {
-                updated.setCardNumber(item.getCardNumber());
-            } catch (Throwable ignored) {}
-            // set editable fields from UI
+            try { updated.setCardNumber(item.getCardNumber()); } catch (Throwable ignored) {}
             updated.setFamilyName(familyField.getText());
             updated.setGivenName(givenField.getText());
             updated.setStudentNumber(studentNumberField.getText());
             updated.setMajor(majorField.getText());
             updated.setSchool(schoolField.getText());
-            // NOTE: for enums like gender/politicalStatus/status you might need mapping from text to enum
-            // Here we leave them unchanged if mapping not available
-            // If you have setter overloads, call them accordingly.
 
-            // Call update (asynchronous). Provide success and error callbacks.
             viewModel.updateStudent(updated,
                     () -> Platform.runLater(() -> {
-                        // success: update item in the ListView if possible
                         try {
                             int idx = getIndex();
                             if (getListView() != null && idx >= 0 && idx < getListView().getItems().size()) {
-                                // replace element (we replace with 'updated' but preserve non-edited fields from original)
                                 Student replaced = mergeStudents(item, updated);
                                 getListView().getItems().set(idx, replaced);
                                 getListView().refresh();
@@ -248,12 +269,10 @@ public class SearchStudentCell extends ListCell<Student> {
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         } finally {
-                            // restore UI state
                             cancelBtn.fire();
                         }
                     }),
                     () -> Platform.runLater(() -> {
-                        // error handling: simple stderr print; you can pop up dialog if needed
                         System.err.println("Student update failed for: " + item.getStudentNumber());
                     })
             );
@@ -263,26 +282,80 @@ public class SearchStudentCell extends ListCell<Student> {
 
         detailsBox.getChildren().addAll(row1, row2, buttonRow);
 
+        // 让卡片宽度自适应容器宽度
+        root.setMaxWidth(Double.MAX_VALUE);
+
         setGraphic(root);
     }
 
-    /**
-     * 在将更新结果放回列表时，尽量保留原对象中除已编辑字段外的其它重要字段。
-     * This merges 'base' (original) and 'updated' (partial) into a new Student to show in UI.
-     */
+    private VBox createFieldVBox(String labelText, JFXTextField textField) {
+        VBox fieldBox = new VBox(6);
+
+        Label label = new Label(labelText);
+        label.setStyle("-fx-font-size: 12px; -fx-font-weight: 500; -fx-text-fill: #555; -fx-padding: 0 0 2 0;");
+
+        fieldBox.getChildren().addAll(label, textField);
+        return fieldBox;
+    }
+
+    private JFXTextField createTextField(String text, String promptText) {
+        JFXTextField field = new JFXTextField(text);
+        field.setPromptText(promptText);
+        field.setEditable(false);
+        resetTextFieldStyle(field);
+        return field;
+    }
+
+    private void resetTextFieldStyle(JFXTextField field) {
+        field.setEditable(false);
+        field.setStyle(
+                "-fx-background-color: #f5f7fa;"
+                        + "-fx-text-fill: #333;"
+                        + "-fx-background-radius: 6px;"
+                        + "-fx-border-color: #e6e9ed;"
+                        + "-fx-border-radius: 6px;"
+                        + "-fx-border-width: 1px;"
+                        + "-fx-font-size: 12px;"
+                        + "-fx-padding: 8;"
+        );
+    }
+
+    private void setEditableFieldStyle(JFXTextField field) {
+        field.setEditable(true);
+        field.setStyle(
+                "-fx-background-color: white;"
+                        + "-fx-text-fill: #333;"
+                        + "-fx-background-radius: 6px;"
+                        + "-fx-border-color: #1890ff;"
+                        + "-fx-border-radius: 6px;"
+                        + "-fx-border-width: 1px;"
+                        + "-fx-font-size: 12px;"
+                        + "-fx-padding: 8;"
+        );
+    }
+
+    private void addButtonHoverEffects(JFXButton button, String normalColor, String hoverColor) {
+        String originalStyle = button.getStyle();
+
+        button.setOnMouseEntered(e -> {
+            button.setStyle(originalStyle.replace(normalColor, hoverColor));
+        });
+
+        button.setOnMouseExited(e -> {
+            button.setStyle(originalStyle);
+        });
+    }
+
     private Student mergeStudents(Student base, Student updated) {
         Student merged = new Student();
-        // identity
         try { merged.setCardNumber(base.getCardNumber()); } catch (Throwable ignored) {}
 
-        // prefer updated if provided, else base
         merged.setFamilyName(isEmpty(updated.getFamilyName()) ? base.getFamilyName() : updated.getFamilyName());
         merged.setGivenName(isEmpty(updated.getGivenName()) ? base.getGivenName() : updated.getGivenName());
         merged.setStudentNumber(isEmpty(updated.getStudentNumber()) ? base.getStudentNumber() : updated.getStudentNumber());
         merged.setMajor(isEmpty(updated.getMajor()) ? base.getMajor() : updated.getMajor());
         merged.setSchool(isEmpty(updated.getSchool()) ? base.getSchool() : updated.getSchool());
 
-        // copy other fields from base (gender, birthDate, status...) if setters/getters exist
         try { merged.setGender(base.getGender()); } catch (Throwable ignored) {}
         try { merged.setBirthDate(base.getBirthDate()); } catch (Throwable ignored) {}
         try { merged.setBirthPlace(base.getBirthPlace()); } catch (Throwable ignored) {}
@@ -292,11 +365,8 @@ public class SearchStudentCell extends ListCell<Student> {
         return merged;
     }
 
-    private boolean isEmpty(String s) {
-        return s == null || s.trim().isEmpty();
-    }
-
-    private String nullSafe(String s) {
-        return s == null ? "" : s;
-    }
+    private boolean isEmpty(String s) { return s == null || s.trim().isEmpty(); }
+    private String nullSafe(String s) { return s == null ? "" : s; }
 }
+
+
