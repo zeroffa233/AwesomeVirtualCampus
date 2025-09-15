@@ -178,9 +178,15 @@ public class FinanceClient extends BaseClient {
         */
 
         // Mock for now
+        StoreItem laptop = new StoreItem();
+        laptop.setItemName("笔记本电脑");
+        laptop.setPrice(11050);
+        StoreItem mouse = new StoreItem();
+        mouse.setItemName("鼠标");
+        mouse.setPrice(150);
         return Arrays.asList(
                 new DisplayableTransaction(1725936059000L, "充值", 12345678.00),
-                //new DisplayableTransaction(new ShopTransactionRecord(Arrays.asList(laptop, mouse, laptop), 11350.00)),
+                new DisplayableTransaction(new ShopTransactionRecord(Arrays.asList(mouse, laptop, mouse), 11350.00)),
                 new DisplayableTransaction(1725937059000L, "充值", 13.00)
         );
     }
