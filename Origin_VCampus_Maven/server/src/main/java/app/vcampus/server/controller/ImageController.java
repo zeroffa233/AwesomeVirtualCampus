@@ -2,6 +2,7 @@
 package app.vcampus.server.controller;
 
 import app.vcampus.server.entity.CachedImage;
+import app.vcampus.server.entity.IEntity;
 import app.vcampus.server.utility.Database;
 import app.vcampus.server.utility.Request;
 import app.vcampus.server.utility.Response;
@@ -46,28 +47,18 @@ public class ImageController {
     public Response addImage(Request request, Session database) {
         Transaction tx = null;
         try {
-            String key = request.getParams().get("key");
-            String base64Data = request.getParams().get("imageData");
+            String imageJson = request.getParams().get("image");
+            if (imageJson == null) return Response.Common.error("Image data cannot be empty.");
 
-            if (key == null || key.isEmpty() || base64Data == null || base64Data.isEmpty()) {
-                return Response.Common.error("Key and imageData cannot be empty.");
-            }
 
-            // 检查 Key 是否已存在
-            if (database.get(CachedImage.class, key) != null) {
-                return Response.Common.error("Image with key '" + key + "' already exists.");
-            }
-
-            // 将 Base64 字符串解码为 byte[]
-            byte[] imageData = Base64.getDecoder().decode(base64Data);
-
-            CachedImage newImage = new CachedImage(key, imageData);
+            CachedImage imageToUpdate = IEntity.fromJson(imageJson, CachedImage.class);
+            if (imageToUpdate == null) return Response.Common.error("Invalid image data format.");
 
             tx = database.beginTransaction();
-            database.persist(newImage);
+            database.merge(imageToUpdate);
             tx.commit();
 
-            log.info("Successfully added image with key: {}", key);
+            log.info("Successfully updated image with key: {}", imageToUpdate.getKey());
             return Response.Common.ok();
 
         } catch (IllegalArgumentException e) {

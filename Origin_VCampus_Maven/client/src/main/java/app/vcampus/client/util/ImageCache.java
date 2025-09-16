@@ -64,4 +64,37 @@ public final class ImageCache {
     public void addImage(final String path, final Image image) {
         if (path != null && image != null) cache.put(path, image);
     }
+
+    public void refresh() {
+        System.out.println("ImageCache: 正在强制刷新...");
+
+        // 将网络操作封装在后台线程中，避免阻塞调用者
+        new Thread(() -> {
+            // 1. 调用我们已经完成的 ImageClient，从服务器获取所有图片数据
+            List<CachedImage> imagesFromServer = ImageClient.getAllImages();
+
+            if (imagesFromServer != null) {
+                // 2. 先清空旧缓存，以保证数据最新
+                cache.clear();
+
+                // 3. 再用新数据填充缓存
+                for (CachedImage dto : imagesFromServer) {
+                    if (dto.getKey() != null && dto.getImageData() != null) {
+                        try (ByteArrayInputStream stream = new ByteArrayInputStream(dto.getImageData())) {
+                            Image image = new Image(stream);
+                            if (!image.isError()) {
+                                // 直接调用已有的 addImage 方法
+                                addImage(dto.getKey(), image);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("ImageCache (refresh): 从服务器数据创建图片时出错, Key: " + dto.getKey());
+                        }
+                    }
+                }
+                System.out.println("ImageCache: 缓存已成功刷新，共加载 " + cache.size() + " 张图片。");
+            } else {
+                System.err.println("ImageCache: 缓存刷新失败，从服务器获取数据为 null。");
+            }
+        }).start();
+    }
 }

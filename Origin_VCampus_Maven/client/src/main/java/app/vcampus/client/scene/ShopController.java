@@ -87,25 +87,13 @@ public class ShopController {
 
     public static final List<ShopTransactionRecord> transactionHistory = new ArrayList<>();
 
+    private static ShopController instance;
+
     // 【已重构】
     @FXML
     public void initialize() {
-        System.out.println("ShopController: 正在启动后台数据加载...");
-
-        new Thread(() -> {
-            List<StoreItem> itemsFromServer = StoreClient.getAll(FakeRepository.handler);
-            Platform.runLater(() -> {
-                if (itemsFromServer != null) {
-                    allItems.setAll(itemsFromServer);
-                    System.out.println("后台任务完成：成功从服务器加载 " + allItems.size() + " 件商品。");
-                } else {
-                    System.err.println("后台任务完成：从服务器加载商品失败。");
-                    allItems.clear();
-                }
-                displayedItems.setAll(allItems);
-                populateItemsGrid();
-            });
-        }).start();
+        instance = this;
+        refreshData();
 
         // 初始化【不】依赖于网络数据的本地组件
         setupBindings();
@@ -533,4 +521,24 @@ public class ShopController {
         timeline.play();
     }
 
+    public void refreshData() {
+        System.out.println("ShopController: 正在启动数据刷新...");
+        new Thread(() -> {
+            List<StoreItem> itemsFromServer = StoreClient.getAll(FakeRepository.handler);
+            Platform.runLater(() -> {
+                if (itemsFromServer != null) {
+                    allItems.setAll(itemsFromServer);
+                    System.out.println("ShopController: 数据刷新成功，共加载 " + allItems.size() + " 件商品。");
+                } else {
+                    System.err.println("ShopController: 数据刷新失败。");
+                    allItems.clear();
+                }
+                displayedItems.setAll(allItems);
+                populateItemsGrid();
+            });
+        }).start();
+    }
+    public static ShopController getInstance() {
+        return instance;
+    }
 }

@@ -16,6 +16,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import app.vcampus.server.entity.IEntity;
+
 /**
  * 客户端网关，专门用于与服务端的 ImageController 进行通信。
  * 该类的实现完全遵循项目中既有的、通过 FakeRepository 访问全局 handler 的模式。
@@ -63,9 +65,12 @@ public class ImageClient extends BaseClient {
     public static boolean addOrUpdateImage(String key, byte[] imageData) {
         Request request = new Request();
         request.setUri("resource/images/update"); // 我们使用 update 路由，因为它能同时处理新增和更新
+        // 【核心修正】使用 URL and Filename safe Base64 编码器
+        String safeBase64Data = Base64.getUrlEncoder().encodeToString(imageData);
+
         request.setParams(Map.of(
                 "key", key,
-                "imageData", Base64.getEncoder().encodeToString(imageData) // 将二进制数据编码为 Base64 字符串
+                "imageData", safeBase64Data // 将二进制数据编码为 Base64 字符串
         ));
 
         try {
@@ -107,9 +112,7 @@ public class ImageClient extends BaseClient {
             StringBuilder hexString = new StringBuilder(2 * hash.length);
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
+                if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
             return hexString.toString();
@@ -117,4 +120,7 @@ public class ImageClient extends BaseClient {
             throw new RuntimeException("无法获取 SHA-256 哈希算法实例", e);
         }
     }
+
+
+
 }

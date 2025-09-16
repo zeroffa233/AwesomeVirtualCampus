@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "image_cache") // 数据库中的表名
-public class CachedImage {
+public class CachedImage implements IEntity{
 
     @Id
     @Column(name = "image_key", nullable = false, unique = true)
