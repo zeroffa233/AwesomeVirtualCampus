@@ -5,7 +5,7 @@
 <hibernate-configuration>
     <session-factory>
         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/mytestsql?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/vcampus?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC</property>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
 
 
@@ -18,5 +18,9 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
         <mapping class="app.vcampus.server.entity.GptContext"/>
         <mapping class="app.vcampus.server.entity.User"/>
+        <mapping class="app.vcampus.server.entity.ChatRoom"/>
+        <mapping class="app.vcampus.server.entity.Identity"/>
+        <mapping class="app.vcampus.server.entity.Message"/>
+        <mapping class="app.vcampus.server.entity.Comment"/>
     </session-factory>
 </hibernate-configuration>

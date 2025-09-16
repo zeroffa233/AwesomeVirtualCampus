@@ -35,6 +35,8 @@ public class SideBarController implements Initializable {
     private JFXButton adminButton;
     @FXML
     private JFXButton gptButton;
+    @FXML
+    private JFXButton chatButton;
 
     @Setter
     private MainSceneController mainSceneController; // 这个变量将通过下面的方法被赋值
@@ -50,6 +52,7 @@ public class SideBarController implements Initializable {
         financeButton.setUserData("finance");
         adminButton.setUserData("administrator");
         gptButton.setUserData("llm");
+        chatButton.setUserData("chat");
 
         // Bind managed property to visible property to remove from layout when not visible
         adminButton.managedProperty().bind(adminButton.visibleProperty());
@@ -291,9 +294,13 @@ public class SideBarController implements Initializable {
 
     @FXML
     private void handleGpt() {
-
-
         setActiveButton(gptButton);
         switchView("/app/vcampus/client/scene/SubScene/LlmScene/GptView.fxml", "VCampus GPT", List.of());
+    }
+
+    @FXML
+    private void handleChat() {
+        setActiveButton(chatButton);
+        switchView("/app/vcampus/client/scene/SubScene/ChatScene/ChatView.fxml", "VCampus BBS", List.of());
     }
 }

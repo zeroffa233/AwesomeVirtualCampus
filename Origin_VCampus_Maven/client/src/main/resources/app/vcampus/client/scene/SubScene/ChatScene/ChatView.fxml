@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXComboBox?>
+<?import com.jfoenix.controls.JFXScrollPane?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="rootPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.ChatController">
+    <children>
+        <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <top>
+                <AnchorPane prefHeight="50.0" style="-fx-background-color: #FAFAFA; -fx-border-color: #E0E0E0; -fx-border-width: 0 0 1 0;">
+                    <children>
+                        <Label fx:id="titleLabel" text="校园聊天室" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="0.0">
+                            <font><Font name="System Bold" size="18.0" /></font>
+                        </Label>
+                        <JFXComboBox fx:id="topicComboBox" promptText="选择聊天室" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="150.0" AnchorPane.topAnchor="10.0" />
+
+                        <!-- 补全了该按钮的属性 -->
+                        <JFXButton fx:id="changeUsernameButton" onAction="#onChangeUsernameClicked" style="-fx-background-color: #4285F4;" text="修改昵称" textFill="WHITE" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="10.0" />
+                    </children>
+                </AnchorPane>
+            </top>
+            <center>
+                <!-- 消息显示区域，可滚动 -->
+                <JFXScrollPane fx:id="chatScrollPane" style="-fx-background-color: #F5F5F5;" BorderPane.alignment="CENTER">
+                    <content>
+                        <!-- 移除了硬编码的 prefWidth，使其宽度自适应 -->
+                        <VBox fx:id="messageContainerVBox" spacing="10.0">
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </VBox>
+                    </content>
+                </JFXScrollPane>
+            </center>
+            <bottom>
+                <BorderPane prefHeight="100.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #E0E0E0; -fx-border-width: 1 0 0 0;">
+                    <center>
+                        <!-- 用户输入区域 -->
+                        <JFXTextArea fx:id="userInputArea" promptText="在此输入消息 (Ctrl+Enter 发送)" wrapText="true" BorderPane.alignment="CENTER">
+                            <BorderPane.margin>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </BorderPane.margin>
+                        </JFXTextArea>
+                    </center>
+                    <right>
+                        <!-- 发送按钮 -->
+                        <JFXButton fx:id="sendButton" onAction="#onSendButtonClicked" prefHeight="80.0" prefWidth="80.0" style="-fx-background-color: #0F9D58; -fx-background-radius: 4;" text="发送" textFill="WHITE" BorderPane.alignment="CENTER">
+                            <font>
+                                <Font name="System Bold" size="14.0" />
+                            </font>
+                            <BorderPane.margin>
+                                <Insets right="10.0" />
+                            </BorderPane.margin>
+                        </JFXButton>
+                    </right>
+                </BorderPane>
+            </bottom>
+        </BorderPane>
+    </children>
+</AnchorPane>

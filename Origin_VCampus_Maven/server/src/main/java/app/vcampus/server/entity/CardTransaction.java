@@ -24,6 +24,8 @@ public class CardTransaction implements IEntity {
     @Enumerated(EnumType.STRING)
     public TransactionType type;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     public String description;
 
     public Date time;
