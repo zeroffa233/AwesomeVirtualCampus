@@ -73,8 +73,15 @@ public class LibraryViewController {
 
         searchButton.setOnAction(event -> searchBooks());
 
-        // Initially hide the details and show empty state
-        showEmptyState();
+        // Initially load all books
+        loadAllBooks();
+    }
+
+    private void loadAllBooks() {
+        new Thread(() -> {
+            List<LibraryBook> allBooks = LibraryClient.getAllBooks(FakeRepository.handler);
+            Platform.runLater(() -> processAndDisplayResults(allBooks, true));
+        }).start();
     }
 
     private void showEmptyState() {
@@ -139,10 +146,7 @@ public class LibraryViewController {
 
         if (keyword == null || keyword.trim().isEmpty()) {
             // Path for "Get All Books"
-            new Thread(() -> {
-                List<LibraryBook> allBooks = LibraryClient.getAllBooks(FakeRepository.handler);
-                Platform.runLater(() -> processAndDisplayResults(allBooks, true));
-            }).start();
+            loadAllBooks();
         } else {
             // Path for "Search by Keyword"
             new Thread(() -> {
