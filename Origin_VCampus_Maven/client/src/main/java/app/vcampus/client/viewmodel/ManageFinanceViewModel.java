@@ -105,7 +105,7 @@ public class ManageFinanceViewModel {
             }
 
             runAsyncTask(() -> {
-                boolean success = FinanceClient.recharge(foundCard.get().getCardNumber(), amount);
+                boolean success = FinanceClient.debit(foundCard.get().getCardNumber(), amount, "一卡通充值");
                 Platform.runLater(() -> {
                     if (success) {
                         showStatusMessage("充值 " + String.format("%.2f", amount) + " 元成功！", false);
