@@ -8,7 +8,7 @@
 
 <VBox fx:id="root" prefHeight="700.0" prefWidth="900.0" spacing="20.0" style="-fx-background-color: #FAFAFA;"
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="app.vcampus.client.scene.FinanceScene.ManageFinanceController">
+      fx:controller="app.vcampus.client.scene.SubScene.FinanceScene.ManageFinanceController">
     <padding>
         <Insets bottom="30.0" left="30.0" right="30.0" top="30.0"/>
     </padding>

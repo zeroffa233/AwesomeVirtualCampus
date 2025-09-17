@@ -1,4 +1,4 @@
-package app.vcampus.client.scene.FinanceScene;
+package app.vcampus.client.scene.SubScene.FinanceScene;
 
 import app.vcampus.client.viewmodel.ManageFinanceViewModel;
 import com.jfoenix.controls.JFXButton;

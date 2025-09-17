@@ -16,6 +16,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import java.util.ArrayList; // 确保导入
+import jakarta.persistence.criteria.CriteriaBuilder; // 确保导入
+import jakarta.persistence.criteria.CriteriaQuery; // 确保导入
+import jakarta.persistence.criteria.Predicate; // 确保导入
+import jakarta.persistence.criteria.Root; // 确保导入
+
 public class ChatController {
 
     /**
@@ -314,6 +320,195 @@ public class ChatController {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             return Response.Common.error("Failed to update username: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 7. 按条件搜索消息或评论
+     *
+     * @param request  请求对象
+     * @param database Hibernate 会话
+     * @return 包含搜索结果的响应
+     */
+    @RouteMapping(uri = "chat/search", role = "admin") // 假设此功能仅管理员可用
+    public Response search(Request request, org.hibernate.Session database) {
+        try {
+            String type = request.getParams().get("type"); // "message" or "comment"
+            String nickname = request.getParams().get("nickname");
+            String cardNumStr = request.getParams().get("cardNum");
+            String content = request.getParams().get("content");
+
+            if (type == null || (!type.equals("message") && !type.equals("comment"))) {
+                return Response.Common.error("Invalid search type. Must be 'message' or 'comment'.");
+            }
+
+            CriteriaBuilder cb = database.getCriteriaBuilder();
+            List<Predicate> predicates = new ArrayList<>();
+            List<?> results;
+
+            if ("message".equals(type)) {
+                CriteriaQuery<Message> cq = cb.createQuery(Message.class);
+                Root<Message> root = cq.from(Message.class);
+
+                // 内容匹配
+                if (content != null && !content.isEmpty()) {
+                    predicates.add(cb.like(root.get("content"), "%" + content + "%"));
+                }
+
+                // 卡号或昵称匹配
+                if ((nickname != null && !nickname.isEmpty()) || (cardNumStr != null && !cardNumStr.isEmpty())) {
+                    List<Integer> userCardNums = findCardNums(database, nickname, cardNumStr);
+                    if (!userCardNums.isEmpty()) {
+                        predicates.add(root.get("uploaderCardNum").in(userCardNums));
+                    } else {
+                        // 如果指定了昵称或卡号但找不到匹配的用户，则返回空结果
+                        return Response.Common.ok(Map.of("results", Collections.emptyList(), "identities", Collections.emptyList()));
+                    }
+                }
+
+                cq.where(cb.and(predicates.toArray(new Predicate[0])));
+                results = database.createQuery(cq).getResultList();
+
+            } else { // "comment"
+                CriteriaQuery<Comment> cq = cb.createQuery(Comment.class);
+                Root<Comment> root = cq.from(Comment.class);
+
+                if (content != null && !content.isEmpty()) {
+                    predicates.add(cb.like(root.get("content"), "%" + content + "%"));
+                }
+
+                if ((nickname != null && !nickname.isEmpty()) || (cardNumStr != null && !cardNumStr.isEmpty())) {
+                    List<Integer> userCardNums = findCardNums(database, nickname, cardNumStr);
+                    if (!userCardNums.isEmpty()) {
+                        predicates.add(root.get("uploaderCardNum").in(userCardNums));
+                    } else {
+                        return Response.Common.ok(Map.of("results", Collections.emptyList(), "identities", Collections.emptyList()));
+                    }
+                }
+
+                cq.where(cb.and(predicates.toArray(new Predicate[0])));
+                results = database.createQuery(cq).getResultList();
+            }
+
+            // 为了显示，同时返回所有用户信息
+            List<Identity> identities = database.createQuery("FROM Identity", Identity.class).getResultList();
+
+            return Response.Common.ok(Map.of(
+                    "results", results,
+                    "identities", identities
+            ));
+
+        } catch (Exception e) {
+            return Response.Common.error("Search failed: " + e.getMessage());
+        }
+    }
+
+    // 辅助方法：根据昵称或卡号查找匹配的 cardNum 列表
+    private List<Integer> findCardNums(org.hibernate.Session database, String nickname, String cardNumStr) {
+        CriteriaBuilder cb = database.getCriteriaBuilder();
+        CriteriaQuery<Identity> cq = cb.createQuery(Identity.class);
+        Root<Identity> root = cq.from(Identity.class);
+        List<Predicate> userPredicates = new ArrayList<>();
+
+        if (nickname != null && !nickname.isEmpty()) {
+            userPredicates.add(cb.like(root.get("userName"), "%" + nickname + "%"));
+        }
+        if (cardNumStr != null && !cardNumStr.isEmpty()) {
+            try {
+                userPredicates.add(cb.equal(root.get("cardNum"), Integer.parseInt(cardNumStr)));
+            } catch (NumberFormatException e) {
+                // 忽略无效的卡号格式
+            }
+        }
+
+        if (userPredicates.isEmpty()) return Collections.emptyList();
+
+        cq.select(root).where(cb.or(userPredicates.toArray(new Predicate[0])));
+        List<Identity> users = database.createQuery(cq).getResultList();
+
+        return users.stream().map(Identity::getCardNum).collect(Collectors.toList());
+    }
+
+
+    /**
+     * 8. 删除消息或评论 (修正后)
+     *
+     * @param request  请求对象
+     * @param database Hibernate 会话
+     * @return 成功或失败的响应
+     */
+    @RouteMapping(uri = "chat/delete", role = "admin")
+    public Response delete(Request request, org.hibernate.Session database) {
+        Transaction tx = null;
+        try {
+            String type = request.getParams().get("type"); // "message" or "comment"
+            String idStr = request.getParams().get("id");
+            UUID id = UUID.fromString(idStr);
+
+            tx = database.beginTransaction();
+
+            if ("message".equals(type)) {
+                Message message = database.get(Message.class, id);
+                if (message != null) {
+
+                    // --- ADDED LOGIC START ---
+                    // 1. 在删除消息之前，先获取其所有关联的评论ID
+                    List<UUID> commentIds = message.getCommentIds();
+                    if (commentIds != null && !commentIds.isEmpty()) {
+                        // 2. 高效地批量删除所有这些评论
+                        // 使用 HQL (Hibernate Query Language) 来执行批量删除操作
+                        database.createMutationQuery("DELETE FROM Comment c WHERE c.id IN (:ids)")
+                                .setParameter("ids", commentIds)
+                                .executeUpdate();
+                    }
+                    // --- ADDED LOGIC END ---
+
+                    // 3. 从关联的 ChatRoom 中移除 Message ID
+                    // 注意：此查询可能因没有直接的反向链接而效率不高，但对于当前结构是必要的
+                    ChatRoom room = database.createQuery("FROM ChatRoom cr WHERE :messageId MEMBER OF cr.messageIds", ChatRoom.class)
+                            .setParameter("messageId", id)
+                            .uniqueResult();
+                    if (room != null) {
+                        room.getMessageIds().remove(id);
+                        database.merge(room);
+                    }
+
+                    // 4. 最后删除消息本身
+                    database.remove(message);
+
+                } else {
+                    tx.rollback(); // 消息不存在，回滚事务
+                    return Response.Common.error("Message not found");
+                }
+            } else if ("comment".equals(type)) {
+                Comment comment = database.get(Comment.class, id);
+                if (comment != null) {
+                    // 从关联的 Message 中移除 Comment ID
+                    Message message = database.createQuery("FROM Message m WHERE :commentId MEMBER OF m.commentIds", Message.class)
+                            .setParameter("commentId", id)
+                            .uniqueResult();
+                    if(message != null) {
+                        message.getCommentIds().remove(id);
+                        database.merge(message);
+                    }
+                    // 删除评论本身
+                    database.remove(comment);
+                } else {
+                    tx.rollback();
+                    return Response.Common.error("Comment not found");
+                }
+            } else {
+                tx.rollback();
+                return Response.Common.error("Invalid delete type");
+            }
+
+            tx.commit();
+            return Response.Common.ok("Successfully deleted");
+
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            e.printStackTrace(); // 在服务器日志中打印详细错误，便于调试
+            return Response.Common.error("Delete failed: " + e.getMessage());
         }
     }
 }

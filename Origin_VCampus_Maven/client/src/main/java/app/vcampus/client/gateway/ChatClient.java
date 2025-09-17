@@ -10,14 +10,20 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement; // ADDED: 导入 JsonElement
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
+import app.vcampus.server.utility.SearchResult;
+import app.vcampus.server.entity.Comment; // 客户端需要这个类的定义
+import app.vcampus.server.entity.Identity; // 客户端需要这个类的定义
+import app.vcampus.server.entity.Message;  // 客户端需要这个类的定义
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.stream.Collectors;
 /**
  * ChatClient 提供了一个网关，用于访问后端的聊天室服务。
  * 它封装了所有与服务器的HTTP API交互的细节。
  */
-public class ChatClient extends BaseClient {
+public class    ChatClient extends BaseClient {
     // 使用 Gson 进行 Map 和对象之间的转换
     private final Gson gson = new GsonBuilder().create();
     private final NettyHandler handler;
@@ -146,5 +152,73 @@ public class ChatClient extends BaseClient {
             Thread.currentThread().interrupt();
             throw new IOException("Request was interrupted", e);
         }
+    }
+
+    /**
+     * 7. 按条件搜索消息或评论 (重构后)
+     * @param type "message" 或 "comment"
+     * @param searchCriteria 包含搜索条件的 Map (nickname, cardNum, content)
+     * @return 一个 SearchResult 对象，其中包含类型化的结果列表和用户信息映射
+     * @throws IOException 如果网络请求失败
+     */
+    public SearchResult search(String type, Map<String, String> searchCriteria) throws IOException {
+        Request request = new Request();
+        request.setUri("chat/search");
+
+        Map<String, String> params = new HashMap<>(searchCriteria);
+        params.put("type", type);
+        request.setParams(params);
+
+        try {
+            Response response = BaseClient.sendRequest(handler, request);
+            if (!response.getStatus().equals("success")) {
+                throw new IOException("Search failed: " + response.getMessage());
+            }
+
+            // *************** 解析逻辑从 ViewModel 移到此处 ***************
+            Map<String, Object> data = (Map<String, Object>) response.getData();
+
+            // 1. 解析 Identity 列表并创建用户映射
+            Type identityListType = new TypeToken<List<Identity>>(){}.getType();
+            List<Identity> identities = gson.fromJson(gson.toJsonTree(data.get("identities")), identityListType);
+            Map<Integer, String> userMap = identities.stream()
+                    .collect(Collectors.toMap(Identity::getCardNum, Identity::getUserName, (u1, u2) -> u1)); // 避免重复制
+
+            // 2. 根据类型解析结果列表
+            List<?> resultsList;
+            if ("message".equalsIgnoreCase(type)) {
+                Type messageListType = new TypeToken<List<Message>>(){}.getType();
+                resultsList = gson.fromJson(gson.toJsonTree(data.get("results")), messageListType);
+            } else if ("comment".equalsIgnoreCase(type)) {
+                Type commentListType = new TypeToken<List<Comment>>(){}.getType();
+                resultsList = gson.fromJson(gson.toJsonTree(data.get("results")), commentListType);
+            } else {
+                // 如果类型无效，返回空结果
+                resultsList = Collections.emptyList();
+            }
+
+            // 3. 将解析和处理后的数据封装并返回
+            return new SearchResult(resultsList, userMap);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Request was interrupted", e);
+        }
+    }
+
+    /**
+     * 8. 删除消息或评论
+     * @param type "message" 或 "comment"
+     * @param id 要删除的项的 UUID
+     * @throws IOException 如果网络请求失败
+     */
+    public void delete(String type, UUID id) throws IOException {
+        Request request = new Request();
+        request.setUri("chat/delete");
+        request.setParams(Map.of(
+                "type", type,
+                "id", id.toString()
+        ));
+        sendActionRequest(request, "Failed to delete");
     }
 }

@@ -1,12 +1,11 @@
-package app.vcampus.client.scene;
+package app.vcampus.client.scene.SubScene.ChatScene;
 
+import app.vcampus.client.scene.MessageController;
 import app.vcampus.client.viewmodel.ChatViewModel;
 import app.vcampus.client.viewmodel.MessageViewModel;
 import app.vcampus.server.enums.ChatTopic;
 import com.jfoenix.controls.*;
 import javafx.animation.PauseTransition;
-import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -15,7 +14,6 @@ import java.io.IOException;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;

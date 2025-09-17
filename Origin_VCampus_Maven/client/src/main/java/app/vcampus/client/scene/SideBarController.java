@@ -298,7 +298,16 @@ public class SideBarController implements Initializable {
 
     @FXML
     private void handleChat() {
+        List<Node> menuItems = new ArrayList<>();
+        if(FakeRepository.user != null && (Arrays.asList(FakeRepository.user.getRoles()).contains("admin") || Arrays.asList(FakeRepository.user.getRoles()).contains("chat_admin"))) {
+            JFXButton ctButton = createSecondaryMenuButton("聊天", "/app/vcampus/client/scene/SubScene/ChatScene/ChatView.fxml");
+            JFXButton mgButton = createSecondaryMenuButton("管理", "/app/vcampus/client/scene/SubScene/ChatScene/ManageChatView.fxml");
+            menuItems.add(ctButton);
+            menuItems.add(mgButton);
+            ctButton.getStyleClass().add("active");
+        }
         setActiveButton(chatButton);
-        switchView("/app/vcampus/client/scene/SubScene/ChatScene/ChatView.fxml", "VCampus BBS", List.of());
+        switchView("/app/vcampus/client/scene/SubScene/ChatScene/ChatView.fxml", "VCampus BBS", menuItems);
     }
+
 }
