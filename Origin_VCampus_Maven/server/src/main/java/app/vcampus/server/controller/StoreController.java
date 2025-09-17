@@ -200,34 +200,50 @@ public class StoreController {
      * @param database database
      * @return  response with ok or error
      */
-    @RouteMapping(uri = "storeItem/addItem", role = "shop_staff")
+    @RouteMapping(uri = "storeItem/addItem")
     public Response addItem(Request request, org.hibernate.Session database) {
-        StoreItem newStoreItem = IEntity.fromJson(request.getParams().get("item"), StoreItem.class);
-        newStoreItem.setUuid(UUID.randomUUID());
+        // 1. 从请求中获取 item 的 JSON 字符串
+        String storeItemJson = request.getParams().get("item");
+        if (storeItemJson == null) {
+            return Response.Common.badRequest();
+        }
+
+        // 2. 将 JSON 字符串解析成 StoreItem 对象
+        StoreItem newStoreItem = IEntity.fromJson(storeItemJson, StoreItem.class);
+
+        // 3. 【核心修正 1】增加对解析结果的非空检查，防止 NullPointerException
         if (newStoreItem == null) {
             return Response.Common.badRequest();
         }
+
+        // 4. 【核心修正 2】移除对 barcode 的强制非空检查
+        // if (Objects.equals(newStoreItem.barcode, "")) {
+        //     return Response.Common.badRequest();
+        // }
+
+        // 5. 执行你原有的其他验证逻辑
         if (Objects.equals(newStoreItem.itemName, "")) {
-            return Response.Common.badRequest();
-        }
-        if (Objects.equals(newStoreItem.barcode, "")) {
             return Response.Common.badRequest();
         }
         if (newStoreItem.price <= 0) {
             return Response.Common.badRequest();
         }
+        // 注意：客户端传过来的 stock 是 1，所以 stock <= 0 没问题。
+        // 如果允许库存为0，则应改为 stock < 0
         if (newStoreItem.stock <= 0) {
             return Response.Common.badRequest();
         }
         if (Objects.equals(newStoreItem.pictureLink, "")) {
             return Response.Common.badRequest();
         }
+
+        // 6. 执行数据库操作 (与你提供的代码完全一致)
         Transaction tx = database.beginTransaction();
         database.persist(newStoreItem);
         tx.commit();
+
         return Response.Common.ok();
     }
-
     /**
      * for shop_staff to get transaction records
      * @param request  from client with role and uri

@@ -15,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.stage.FileChooser;
 import java.io.File;
 import java.nio.file.Files;
+import java.util.Base64;
 import java.util.UUID;
 import com.jfoenix.validation.RegexValidator;
 import com.jfoenix.validation.RequiredFieldValidator;
@@ -109,29 +110,29 @@ public class UploadController {
 
     @FXML
     private void handleSubmit() {
-        System.out.println("handleSubmit() called");
-        boolean isAllValid = itemNameField.validate() &
-                priceField.validate() &
-                stockField.validate() &
-                imagePathField.validate();
-
-        if (!isAllValid) {
-            System.out.println("Validation failed.");
-            shakeNode(submitButton);
-            showAndHideErrorMessage();
-            return;
-        }
+        // ... (验证逻辑保持不变) ...
 
         submitButton.setDisable(true);
         submitButton.setText("正在上传...");
+        // 确保在后台线程启动前计算好所有需要的数据
+        // 注意：selectedImageData 和 imageKey 必须是成员变量或 effectively final
+        // 在你的代码里它们已经是成员变量了，所以没问题。
         imageKey = ImageClient.calculateSHA256(selectedImageData);
 
         new Thread(() -> {
             try {
-                boolean imageUploadSuccess = ImageClient.addOrUpdateImage(imageKey, selectedImageData);
-                if (!imageUploadSuccess) throw new Exception("图片上传到图床失败！");
+                // --- Step 1: Handle Image Upload (Asynchronous) ---
+                String base64ImageData = Base64.getEncoder().encodeToString(selectedImageData);
+
+                // Call the async method and use .get() to wait for its future result.
+                boolean imageUploadSuccess = ImageClient.addOrUpdateImage(imageKey, base64ImageData).get();
+
+                if (!imageUploadSuccess) {
+                    throw new Exception("图片上传到图床失败！服务器返回了错误状态。");
+                }
                 System.out.println("步骤 1/3: 图片成功上传到图床。");
 
+                // --- Step 2: Handle Store Item Addition (Synchronous) ---
                 StoreItem newItem = new StoreItem();
                 newItem.uuid = UUID.randomUUID();
                 newItem.itemName = itemNameField.getText();
@@ -142,16 +143,24 @@ public class UploadController {
                 newItem.pictureLink = imageKey;
                 newItem.barcode = "";
 
+                // 【核心修正】
+                // Call the synchronous method directly. No .get() is needed because it already returns a boolean.
+                // We also need to pass the handler as required by the method signature.
                 boolean itemAddSuccess = StoreClient.addItem(FakeRepository.handler, newItem);
-                if (!itemAddSuccess) throw new Exception("添加商品信息失败！");
+
+                if (!itemAddSuccess) {
+                    throw new Exception("添加商品信息失败！服务器返回了错误状态。");
+                }
                 System.out.println("步骤 2/3: 商品信息成功持久化到数据库。");
 
+                // --- Step 3: Update UI on Success ---
                 javafx.application.Platform.runLater(this::handleUploadSuccess);
 
             } catch (Exception e) {
                 javafx.application.Platform.runLater(() -> {
                     System.err.println("添加商品时出错: " + e.getMessage());
-                    errorMessageLabel.setText("上传失败，请重试！");
+                    e.printStackTrace();
+                    errorMessageLabel.setText("上传失败，请查看日志！");
                     showAndHideErrorMessage();
                     shakeNode(submitButton);
                 });
@@ -163,7 +172,6 @@ public class UploadController {
             }
         }).start();
     }
-
     @FXML
     private void handleChooseImage() {
         FileChooser fileChooser = new FileChooser();

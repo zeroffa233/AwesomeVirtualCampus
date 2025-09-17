@@ -38,7 +38,7 @@ public class NettyClient implements Callable<NettyHandler> {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(@NotNull SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new JsonObjectDecoder())
+                    ch.pipeline().addLast(new JsonObjectDecoder(100 * 1024 * 1024))
                         .addLast(new StringEncoder(CharsetUtil.UTF_8))
                         .addLast(new StringDecoder(CharsetUtil.UTF_8))
                         .addLast(handler);

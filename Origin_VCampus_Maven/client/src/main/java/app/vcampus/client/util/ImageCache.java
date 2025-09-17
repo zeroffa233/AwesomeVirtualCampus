@@ -43,17 +43,28 @@ public final class ImageCache {
                 List<CachedImage> imagesFromServer = ImageClient.getAllImages();
 
                 if (imagesFromServer != null) {
+                    // 【核心修正】从 refresh() 方法复制过来的、完整的缓存填充逻辑
                     for (CachedImage dto : imagesFromServer) {
-                        // ... (填充缓存的逻辑保持不变)
+                        if (dto.getKey() != null && dto.getImageData() != null) {
+                            try (ByteArrayInputStream stream = new ByteArrayInputStream(dto.getImageData())) {
+                                Image image = new Image(stream);
+                                if (!image.isError()) {
+                                    // 直接调用已有的 addImage 方法
+                                    addImage(dto.getKey(), image);
+                                }
+                            } catch (Exception e) {
+                                System.err.println("ImageCache (initOnce): 从服务器数据创建图片时出错, Key: " + dto.getKey());
+                            }
+                        }
                     }
-                    System.out.println("ImageCache: 初始化成功，共加载 " + imagesFromServer.size() + " 张图片。");
+                    // 现在这个日志信息才是名副其实的
+                    System.out.println("ImageCache: 初始化成功，共加载 " + cache.size() + " 张图片到缓存。");
                 } else {
-                    System.err.println("ImageCache: 从服务器初始化失败。");
+                    System.err.println("ImageCache: 从服务器初始化失败，获取数据为 null。");
                 }
             }).start();
         }
     }
-
     // ... getImage 和 addImage 方法保持您原有的、简洁的版本 ...
     public Image getImage(final String path) {
         Image cachedImage = cache.get(path);
