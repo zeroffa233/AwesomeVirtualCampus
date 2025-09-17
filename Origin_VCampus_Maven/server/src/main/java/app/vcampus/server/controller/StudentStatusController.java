@@ -84,7 +84,8 @@ public class StudentStatusController {
             if (keyword == null) {
                 students = Database.loadAllData(Student.class, database);
             } else {
-                students = Database.likeQuery(Student.class, new String[]{"cardNumber", "studentNumber", "givenName", "familyName", "birthDate", "major", "school", "birthPlace"}, keyword, database);
+                // 使用自定义查询以支持完整姓名搜索
+                students = searchStudentWithFullName(keyword, database);
             }
 
             return Response.Common.ok(Map.of("students", students.stream().map(Student::toJson).collect(Collectors.toList())));
@@ -92,6 +93,44 @@ public class StudentStatusController {
             log.warn("Failed to filter students", e);
             return Response.Common.error("Failed to filter students");
         }
+    }
+
+    /**
+     * 支持完整姓名搜索的学生查询方法
+     * @param keyword 搜索关键词
+     * @param database 数据库会话
+     * @return 匹配的学生列表
+     */
+    private List<Student> searchStudentWithFullName(String keyword, org.hibernate.Session database) {
+        jakarta.persistence.criteria.CriteriaBuilder builder = database.getCriteriaBuilder();
+        jakarta.persistence.criteria.CriteriaQuery<Student> criteria = builder.createQuery(Student.class);
+        jakarta.persistence.criteria.Root<Student> studentRoot = criteria.from(Student.class);
+
+        // 构建搜索条件
+        java.util.ArrayList<jakarta.persistence.criteria.Predicate> conditions = new java.util.ArrayList<>();
+
+        // 原有的字段搜索
+        String[] searchFields = {"cardNumber", "studentNumber", "givenName", "familyName", "birthDate", "major", "school", "birthPlace"};
+        for (String field : searchFields) {
+            conditions.add(builder.like(studentRoot.get(field).as(String.class), "%" + keyword + "%"));
+        }
+
+        // 添加完整姓名搜索（familyName + givenName）
+        jakarta.persistence.criteria.Expression<String> fullName = builder.concat(
+                builder.concat(studentRoot.get("familyName").as(String.class), " "),
+                studentRoot.get("givenName").as(String.class)
+        );
+        conditions.add(builder.like(fullName, "%" + keyword + "%"));
+
+        // 添加无空格完整姓名搜索（familyName + givenName）
+        jakarta.persistence.criteria.Expression<String> fullNameNoSpace = builder.concat(
+                studentRoot.get("familyName").as(String.class),
+                studentRoot.get("givenName").as(String.class)
+        );
+        conditions.add(builder.like(fullNameNoSpace, "%" + keyword + "%"));
+
+        criteria.where(builder.or(conditions.toArray(new jakarta.persistence.criteria.Predicate[0])));
+        return database.createQuery(criteria).getResultList();
     }
 }
 

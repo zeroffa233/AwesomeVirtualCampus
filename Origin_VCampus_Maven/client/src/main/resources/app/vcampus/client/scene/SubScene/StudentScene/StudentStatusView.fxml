@@ -18,13 +18,13 @@
     <center>
         <StackPane fx:id="contentPane" styleClass="content-panel">
             <!-- 学籍信息展示（默认可见） -->
-            <AnchorPane fx:id="studentInfoPane" visible="true">
+            <AnchorPane fx:id="studentInfoPane" visible="true" style="-fx-background-color: white;">
                 <children>
                     <ScrollPane fitToWidth="true" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
                                 AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
-                                style="-fx-background-color: transparent;">
+                                styleClass="scroll-pane">
                         <content>
-                            <VBox spacing="20.0">
+                            <VBox spacing="20.0" style="-fx-background-color: white;">
                                 <!-- 标题部分 - 独立的标题组件 -->
                                 <VBox styleClass="page-title">
                                     <padding>
@@ -37,7 +37,7 @@
                                 </VBox>
 
                                 <!-- 表单部分 - 添加独立的表单容器 -->
-                                <VBox styleClass="form-container">
+                                <VBox styleClass="form-container" style="-fx-background-color: white;">
                                     <padding>
                                         <Insets top="0" right="24" bottom="24" left="24"/>
                                     </padding>

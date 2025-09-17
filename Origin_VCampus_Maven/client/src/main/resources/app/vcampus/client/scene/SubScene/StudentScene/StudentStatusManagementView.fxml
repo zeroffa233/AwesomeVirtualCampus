@@ -19,12 +19,12 @@
 
             <!-- 修改学籍信息页面（管理界面，默认显示） -->
             <AnchorPane fx:id="modifyPane" visible="true"
-                        prefWidth="800.0">
+                        prefWidth="800.0" style="-fx-background-color: white;">
                 <children>
                     <VBox spacing="16.0" AnchorPane.topAnchor="0.0"
                           AnchorPane.leftAnchor="0.0"
                           AnchorPane.rightAnchor="0.0"
-                          AnchorPane.bottomAnchor="0.0">
+                          AnchorPane.bottomAnchor="0.0" style="-fx-background-color: white;">
                         <padding>
                             <Insets top="24" right="24" bottom="24" left="24" />
                         </padding>
@@ -39,9 +39,9 @@
                         <Label text="搜索到的学生学籍信息" style="-fx-font-size: 14px; -fx-text-fill: #5a6872;" />
 
                         <!-- 使用VBox和ScrollPane替代ListView -->
-                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="results-scroll-pane">
+                        <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" styleClass="results-scroll-pane">
                             <content>
-                                <VBox fx:id="searchResultsContainer" spacing="8.0" styleClass="results-container" />
+                                <VBox fx:id="searchResultsContainer" spacing="8.0" styleClass="results-container" style="-fx-background-color: white;"/>
                             </content>
                         </ScrollPane>
                     </VBox>

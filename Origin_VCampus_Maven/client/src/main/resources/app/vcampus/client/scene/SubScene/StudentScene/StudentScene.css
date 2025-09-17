@@ -7,7 +7,7 @@
 
 /* 主容器样式 */
 .student-status-root {
-    -fx-background-color: #f9fafc;
+    -fx-background-color: white;
     -fx-padding: 16px;
 }
 
@@ -24,7 +24,16 @@
     -fx-font-weight: bold;
     -fx-text-fill: #111111;
 }
+.page-title {
+    -fx-background-color: white;
+    -fx-background-radius: 8px 8px 0 0;
+}
 
+/* 表单容器样式 */
+.form-container {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 8px 8px;
+}
 /* 表单网格布局优化 */
 .form-grid {
     -fx-hgap: 20px;
@@ -234,3 +243,29 @@
         -fx-padding: 16px;
     }
 }
+/* 搜索结果滚动面板样式 */
+.results-scroll-pane {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8px;
+}
+
+/* 搜索结果容器样式 */
+.results-container {
+    -fx-background-color: white;
+    -fx-padding: 8px;
+}
+/* 覆盖 ScrollPane 的 viewport（关键） */
+.scroll-pane {
+    -fx-background-color: white; /* ScrollPane 外框 */
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: white; /* **关键：内容显示区** */
+}
+
+/* 保证根容器与内容面板白底 */
+.content-panel {
+    -fx-background-color: white;
+}
+

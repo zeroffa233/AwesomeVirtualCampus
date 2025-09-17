@@ -174,12 +174,12 @@ public class SearchStudentCell extends ListCell<Student> {
         JFXButton editBtn = new JFXButton("修改");
         editBtn.setStyle("-fx-background-color: #f0f2f5; -fx-text-fill: #444; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 8 16 8 16;");
         JFXButton confirmBtn = new JFXButton("确认");
-        confirmBtn.setStyle("-fx-background-color: #1890ff; -fx-text-fill: white; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 8 16 8 16;");
+        confirmBtn.setStyle("-fx-background-color: #607830; -fx-text-fill: white; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 8 16 8 16;");
         JFXButton cancelBtn = new JFXButton("取消");
         cancelBtn.setStyle("-fx-background-color: #f0f2f5; -fx-text-fill: #444; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-padding: 8 16 8 16;");
 
         addButtonHoverEffects(editBtn, "#f0f2f5", "#e6e9ed");
-        addButtonHoverEffects(confirmBtn, "#1890ff", "#40a9ff");
+        addButtonHoverEffects(confirmBtn, "#607830", "#4f6228");
         addButtonHoverEffects(cancelBtn, "#f0f2f5", "#e6e9ed");
 
         editBtn.setVisible(editable);
@@ -326,7 +326,7 @@ public class SearchStudentCell extends ListCell<Student> {
                 "-fx-background-color: white;"
                         + "-fx-text-fill: #333;"
                         + "-fx-background-radius: 6px;"
-                        + "-fx-border-color: #1890ff;"
+                        + "-fx-border-color: #4f6228;"
                         + "-fx-border-radius: 6px;"
                         + "-fx-border-width: 1px;"
                         + "-fx-font-size: 12px;"

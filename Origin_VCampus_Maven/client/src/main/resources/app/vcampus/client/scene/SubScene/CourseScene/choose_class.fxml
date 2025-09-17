@@ -26,7 +26,7 @@
 
             <!-- 列表：使用 ScrollPane 包裹 VBox -->
             <!-- ScrollPane 占满剩余空间 -->
-            <ScrollPane fx:id="scrollPane" fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+            <ScrollPane fx:id="scrollPane" fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" VBox.vgrow="ALWAYS" style="-fx-background-color: white;">
                 <content>
                     <VBox fx:id="coursesContainer" spacing="10">
                         <padding>

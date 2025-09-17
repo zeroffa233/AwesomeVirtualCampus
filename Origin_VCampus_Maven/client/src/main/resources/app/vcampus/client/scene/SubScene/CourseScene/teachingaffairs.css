@@ -23,7 +23,7 @@
 
 /* 标题区域样式 */
 .page-title {
-    -fx-background-color: #F8F8F8;
+    -fx-background-color: white;
     -fx-border-color: #EAEAEA;
     -fx-border-width: 0 0 1px 0;
 }
@@ -51,7 +51,7 @@
 
 /* 教学班卡片 */
 .tc-card-root {
-    -fx-background-color: #fafafa;
+    -fx-background-color: white;
     -fx-background-radius: 8;
     -fx-border-color: #e6e6e6;
     -fx-border-radius: 8;
@@ -167,7 +167,7 @@
 /* 时间表样式 */
 .timetable-root {
     -fx-font-size: 13px;
-    -fx-background-color: linear-gradient(to bottom, #f7fbff, #ffffff);
+    -fx-background-color: white;
 }
 
 /* 统一时间表标题样式 */
@@ -262,7 +262,7 @@
 
 /* 表单区域样式 */
 .form-container {
-    -fx-background-color: #FAFAFA;
+    -fx-background-color: white;
     -fx-background-radius: 8px;
     -fx-border-radius: 8px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);
@@ -357,7 +357,7 @@
 }
 
 .schedule-table .column-header {
-    -fx-background-color: #F8F8F8;
+    -fx-background-color: white;
     -fx-border-color: #E0E0E0;
     -fx-border-width: 0 0 1px 1px;
     -fx-padding: 8px;
@@ -370,11 +370,11 @@
 }
 
 .schedule-table .table-row-cell:even {
-    -fx-background-color: #FAFAFA;
+    -fx-background-color: white;
 }
 
 .schedule-table .table-row-cell:hover {
-    -fx-background-color: #F0F0F0;
+    -fx-background-color: white;
 }
 
 /* TitledPane样式 */
@@ -386,7 +386,7 @@
 }
 
 .schedule-titled-pane > .title {
-    -fx-background-color: #F8F8F8;
+    -fx-background-color: white;
     -fx-border-color: #E0E0E0;
     -fx-border-width: 0 0 1px 0;
     -fx-font-size: 14px;
@@ -401,7 +401,7 @@
 
 /* 我的课堂模块样式 - 扁平化设计 */
 .my-class-root {
-    -fx-background-color: #fafafa;
+    -fx-background-color: white;
 }
 
 /* 页面容器 */
