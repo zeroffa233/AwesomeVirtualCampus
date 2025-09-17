@@ -65,12 +65,12 @@
             <children>
                 <VBox fx:id="emptyStateContainer" alignment="CENTER" spacing="20">
                     <children>
-                        <ImageView fitHeight="900.0" fitWidth="900.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="emptyStateImageView" fitHeight="900.0" fitWidth="900.0" pickOnBounds="true" preserveRatio="true">
                             <image>
                                 <Image url="@/images/Library_Default.png" />
                             </image>
                         </ImageView>
-                        <Label text="输入关键词，开始探索图书馆的宝藏" style="-fx-font-size: 16px; -fx-text-fill: #888888;"/>
+                        <Label fx:id="emptyStateLabel" text="输入关键词，开始探索图书馆的宝藏" style="-fx-font-size: 16px; -fx-text-fill: #888888;"/>
                     </children>
                 </VBox>
                 <VBox fx:id="resultsContainer" spacing="15">

@@ -30,6 +30,10 @@ public class LibraryViewController {
     @FXML
     private VBox emptyStateContainer;
     @FXML
+    private ImageView emptyStateImageView;
+    @FXML
+    private Label emptyStateLabel;
+    @FXML
     private VBox resultsContainer;
     @FXML
     private Label resultCountLabel;
@@ -85,6 +89,19 @@ public class LibraryViewController {
     }
 
     private void showEmptyState() {
+        emptyStateImageView.setVisible(true);
+        emptyStateImageView.setManaged(true);
+        emptyStateLabel.setText("输入关键词，开始探索图书馆的宝藏");
+        resultsContainer.setVisible(false);
+        resultsContainer.setManaged(false);
+        emptyStateContainer.setVisible(true);
+        emptyStateContainer.setManaged(true);
+    }
+
+    private void showNotFoundState() {
+        emptyStateImageView.setVisible(false);
+        emptyStateImageView.setManaged(false);
+        emptyStateLabel.setText("没有找到您所搜寻的内容，请重试");
         resultsContainer.setVisible(false);
         resultsContainer.setManaged(false);
         emptyStateContainer.setVisible(true);
@@ -100,7 +117,11 @@ public class LibraryViewController {
 
     private void processAndDisplayResults(List<LibraryBook> allCopies, boolean isAllBooks) {
         if (allCopies == null || allCopies.isEmpty()) {
-            showEmptyState();
+            if (isAllBooks) {
+                showEmptyState();
+            } else {
+                showNotFoundState();
+            }
             return;
         }
 

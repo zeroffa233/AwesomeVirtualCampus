@@ -4,29 +4,29 @@ import app.vcampus.client.gateway.LibraryClient;
 import app.vcampus.client.repository.FakeRepository;
 import app.vcampus.server.entity.LibraryBook;
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
-import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 
 public class LibraryAddBookViewController {
     @FXML
-    private JFXTextField authorField;
+    private TextField authorField;
     @FXML
-    private JFXTextField callNumberField;
+    private TextField callNumberField;
     @FXML
-    private JFXTextField nameField;
+    private TextField nameField;
     @FXML
-    private JFXTextField coverField;
+    private TextField coverField;
     @FXML
-    private JFXTextField isbnField;
+    private TextField isbnField;
     @FXML
-    private JFXTextField placeField;
+    private TextField placeField;
     @FXML
-    private JFXTextField pressField;
+    private TextField pressField;
     @FXML
-    private JFXTextArea descriptionArea;
+    private TextArea descriptionArea;
     @FXML
     private JFXButton confirmButton;
     @FXML
