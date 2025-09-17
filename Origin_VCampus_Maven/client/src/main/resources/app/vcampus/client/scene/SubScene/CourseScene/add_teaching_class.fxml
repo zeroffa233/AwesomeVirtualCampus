@@ -30,14 +30,14 @@
                     <Label text="选择课程:" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="form-label"/>
                     <ComboBox fx:id="courseComboBox" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="350" styleClass="form-combo-box"/>
 
-                    <Label text="教师工号:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="form-label"/>
-                    <TextField fx:id="teacherIdField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="300" styleClass="form-text-field"/>
+                    <Label text="教师工号:" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="form-label"/>
+                    <TextField fx:id="teacherIdField" GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="300" styleClass="form-text-field"/>
 
-                    <Label text="上课地点:" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="form-label"/>
-                    <TextField fx:id="placeField" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="300" styleClass="form-text-field"/>
+                    <Label text="上课地点:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="form-label"/>
+                    <TextField fx:id="placeField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="300" styleClass="form-text-field"/>
 
-                    <Label text="班级容量:" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="form-label"/>
-                    <TextField fx:id="capacityField" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="300" styleClass="form-text-field"/>
+                    <Label text="班级容量:" GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="form-label"/>
+                    <TextField fx:id="capacityField" GridPane.columnIndex="3" GridPane.rowIndex="1" prefWidth="300" styleClass="form-text-field"/>
                 </GridPane>
 
                 <!-- 排课信息 -->
@@ -53,24 +53,24 @@
                             <Label text="星期(1-7):" GridPane.columnIndex="4" GridPane.rowIndex="0" styleClass="form-label"/>
                             <TextField fx:id="weekdayField" GridPane.columnIndex="5" GridPane.rowIndex="0" prefWidth="100" styleClass="form-text-field"/>
 
-                            <Label text="开始节次:" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="form-label"/>
-                            <TextField fx:id="startSectionField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="100" styleClass="form-text-field"/>
+                            <Label text="开始节次:" GridPane.columnIndex="6" GridPane.rowIndex="0" styleClass="form-label"/>
+                            <TextField fx:id="startSectionField" GridPane.columnIndex="7" GridPane.rowIndex="0" prefWidth="100" styleClass="form-text-field"/>
 
-                            <Label text="结束节次:" GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="form-label"/>
-                            <TextField fx:id="endSectionField" GridPane.columnIndex="3" GridPane.rowIndex="1" prefWidth="100" styleClass="form-text-field"/>
+                            <Label text="结束节次:" GridPane.columnIndex="8" GridPane.rowIndex="0" styleClass="form-label"/>
+                            <TextField fx:id="endSectionField" GridPane.columnIndex="9" GridPane.rowIndex="0" prefWidth="100" styleClass="form-text-field"/>
 
-                            <Button fx:id="addScheduleButton" text="添加排课" onAction="#handleAddSchedule" GridPane.columnIndex="4" GridPane.rowIndex="1" GridPane.columnSpan="2" styleClass="secondary-button"/>
+                            <Button fx:id="addScheduleButton" text="添加排课" onAction="#handleAddSchedule" GridPane.columnIndex="10" GridPane.rowIndex="0" GridPane.columnSpan="2" styleClass="secondary-button"/>
                         </GridPane>
 
                         <!-- 排课列表 -->
                         <HBox spacing="16">
-                            <TableView fx:id="scheduleTable" prefWidth="600" prefHeight="200" styleClass="schedule-table">
+                            <TableView fx:id="scheduleTable" prefWidth="1100" prefHeight="400" styleClass="schedule-table">
                                 <columns>
-                                    <TableColumn fx:id="startWeekColumn" text="开始周" prefWidth="100"/>
-                                    <TableColumn fx:id="endWeekColumn" text="结束周" prefWidth="100"/>
-                                    <TableColumn fx:id="weekdayColumn" text="星期" prefWidth="100"/>
-                                    <TableColumn fx:id="startSectionColumn" text="开始节次" prefWidth="100"/>
-                                    <TableColumn fx:id="endSectionColumn" text="结束节次" prefWidth="100"/>
+                                    <TableColumn fx:id="startWeekColumn" text="开始周" prefWidth="220"/>
+                                    <TableColumn fx:id="endWeekColumn" text="结束周" prefWidth="220"/>
+                                    <TableColumn fx:id="weekdayColumn" text="星期" prefWidth="220"/>
+                                    <TableColumn fx:id="startSectionColumn" text="开始节次" prefWidth="220"/>
+                                    <TableColumn fx:id="endSectionColumn" text="结束节次" prefWidth="220"/>
                                 </columns>
                             </TableView>
                             <VBox spacing="12" alignment="CENTER">
