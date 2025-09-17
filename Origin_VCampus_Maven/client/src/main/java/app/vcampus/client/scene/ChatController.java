@@ -16,6 +16,7 @@ import javafx.fxml.FXMLLoader;
 import java.io.IOException;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -36,7 +37,7 @@ public class ChatController implements Initializable {
     @FXML
     private AnchorPane rootPane;
     @FXML
-    private JFXScrollPane chatScrollPane;
+    private ScrollPane chatScrollPane;
     @FXML
     private VBox messageContainerVBox;
     @FXML
