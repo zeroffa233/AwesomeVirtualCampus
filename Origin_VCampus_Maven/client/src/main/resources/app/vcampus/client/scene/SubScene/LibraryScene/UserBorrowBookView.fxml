@@ -12,18 +12,24 @@
 
 <VBox spacing="20.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.UserBorrowBookViewController">
     <padding>
-        <Insets bottom="20.0" left="50.0" right="50.0" top="20.0" />
+        <Insets bottom="40.0" left="100.0" right="100.0" top="40.0" />
     </padding>
     <children>
+        <VBox>
+            <Label text="图书检索">
+                <font>
+                    <Font name="System Bold" size="32.0" />
+                </font>
+            </Label>
+            <Label text="检索并借阅图书馆的藏书" textFill="#616161">
+                <font>
+                    <Font size="18.0" />
+                </font>
+            </Label>
+        </VBox>
         <HBox alignment="CENTER_LEFT">
             <children>
-                <Label text="借阅图书">
-                    <font>
-                        <Font name="System Bold" size="24.0" />
-                    </font>
-                </Label>
-                <Region HBox.hgrow="ALWAYS" />
-                <JFXTextField fx:id="bookNameField" labelFloat="true" prefWidth="250.0" promptText="请输入书籍名称" />
+                <JFXTextField fx:id="bookNameField" labelFloat="true" prefWidth="250.0" promptText="请输入书籍名称" HBox.hgrow="ALWAYS" />
                 <JFXButton fx:id="searchButton" style="-fx-background-color: #607830DE;" styleClass="button-raised" text="搜索" />
             </children>
         </HBox>

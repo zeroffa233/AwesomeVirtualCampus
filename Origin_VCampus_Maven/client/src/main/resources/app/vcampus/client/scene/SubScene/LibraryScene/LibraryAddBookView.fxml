@@ -10,37 +10,36 @@
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.paint.Color?>
 
-<VBox fx:id="rootPane" alignment="CENTER" prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #F0F2F5;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.LibraryAddBookViewController">
+<VBox fx:id="rootPane" spacing="20.0" style="-fx-background-color: #FAFAFA;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.LibraryAddBookViewController">
+    <padding>
+        <Insets bottom="40.0" left="100.0" right="100.0" top="40.0" />
+    </padding>
     <children>
-        <VBox alignment="TOP_CENTER" spacing="20.0" style="-fx-background-color: white; -fx-padding: 40; -fx-background-radius: 10;" maxWidth="500.0">
-            <effect>
-                <DropShadow blurType="GAUSSIAN" height="30" offsetY="2" radius="14.5" width="30">
-                    <color>
-                        <Color opacity="0.1" />
-                    </color>
-                </DropShadow>
-            </effect>
-            <children>
-                <Label text="添加新图书" textFill="#424242">
-                    <font>
-                        <Font name="System Bold" size="28.0" />
-                    </font>
-                </Label>
-                <JFXTextField fx:id="nameField" labelFloat="true" promptText="书名" prefHeight="45" />
-                <JFXTextField fx:id="authorField" labelFloat="true" promptText="作者" prefHeight="45" />
-                <JFXTextField fx:id="isbnField" labelFloat="true" promptText="ISBN" prefHeight="45" />
-                <JFXTextField fx:id="pressField" labelFloat="true" promptText="出版社" prefHeight="45" />
-                <JFXTextField fx:id="callNumberField" labelFloat="true" promptText="索书号" prefHeight="45" />
-                <JFXTextField fx:id="placeField" labelFloat="true" promptText="馆藏地" prefHeight="45" />
-                <JFXTextField fx:id="coverField" labelFloat="true" promptText="封面图片链接" prefHeight="45" />
-                <JFXTextArea fx:id="descriptionArea" labelFloat="true" promptText="书籍简介" prefHeight="80" />
-                <JFXButton fx:id="confirmButton" buttonType="RAISED" prefHeight="50" prefWidth="500" style="-fx-background-color: #607830;" text="确认添加" textFill="WHITE">
-                    <font>
-                        <Font name="System Bold" size="16.0" />
-                    </font>
-                </JFXButton>
-                <Label fx:id="infoLabel" textFill="#D32F2F" />
-            </children>
+        <VBox>
+            <Label text="添加新图书">
+                <font>
+                    <Font name="System Bold" size="32.0" />
+                </font>
+            </Label>
+            <Label text="在图书馆馆藏中添加一本新书" textFill="#616161">
+                <font>
+                    <Font size="18.0" />
+                </font>
+            </Label>
         </VBox>
+        <JFXTextField fx:id="nameField" labelFloat="true" promptText="书名" prefHeight="45" />
+        <JFXTextField fx:id="authorField" labelFloat="true" promptText="作者" prefHeight="45" />
+        <JFXTextField fx:id="isbnField" labelFloat="true" promptText="ISBN" prefHeight="45" />
+        <JFXTextField fx:id="pressField" labelFloat="true" promptText="出版社" prefHeight="45" />
+        <JFXTextField fx:id="callNumberField" labelFloat="true" promptText="索书号" prefHeight="45" />
+        <JFXTextField fx:id="placeField" labelFloat="true" promptText="馆藏地" prefHeight="45" />
+        <JFXTextField fx:id="coverField" labelFloat="true" promptText="封面图片链接" prefHeight="45" />
+        <JFXTextArea fx:id="descriptionArea" labelFloat="true" promptText="书籍简介" prefHeight="80" VBox.vgrow="ALWAYS" />
+        <JFXButton fx:id="confirmButton" buttonType="RAISED" prefHeight="50" prefWidth="Infinity" style="-fx-background-color: #607830;" text="确认添加" textFill="WHITE">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+        </JFXButton>
+        <Label fx:id="infoLabel" textFill="#D32F2F" />
     </children>
 </VBox>

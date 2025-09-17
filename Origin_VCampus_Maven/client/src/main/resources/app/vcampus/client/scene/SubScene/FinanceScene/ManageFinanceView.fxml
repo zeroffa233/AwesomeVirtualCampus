@@ -10,7 +10,7 @@
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="app.vcampus.client.scene.FinanceScene.ManageFinanceController">
     <padding>
-        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0"/>
+        <Insets bottom="40.0" left="100.0" right="100.0" top="40.0" />
     </padding>
     <children>
         <Label style="-fx-font-size: 28px; -fx-font-weight: bold;" text="一卡通管理"/>
