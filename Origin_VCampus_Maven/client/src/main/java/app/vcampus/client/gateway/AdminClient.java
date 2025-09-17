@@ -25,10 +25,9 @@ public class AdminClient extends BaseClient {
         try {
             Response response = BaseClient.sendRequest(handler, request);
             if (response.getStatus().equals("success")) {
-                Type type = new TypeToken<List<String>>() {
+                Type type = new TypeToken<List<User>>() {
                 }.getType();
-                List<String> data = new Gson().fromJson(response.getData().toString(), type);
-                return data.stream().map(s -> IEntity.fromJson(s, User.class)).collect(Collectors.toList());
+                return new Gson().fromJson(response.getData().toString(), type);
             } else {
                 throw new RuntimeException("Failed to get all users");
             }

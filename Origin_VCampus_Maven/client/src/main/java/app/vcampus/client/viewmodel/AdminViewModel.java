@@ -33,8 +33,11 @@ public class AdminViewModel {
         };
 
         task.setOnSucceeded(event -> {
-            users.clear();
-            task.getValue().forEach(serverUser -> users.add(User.fromServerEntity(serverUser)));
+            List<app.vcampus.server.entity.User> result = task.getValue();
+            if (result != null) {
+                users.clear();
+                result.forEach(serverUser -> users.add(User.fromServerEntity(serverUser)));
+            }
         });
 
         task.setOnFailed(event -> {

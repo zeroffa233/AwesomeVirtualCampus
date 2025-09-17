@@ -9,7 +9,7 @@ import app.vcampus.server.utility.Request;
 import app.vcampus.server.utility.Response;
 import app.vcampus.server.utility.router.RouteMapping;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 
 import java.util.Arrays;
 import java.util.List;
