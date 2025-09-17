@@ -1,0 +1,92 @@
+/*
+ * MessageView.css
+ * Styles for an individual message card, giving it a clean, modern, and flat appearance.
+ */
+
+/* --- Root Message Card --- */
+.message-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8px; /* Rounded corners for the card */
+    -fx-border-width: 1px;
+    -fx-border-color: #E0E0E0; /* Subtle border */
+    -fx-border-radius: 8px;
+    /* A more subtle shadow than the original */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 1);
+}
+
+/* --- Header: Username & Timestamp --- */
+.username-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50; /* Dark, readable text */
+}
+
+.timestamp-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #95a5a6; /* Muted gray for secondary info */
+}
+
+/* --- Message Content --- */
+.content-label {
+    -fx-font-size: 15px;
+    -fx-text-fill: #34495e; /* Slightly softer than the username for less strain */
+    -fx-line-spacing: 4px; /* Improves readability for multi-line text */
+}
+
+/* --- Separator --- */
+.message-separator {
+    -fx-background-color: #E9EDF0; /* A very light gray for a subtle division */
+}
+
+/* --- Action Bar at the bottom --- */
+
+/* Style for the Like button */
+.like-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 50%; /* Make the hover effect circular */
+    -fx-padding: 6px;
+}
+
+.like-button:hover {
+    -fx-background-color: #E9EDF0;
+}
+
+.like-icon {
+    -fx-font-size: 18px;
+}
+
+.like-count-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50;
+    -fx-font-weight: bold;
+}
+
+/* Style for the comment input field */
+.comment-textfield {
+    -fx-background-color: #F4F6F8;
+    -fx-background-radius: 15px; /* Pill-shaped input field */
+    -fx-border-width: 0;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #95a5a6;
+    -jfx-focus-color: #607830; /* SEU-Green on focus */
+}
+
+/* Remove the underline from JFXTextField */
+.comment-textfield .jfx-text-field {
+    -jfx-focus-color: transparent;
+    -jfx-unfocus-color: transparent;
+}
+
+
+/* Style for the 'Post' button */
+.post-comment-button {
+    -fx-background-color: #BACA58; /* SEU-Light-Green */
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-background-radius: 6px;
+    -jfx-button-type: RAISED;
+}
+
+.post-comment-button:hover {
+    -fx-background-color: #79953c;
+}

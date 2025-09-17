@@ -93,7 +93,7 @@
             <graphic>
                 <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
                     <image>
-                        <Image url="/images/llm.png" />
+                        <Image url="/images/chat.png" />
                     </image>
                 </ImageView>
             </graphic>

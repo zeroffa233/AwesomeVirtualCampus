@@ -1,0 +1,155 @@
+/*
+ * ChatView.css
+ * Modern, flat design for the BBS Chat interface.
+ * Inspired by the design of GptView.css
+ */
+
+/* --- Base & General --- */
+
+.root-pane {
+    /* 使用更现代、在Windows上表现更好的字体 */
+    -fx-font-family: "Microsoft YaHei UI", sans-serif;
+    -fx-background-color: #F4F6F8; /* 干净的浅色背景 */
+}
+
+/* --- Top Header Panel --- */
+
+.header-pane {
+    -fx-background-color: #FFFFFF; /* 顶部栏使用白色背景 */
+    -fx-border-width: 0 0 1px 0; /* 底部加一条细线，以示区分 */
+    -fx-border-color: #DDE1E5;
+    -fx-padding: 0 20px; /* 左右内边距 */
+}
+
+.title-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50; /* 深灰色文字 */
+}
+
+/* --- Topic Selector & Username Area --- */
+
+.topic-combo-box {
+    -fx-font-size: 14px;
+    -jfx-focus-color: #607830; /* 焦点颜色使用主题绿 */
+    -jfx-unfocus-color: #95a5a6; /* 非焦点颜色 */
+}
+
+.username-area .label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 5px 0 0;
+}
+
+.username-textfield {
+    -jfx-focus-color: #607830;
+    -fx-font-size: 14px;
+}
+
+.save-button {
+    -fx-background-color: #79953c; /* 使用比主色调稍亮的绿色 */
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-background-radius: 6px;
+    -jfx-button-type: RAISED; /* JFoenix的凸起按钮效果 */
+}
+
+.save-button:hover {
+    -fx-background-color: #607830; /* 悬停时变为主题绿 */
+}
+
+
+/* --- Center: Chat Display Area --- */
+
+.chat-scroll-pane {
+    -fx-background-color: #FFFFFF;
+    -fx-border-width: 0;
+}
+
+.message-container-vbox {
+    -fx-padding: 15px;
+    -fx-background-color: #FFFFFF;
+}
+
+/*
+ * --- Chat Bubbles ---
+ * 注意: 这些样式需要您在Java控制器代码中，
+ * 根据消息是自己发送的还是他人发送的，
+ * 动态地添加到消息节点上。
+ */
+
+.message-bubble {
+    -fx-padding: 12px 16px;
+    -fx-background-radius: 8px;
+    -fx-max-width: 75%; /* 气泡最大宽度，防止过长 */
+    -fx-wrap-text: true;
+}
+
+/* 您自己发送的消息气泡 */
+.my-message-bubble {
+    -fx-background-color: #607830DE; /* 使用带透明度的主题绿 */
+}
+
+.my-message-bubble .text {
+    -fx-fill: white; /* 白色文字 */
+}
+
+/* 其他人发送的消息气泡 */
+.other-message-bubble {
+    -fx-background-color: #E9EDF0; /* 浅灰色，以作区分 */
+}
+
+.other-message-bubble .text {
+    -fx-fill: #2c3e50; /* 深灰色文字 */
+}
+
+/* 显示在他人消息气泡上方的昵称标签 */
+.username-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #95a5a6; /* 柔和的灰色 */
+    -fx-padding: 0 0 4px 2px;
+}
+
+/* --- Bottom: Input Area --- */
+
+.input-area-pane {
+    -fx-background-color: #F4F6F8;
+    -fx-padding: 12px;
+    -fx-border-width: 1px 0 0 0; /* 顶部加一条细线 */
+    -fx-border-color: #DDE1E5;
+}
+
+.chat-text-area {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DDE1E5;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #95a5a6; /* 提示文字颜色 */
+    -fx-text-fill: #2c3e50; /* 输入文字颜色 */
+    -fx-padding: 8px;
+    -jfx-focus-color: #607830; /* 焦点颜色 */
+}
+
+/* 覆盖JFXTextArea默认样式，移除下划线，使其更像一个输入框 */
+.chat-text-area .jfx-text-area {
+    -jfx-focus-color: transparent;
+    -jfx-unfocus-color: transparent;
+}
+
+
+.send-button {
+    -fx-background-color: #607830; /* 主题绿 */
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-min-height: 50px;
+    -fx-padding: 10px 20px;
+    -jfx-button-type: RAISED;
+}
+
+.send-button:hover {
+    -fx-background-color: #79953c; /* 悬停时颜色变亮 */
+}

@@ -1,4 +1,4 @@
-package app.vcampus.client.scene;
+package app.vcampus.client.scene.SubScene.ChatScene;
 
 import app.vcampus.client.viewmodel.ChatViewModel;
 import app.vcampus.client.viewmodel.CommentViewModel;
@@ -79,7 +79,7 @@ public class MessageController {
     private void updateLikeButtonState(boolean isLiked) {
         System.out.println("Trigger like:"+isLiked);
         if (isLiked) {
-            likeIconText.setFill(Color.web("#4285F4")); // 点赞后为蓝色 (Google Blue)
+            likeIconText.setFill(Color.web("#607830")); // 点赞后为绿色 (SEU Blue)
         } else {
             likeIconText.setFill(Color.GRAY); // 未点赞为灰色
         }
@@ -93,7 +93,7 @@ public class MessageController {
     }
 
     /**
-     * 【修改点 2】: 创建评论节点，实现空心/实心爱心效果 (♡/❤)
+     * 【修改点 2】: 创建评论节点
      * @param cvm 评论的ViewModel
      * @return 代表一条评论的UI节点
      */

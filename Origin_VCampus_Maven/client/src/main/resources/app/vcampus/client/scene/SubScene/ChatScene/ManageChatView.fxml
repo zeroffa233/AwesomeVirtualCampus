@@ -10,40 +10,34 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.ChatScene.ManageChatController">
+<AnchorPane prefHeight="600.0" prefWidth="800.0" styleClass="root-pane"
+            stylesheets="@ManageChatView.css" xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="app.vcampus.client.scene.SubScene.ChatScene.ManageChatController">
     <children>
-        <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+        <VBox spacing="15.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
             <children>
-                <Label text="BBS 内容管理">
-                    <font>
-                        <Font name="System Bold" size="24.0" />
-                    </font>
-                </Label>
-                <HBox alignment="CENTER_LEFT" spacing="15.0">
-                    <children>
-                        <Label text="搜索类型:" />
-                        <JFXComboBox fx:id="typeComboBox" prefWidth="150.0" promptText="选择消息或评论" />
-                        <JFXCheckBox fx:id="nicknameCheckBox" text="昵称" />
-                        <JFXTextField fx:id="nicknameTextField" prefWidth="150.0" promptText="部分或完整昵称" />
-                        <JFXCheckBox fx:id="cardNumCheckBox" text="卡号" />
-                        <JFXTextField fx:id="cardNumTextField" prefWidth="150.0" promptText="完整卡号" />
-                        <JFXCheckBox fx:id="contentCheckBox" text="内容" />
-                        <JFXTextField fx:id="contentTextField" prefWidth="250.0" promptText="部分内容" />
-                        <JFXButton fx:id="searchButton" style="-fx-background-color: #4059A9;" text="搜索" textFill="WHITE" />
+                <Label text="BBS 内容管理" styleClass="title-label"/>
 
-                        <Label fx:id="errorLabel" style="-fx-text-fill: red;">
-                            <HBox.margin>
-                                <Insets left="10.0" />
-                            </HBox.margin>
-                        </Label>
+                <!-- Filter Panel -->
+                <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="filter-pane">
+                    <children>
+                        <Label text="搜索类型:"/>
+                        <JFXComboBox fx:id="typeComboBox" prefWidth="150.0" promptText="消息或评论"/>
+                        <JFXCheckBox fx:id="nicknameCheckBox" text="昵称"/>
+                        <JFXTextField fx:id="nicknameTextField" prefWidth="150.0" promptText="部分或完整昵称"/>
+                        <JFXCheckBox fx:id="cardNumCheckBox" text="卡号"/>
+                        <JFXTextField fx:id="cardNumTextField" prefWidth="150.0" promptText="完整卡号"/>
+                        <JFXCheckBox fx:id="contentCheckBox" text="内容"/>
+                        <JFXTextField fx:id="contentTextField" HBox.hgrow="ALWAYS" promptText="部分内容"/>
+                        <JFXButton fx:id="searchButton" text="搜索" styleClass="search-button"/>
+                        <Label fx:id="errorLabel" styleClass="error-label"/>
                     </children>
-                    <padding>
-                        <Insets bottom="1.0" top="10.0" />
-                    </padding>
                 </HBox>
-                <JFXListView fx:id="resultListView" VBox.vgrow="ALWAYS" />
+
+                <!-- Results List -->
+                <JFXListView fx:id="resultListView" styleClass="results-list-view" VBox.vgrow="ALWAYS"/>
             </children>
         </VBox>
     </children>

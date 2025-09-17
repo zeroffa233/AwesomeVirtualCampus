@@ -1,0 +1,103 @@
+/*
+ * ManageChatView.css
+ * Modern, flat design for the BBS content management interface.
+ */
+
+/* --- Base & General --- */
+
+.root-pane {
+    -fx-font-family: "Microsoft YaHei UI", sans-serif;
+    -fx-background-color: #F4F6F8; /* A light, clean background */
+}
+
+/* --- Main Title --- */
+
+.title-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 10px 5px; /* Add some padding for better spacing */
+}
+
+/* --- Filter Panel --- */
+
+.filter-pane {
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 20px;
+    -fx-background-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 8px;
+}
+
+/* --- Controls inside the Filter Panel --- */
+
+.filter-pane .label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #34495e;
+}
+
+.filter-pane .jfx-combo-box,
+.filter-pane .jfx-text-field {
+    -fx-font-size: 14px;
+    -jfx-focus-color: #607830; /* SEU-Green theme color */
+}
+
+.filter-pane .jfx-check-box {
+    -jfx-checked-color: #607830;
+    -jfx-unchecked-color: #586069;
+    -fx-font-size: 14px;
+}
+
+.search-button {
+    -fx-background-color: #607830; /* SEU-Green */
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 20px;
+    -jfx-button-type: RAISED;
+}
+
+.search-button:hover {
+    -fx-background-color: #79953c;
+}
+
+.error-label {
+    -fx-text-fill: #e74c3c; /* A soft but clear red for errors */
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* --- Results List View --- */
+
+.results-list-view {
+    -fx-background-color: #FFFFFF;
+    -fx-border-width: 1px;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.results-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-font-size: 15px;
+    -fx-padding: 14px;
+    -fx-border-color: transparent;
+    -fx-text-fill: #2c3e50;
+}
+
+.results-list-view .list-cell:filled:hover {
+    -fx-background-color: #E9EDF0;
+    -fx-background-radius: 6px;
+}
+
+.results-list-view .list-cell:filled:selected {
+    -fx-background-color: #607830; /* SEU-Green for selection */
+    -fx-background-radius: 6px;
+}
+
+/* Ensure text in a selected cell is always white */
+.results-list-view .list-cell:filled:selected .label {
+    -fx-text-fill: white;
+}

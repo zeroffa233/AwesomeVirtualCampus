@@ -1,6 +1,5 @@
 package app.vcampus.client.scene.SubScene.ChatScene;
 
-import app.vcampus.client.scene.MessageController;
 import app.vcampus.client.viewmodel.ChatViewModel;
 import app.vcampus.client.viewmodel.MessageViewModel;
 import app.vcampus.server.enums.ChatTopic;
@@ -28,6 +27,8 @@ import java.util.ResourceBundle;
 /**
  * ChatController 作为 ChatView.fxml 的控制器。
  * (已对接 ViewModel 接口的最终版本)
+ *
+ * 【修改】: 实现了根据视图的可见性自动启停轮询的功能，解决了切出界面后后台依然轮询的问题。
  */
 public class ChatController implements Initializable {
 
@@ -67,9 +68,26 @@ public class ChatController implements Initializable {
         // 3. 设置事件监听器
         setupListeners();
 
-        // 4. 【对接】启动 ViewModel 的数据轮询
-        viewModel.startPolling();
-        System.out.println("ChatController initialized. ViewModel polling started.");
+        // 4. 【对接】修改：不再在这里直接启动轮询。
+        //    我们将其移至下面的监听器中，以根据视图的活动状态来管理轮询。
+        // viewModel.startPolling(); // <-- 已移除此行
+
+        // 新增监听器：监听 rootPane 的 parent 属性。
+        // 当 parent 不为 null 时，意味着视图被添加到了某个容器中（即“显示”）。
+        // 当 parent 变为 null 时，意味着视图从容器中被移除了（即“切出”）。
+        rootPane.parentProperty().addListener((obs, oldParent, newParent) -> {
+            if (newParent != null) {
+                // 视图被显示，开始轮询
+                System.out.println("Chat view is now active. Starting polling.");
+                viewModel.startPolling();
+            } else {
+                // 视图被切走，停止轮询
+                System.out.println("Chat view is now inactive. Stopping polling.");
+                viewModel.stopPolling();
+            }
+        });
+
+        System.out.println("ChatController initialized. Polling will be managed by view's active state.");
     }
 
     private void setupBindings() {
@@ -211,6 +229,7 @@ public class ChatController implements Initializable {
 
     /**
      * 在场景切换或窗口关闭时，需要调用此方法来停止轮询。
+     * 这个方法仍然有用，可以作为应用关闭时的最终清理步骤。
      */
     public void shutdown() {
         // 【对接】调用 ViewModel 的清理方法
