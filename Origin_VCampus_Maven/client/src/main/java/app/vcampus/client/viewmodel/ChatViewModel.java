@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ public class ChatViewModel {
     private final StringProperty userInput = new SimpleStringProperty("");
     private final ObservableList<ChatTopic> availableTopics = FXCollections.observableArrayList();
     private final ObjectProperty<ChatTopic> selectedTopic = new SimpleObjectProperty<>();
+    private final StringProperty currentUserNickname = new SimpleStringProperty("加载中...");
 
     // --- Dependencies & State ---
     private final ChatClient chatClient = ChatClient.getInstance();
@@ -60,8 +62,9 @@ public class ChatViewModel {
     public StringProperty userInputProperty() { return userInput; }
     public ObservableList<ChatTopic> getAvailableTopics() { return availableTopics; }
     public ObjectProperty<ChatTopic> selectedTopicProperty() { return selectedTopic; }
+    public StringProperty currentUserNicknameProperty() { return currentUserNickname;}
 
-    // --- Lifecycle Management ---
+        // --- Lifecycle Management ---
     public void startPolling() {
         if (pollingTimeline != null && pollingTimeline.getStatus() == Timeline.Status.RUNNING) {
             return; // Already running
@@ -120,6 +123,14 @@ public class ChatViewModel {
         // 1. 准备高效处理所需的数据结构
         Map<Integer, Identity> identityMap = state.getIdentities().stream()
                 .collect(Collectors.toMap(Identity::getCardNum, Function.identity()));
+        Identity currentUserIdentity = identityMap.get(currentUserCardNum);
+        if (currentUserIdentity != null) {
+            // 仅当昵称实际发生变化时才更新属性，避免不必要的UI刷新
+            if (!currentUserNickname.get().equals(currentUserIdentity.getUserName())) {
+                currentUserNickname.set(currentUserIdentity.getUserName());
+            }
+        }
+
         Map<UUID, Comment> commentMap = state.getComments().stream()
                 .collect(Collectors.toMap(Comment::getId, Function.identity()));
 
@@ -193,13 +204,20 @@ public class ChatViewModel {
         }).start();
     }
 
-    public void updateUsername(String newName) {
+    public void updateUsername(String newName, Consumer<Boolean> callback) {
         new Thread(() -> {
             try {
+                // 假设 chatClient.updateUsername 会在失败时抛出异常
                 chatClient.updateUsername(newName);
-                Platform.runLater(this::forceRefresh);
+                // 成功后，在主线程执行回调和刷新
+                Platform.runLater(() -> {
+                    forceRefresh(); // 强制刷新以获取包含新昵称的 ChatState
+                    callback.accept(true); // 通知 Controller 成功
+                });
             } catch (Exception e) {
                 System.err.println("Failed to update username: " + e.getMessage());
+                // 失败后，在主线程执行回调
+                Platform.runLater(() -> callback.accept(false)); // 通知 Controller 失败
             }
         }).start();
     }

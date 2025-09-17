@@ -3,10 +3,8 @@ package app.vcampus.client.scene;
 import app.vcampus.client.viewmodel.ChatViewModel;
 import app.vcampus.client.viewmodel.MessageViewModel;
 import app.vcampus.server.enums.ChatTopic;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXScrollPane;
-import com.jfoenix.controls.JFXTextArea;
+import com.jfoenix.controls.*;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
@@ -16,11 +14,13 @@ import javafx.fxml.FXMLLoader;
 import java.io.IOException;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -36,7 +36,7 @@ public class ChatController implements Initializable {
     @FXML
     private AnchorPane rootPane;
     @FXML
-    private JFXScrollPane chatScrollPane;
+    private ScrollPane chatScrollPane;
     @FXML
     private VBox messageContainerVBox;
     @FXML
@@ -44,7 +44,9 @@ public class ChatController implements Initializable {
     @FXML
     private JFXButton sendButton;
     @FXML
-    private JFXButton changeUsernameButton;
+    private JFXButton saveUsernameButton;
+    @FXML
+    private JFXTextField usernameTextField;
     @FXML
     private JFXComboBox<ChatTopic> topicComboBox;
     @FXML
@@ -81,6 +83,13 @@ public class ChatController implements Initializable {
 
         topicComboBox.setItems(viewModel.getAvailableTopics());
         topicComboBox.valueProperty().bindBidirectional(viewModel.selectedTopicProperty());
+
+        viewModel.currentUserNicknameProperty().addListener((obs, oldVal, newVal) -> {
+            // 当 ViewModel 的数据更新时，同步到 TextField
+            if (newVal != null && !newVal.equals(usernameTextField.getText())) {
+                usernameTextField.setText(newVal);
+            }
+        });
 
         // 动态绑定标题
 //        titleLabel.textProperty().bind(Bindings.createStringBinding(
@@ -150,17 +159,41 @@ public class ChatController implements Initializable {
      * 当用户点击修改昵称按钮时被调用。
      */
     @FXML
-    private void onChangeUsernameClicked() {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("修改昵称");
-        dialog.setHeaderText("请输入您的新昵称");
-        dialog.setContentText("昵称:");
+    private void onSaveUsernameClicked() {
+        String originalName = viewModel.currentUserNicknameProperty().get();
+        String newName = usernameTextField.getText().trim();
 
-        dialog.showAndWait().ifPresent(newName -> {
-            if (!newName.trim().isEmpty()) {
-                // 【对接】调用 ViewModel 的 updateUsername 方法
-                viewModel.updateUsername(newName);
+        // 如果新昵称无效或与旧昵称相同，则不执行任何操作
+        if (newName.isEmpty() || newName.equals(originalName)) {
+            usernameTextField.setText(originalName); // 恢复为原始昵称
+            return;
+        }
+
+        // 禁用按钮防止重复点击
+        saveUsernameButton.setDisable(true);
+
+        // 调用 ViewModel 的方法，并传入一个回调函数来处理结果
+        viewModel.updateUsername(newName, success -> {
+            // 无论成功与否，都重新启用按钮
+            saveUsernameButton.setDisable(false);
+
+            if (!success) {
+                // 如果失败，显示错误信息
+                usernameTextField.setText("修改失败！");
+
+                // 创建一个2秒的延迟
+                PauseTransition delay = new PauseTransition(Duration.seconds(2));
+
+                // 延迟结束后，将 TextField 的内容恢复为原始昵称
+                delay.setOnFinished(event -> usernameTextField.setText(originalName));
+
+                // 播放延迟动画
+                delay.play();
             }
+            // 如果成功，我们什么都不用做。
+            // ViewModel 的 forceRefresh() 会获取到最新的 ChatState，
+            // 触发 currentUserNicknameProperty 的更新，
+            // 我们的监听器会自动将 TextField 的内容更新为新的、已确认的昵称。
         });
     }
 

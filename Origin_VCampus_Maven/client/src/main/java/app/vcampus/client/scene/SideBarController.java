@@ -67,8 +67,6 @@ public class SideBarController implements Initializable {
             List<String> roles = Arrays.asList(FakeRepository.user.getRoles());
             boolean isAdmin = roles.contains("admin");
             boolean isStudent = roles.contains("student");
-            boolean isGpt = roles.contains("gpt_user");
-            gptButton.setVisible(isGpt);
             adminButton.setVisible(isAdmin);
             studentStatusButton.setVisible(isAdmin || isStudent);
         }

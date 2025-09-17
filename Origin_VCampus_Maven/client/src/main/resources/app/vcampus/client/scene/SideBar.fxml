@@ -89,7 +89,7 @@
                 </ImageView>
             </graphic>
         </JFXButton>
-        <JFXButton fx:id="chatButton" onAction="#handleChat" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="BBS" graphicTextGap="40" VBox.vgrow="ALWAYS">
+        <JFXButton fx:id="chatButton" onAction="#handleChat" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="虎踞龙蟠" graphicTextGap="40" VBox.vgrow="ALWAYS">
             <graphic>
                 <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
                     <image>

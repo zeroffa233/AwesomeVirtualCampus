@@ -2,7 +2,6 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXComboBox?>
-<?import com.jfoenix.controls.JFXScrollPane?>
 <?import com.jfoenix.controls.JFXTextArea?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
@@ -11,25 +10,34 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import com.jfoenix.controls.JFXTextField?>
 <AnchorPane fx:id="rootPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.ChatController">
     <children>
         <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <top>
                 <AnchorPane prefHeight="50.0" style="-fx-background-color: #FAFAFA; -fx-border-color: #E0E0E0; -fx-border-width: 0 0 1 0;">
                     <children>
-                        <Label fx:id="titleLabel" text="校园聊天室" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="0.0">
+                        <Label fx:id="titleLabel" text="虎踞龙蟠BBS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="0.0">
                             <font><Font name="System Bold" size="18.0" /></font>
                         </Label>
-                        <JFXComboBox fx:id="topicComboBox" promptText="选择聊天室" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="150.0" AnchorPane.topAnchor="10.0" />
+                        <JFXComboBox fx:id="topicComboBox" promptText="选择频道" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="150.0" AnchorPane.topAnchor="10.0" />
 
                         <!-- 补全了该按钮的属性 -->
-                        <JFXButton fx:id="changeUsernameButton" onAction="#onChangeUsernameClicked" style="-fx-background-color: #4285F4;" text="修改昵称" textFill="WHITE" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="10.0" />
+                        <HBox alignment="CENTER_RIGHT" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="10.0">
+                        <children>
+                            <Label text="当前昵称" />
+                            <JFXTextField fx:id="usernameTextField" />
+                            <JFXButton fx:id="saveUsernameButton" onAction="#onSaveUsernameClicked" style="-fx-background-color: #4285F4;" text="保存" textFill="WHITE" />
+                        </children>
+                    </HBox>
                     </children>
                 </AnchorPane>
             </top>
             <center>
                 <!-- 消息显示区域，可滚动 -->
-                <JFXScrollPane fx:id="chatScrollPane" style="-fx-background-color: #F5F5F5;" BorderPane.alignment="CENTER">
+                <ScrollPane fx:id="chatScrollPane" fitToHeight="true" fitToWidth="true" style="-fx-background-color: #F5F5F5;" BorderPane.alignment="CENTER">
                     <content>
                         <!-- 移除了硬编码的 prefWidth，使其宽度自适应 -->
                         <VBox fx:id="messageContainerVBox" spacing="10.0">
@@ -38,7 +46,7 @@
                             </padding>
                         </VBox>
                     </content>
-                </JFXScrollPane>
+                </ScrollPane>
             </center>
             <bottom>
                 <BorderPane prefHeight="100.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #E0E0E0; -fx-border-width: 1 0 0 0;">
