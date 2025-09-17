@@ -168,7 +168,7 @@ public class FinanceController {
                 transaction.setCardNumber(cardNumber);
                 transaction.setAmount(amountInCents);
                 transaction.setTime(new Date());
-                transaction.setType(TransactionType.payment);
+                transaction.setType(TransactionType.credit);
                 transaction.setDescription(description);
                 database.persist(transaction);
 
