@@ -195,7 +195,7 @@ public class ChatController implements Initializable {
 
             if (!success) {
                 // 如果失败，显示错误信息
-                usernameTextField.setText("修改失败！");
+                usernameTextField.setText("用户名长度必须在2-20个字符之间!");
 
                 // 创建一个2秒的延迟
                 PauseTransition delay = new PauseTransition(Duration.seconds(2));
