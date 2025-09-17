@@ -16,53 +16,48 @@
 
 
 
-<BorderPane style="-fx-background-color: white; -fx-padding: 20;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.LibraryUpdateBookViewController">
-    <top>
-        <HBox alignment="CENTER_LEFT" spacing="10">
+<VBox style="-fx-background-color: #FAFAFA;" spacing="20.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.LibraryUpdateBookViewController">
+    <padding>
+        <Insets bottom="40.0" left="100.0" right="100.0" top="40.0" />
+    </padding>
+    <children>
+        <VBox>
             <children>
-                <Label text="修改图书信息" textFill="#37474F">
+                <Label text="修改图书信息">
                     <font>
-                        <Font name="System Bold" size="28.0" />
+                        <Font name="System Bold" size="32.0" />
                     </font>
                 </Label>
-                <Pane HBox.hgrow="ALWAYS" />
-                <HBox alignment="CENTER" spacing="10" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 10;">
-                    <effect>
-                        <DropShadow blurType="GAUSSIAN" height="20" offsetY="2" radius="9" width="20">
-                            <color>
-                                <Color opacity="0.1" />
-                            </color>
-                        </DropShadow>
-                    </effect>
-                    <children>
-                        <JFXTextField fx:id="searchTextField" labelFloat="true" prefWidth="300" promptText="按书名、作者或ISBN搜索" />
-                        <JFXButton fx:id="searchButton" buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" prefHeight="45.0" prefWidth="45.0" style="-fx-background-radius: 50; -fx-background-color: #607830;">
-                            <graphic>
-                                <SVGPath content="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="WHITE" />
-                            </graphic>
-                        </JFXButton>
-                    </children>
-                </HBox>
-            </children>
-            <padding>
-                <Insets bottom="10.0" />
-            </padding>
-        </HBox>
-    </top>
-    <center>
-        <VBox spacing="10">
-            <children>
-                <Label fx:id="countLabel" textFill="white">
-                    <VBox.margin>
-                        <Insets top="5.0" />
-                    </VBox.margin>
+                <Label text="检索并修改图书馆的藏书信息" textFill="#616161">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
                 </Label>
-                <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: white; -fx-background-insets: 0;" VBox.vgrow="ALWAYS">
-                    <content>
-                        <VBox fx:id="resultsVBox" spacing="25" />
-                    </content>
-                </ScrollPane>
             </children>
         </VBox>
-    </center>
-</BorderPane>
+
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <children>
+                <JFXTextField fx:id="searchTextField" labelFloat="true" promptText="按书名、作者或ISBN搜索" HBox.hgrow="ALWAYS" />
+                <JFXButton fx:id="searchButton" buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" prefHeight="40.0" prefWidth="40.0" style="-fx-background-radius: 50; -fx-background-color: #607830;">
+                    <graphic>
+                        <SVGPath content="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="WHITE" />
+                    </graphic>
+                </JFXButton>
+            </children>
+        </HBox>
+
+        <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: white; -fx-background-radius: 8;" VBox.vgrow="ALWAYS">
+            <effect>
+                <DropShadow blurType="GAUSSIAN" height="20" offsetY="2" radius="9" width="20">
+                    <color>
+                        <Color opacity="0.1" />
+                    </color>
+                </DropShadow>
+            </effect>
+            <content>
+                <VBox fx:id="resultsVBox" spacing="25" style="-fx-padding: 20;" />
+            </content>
+        </ScrollPane>
+    </children>
+</VBox>
