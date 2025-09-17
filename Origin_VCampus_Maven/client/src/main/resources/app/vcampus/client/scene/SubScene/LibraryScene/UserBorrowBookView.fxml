@@ -15,22 +15,29 @@
         <Insets bottom="40.0" left="100.0" right="100.0" top="40.0" />
     </padding>
     <children>
-        <VBox>
-            <Label text="图书检索">
-                <font>
-                    <Font name="System Bold" size="32.0" />
-                </font>
-            </Label>
-            <Label text="检索并借阅图书馆的藏书" textFill="#616161">
-                <font>
-                    <Font size="18.0" />
-                </font>
-            </Label>
-        </VBox>
         <HBox alignment="CENTER_LEFT">
             <children>
-                <JFXTextField fx:id="bookNameField" labelFloat="true" prefWidth="250.0" promptText="请输入书籍名称" HBox.hgrow="ALWAYS" />
-                <JFXButton fx:id="searchButton" style="-fx-background-color: #607830DE;" styleClass="button-raised" text="搜索" />
+                <VBox>
+                    <children>
+                        <Label text="图书检索">
+                            <font>
+                                <Font name="System Bold" size="32.0" />
+                            </font>
+                        </Label>
+                        <Label text="检索并借阅图书馆的藏书" textFill="#616161">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER_LEFT">
+                    <children>
+                        <JFXTextField fx:id="bookNameField" labelFloat="true" prefWidth="350.0" promptText="请输入书籍名称" HBox.hgrow="ALWAYS" />
+                        <JFXButton fx:id="searchButton" style="-fx-background-color: #607830DE;" styleClass="button-raised" text="搜索" />
+                    </children>
+                </HBox>
             </children>
         </HBox>
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background-insets: 0;" VBox.vgrow="ALWAYS">

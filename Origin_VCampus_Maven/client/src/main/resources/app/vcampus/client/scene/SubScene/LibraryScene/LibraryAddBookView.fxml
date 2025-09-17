@@ -10,6 +10,7 @@
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.paint.Color?>
 
+<?import javafx.scene.control.ScrollPane?>
 <VBox fx:id="rootPane" spacing="20.0" style="-fx-background-color: #FAFAFA;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.vcampus.client.scene.SubScene.LibraryScene.LibraryAddBookViewController">
     <padding>
         <Insets bottom="40.0" left="100.0" right="100.0" top="40.0" />
@@ -27,14 +28,25 @@
                 </font>
             </Label>
         </VBox>
-        <JFXTextField fx:id="nameField" labelFloat="true" promptText="书名" prefHeight="45" />
-        <JFXTextField fx:id="authorField" labelFloat="true" promptText="作者" prefHeight="45" />
-        <JFXTextField fx:id="isbnField" labelFloat="true" promptText="ISBN" prefHeight="45" />
-        <JFXTextField fx:id="pressField" labelFloat="true" promptText="出版社" prefHeight="45" />
-        <JFXTextField fx:id="callNumberField" labelFloat="true" promptText="索书号" prefHeight="45" />
-        <JFXTextField fx:id="placeField" labelFloat="true" promptText="馆藏地" prefHeight="45" />
-        <JFXTextField fx:id="coverField" labelFloat="true" promptText="封面图片链接" prefHeight="45" />
-        <JFXTextArea fx:id="descriptionArea" labelFloat="true" promptText="书籍简介" prefHeight="80" VBox.vgrow="ALWAYS" />
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background-insets: 0;" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox spacing="25.0">
+                    <padding>
+                        <Insets top="10.0" bottom="10.0" />
+                    </padding>
+                    <children>
+                        <JFXTextField fx:id="nameField" labelFloat="true" promptText="书名" prefHeight="50" style="-fx-font-size: 14px;" />
+                        <JFXTextField fx:id="authorField" labelFloat="true" promptText="作者" prefHeight="50" style="-fx-font-size: 14px;" />
+                        <JFXTextField fx:id="isbnField" labelFloat="true" promptText="ISBN" prefHeight="50" style="-fx-font-size: 14px;" />
+                        <JFXTextField fx:id="pressField" labelFloat="true" promptText="出版社" prefHeight="50" style="-fx-font-size: 14px;" />
+                        <JFXTextField fx:id="callNumberField" labelFloat="true" promptText="索书号" prefHeight="50" style="-fx-font-size: 14px;" />
+                        <JFXTextField fx:id="placeField" labelFloat="true" promptText="馆藏地" prefHeight="50" style="-fx-font-size: 14px;" />
+                        <JFXTextField fx:id="coverField" labelFloat="true" promptText="封面图片链接" prefHeight="50" style="-fx-font-size: 14px;" />
+                        <JFXTextArea fx:id="descriptionArea" labelFloat="true" promptText="书籍简介" prefHeight="120" style="-fx-font-size: 14px;" />
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
         <JFXButton fx:id="confirmButton" buttonType="RAISED" prefHeight="50" prefWidth="Infinity" style="-fx-background-color: #607830;" text="确认添加" textFill="WHITE">
             <font>
                 <Font name="System Bold" size="16.0" />
