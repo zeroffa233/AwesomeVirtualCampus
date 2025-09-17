@@ -141,7 +141,14 @@ public class UploadController {
                 String description = descriptionArea.getText();
                 newItem.description = description.isEmpty() ? null : description;
                 newItem.pictureLink = imageKey;
-                newItem.barcode = "";
+                //barcode
+                if (FakeRepository.user != null && FakeRepository.user.getCardNum() != null) {
+                    newItem.barcode = String.valueOf(FakeRepository.user.getCardNum());
+                } else {
+                    // 添加一个备用逻辑，以防万一用户信息获取失败
+                    newItem.barcode = "unknown_user";
+                    System.err.println("警告: 无法获取当前用户信息，barcode 已被设置为 'unknown_user'");
+                }
 
                 // 【核心修正】
                 // Call the synchronous method directly. No .get() is needed because it already returns a boolean.

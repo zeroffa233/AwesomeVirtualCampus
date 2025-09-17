@@ -95,13 +95,27 @@ public class ShopController {
         instance = this;
         refreshData();
 
-        // 初始化【不】依赖于网络数据的本地组件
         setupBindings();
         setupListeners();
         createAndPlaySwipeHintAnimation();
 
         payButton.disableProperty().bind(Bindings.isEmpty(chosenItems));
 
+        // 【核心修正 A】在初始化时，确保 overlayPane 是不可见的且鼠标穿透的
+        overlayPane.setVisible(false);
+        overlayPane.setMouseTransparent(true);
+
+        // 为遮罩层添加点击事件监听器
+        overlayPane.setOnMouseClicked(event -> {
+            if (isCartVisible) {
+                toggleCart();
+            }
+        });
+
+        // 为底部结算条添加点击事件
+        bottomBar.setOnMouseClicked(event -> {
+            toggleCart();
+        });
         // 【修复问题2】不再绑定 cartView 的 maxHeight，让其自由生长
         // 我们改为直接控制 cartContainer 的动画
 
@@ -125,17 +139,20 @@ public class ShopController {
 
     @FXML
     private void toggleCart() {
-        if (cartAnimation != null) cartAnimation.stop();
+        // 【核心修正 B】正确的 Null-check 逻辑
+        // 只有当 cartAnimation 不是 null 时，才尝试停止它
+        if (cartAnimation != null) {
+            cartAnimation.stop();
+        }
 
         isCartVisible = !isCartVisible;
 
-        // 【核心修改】所有平移动画都只针对 cartContainer 这个“弹窗”
         TranslateTransition cartTransition = new TranslateTransition(ANIMATION_SPEED, cartContainer);
         FadeTransition overlayFade = new FadeTransition(ANIMATION_SPEED, overlayPane);
         cartTransition.setInterpolator(CUSTOM_EASING);
         overlayFade.setInterpolator(CUSTOM_EASING);
 
-        if (isCartVisible) {
+        if (isCartVisible) { // 【打开购物车】
             swipeHintAnimation.pause();
             swipeHintIcon.setVisible(false);
 
@@ -143,41 +160,41 @@ public class ShopController {
             updateCartItemsList();
 
             overlayPane.setVisible(true);
-            // 计算弹窗滑入的目标位置。
-            // 我们不能直接设为 0，因为 cartContainer 的顶部还有 60px 的边距
-            // 同时，我们还要确保它不会超出屏幕
+
+            overlayPane.setMouseTransparent(false); // 让遮罩层可以拦截点击
+
             double targetY = Math.max(60, rootPane.getHeight() - cartContainer.getHeight());
             cartTransition.setToY(targetY);
-
             overlayFade.setToValue(0.6);
-        } else {
+
+        } else { // 【关闭购物车】
             swipeHintAnimation.play();
             swipeHintIcon.setVisible(true);
 
-            double currentPrice = chosenItems.stream().mapToDouble(StoreItem::getPrice).sum();
-            playPriceScrollAnimation(currentPrice);
-
             cartTransition.setToY(rootPane.getHeight());
             overlayFade.setToValue(0.0);
+
+            double currentPriceInFen = chosenItems.stream()
+                    .mapToDouble(item -> item.price.doubleValue())
+                    .sum();
+            double finalPrice = currentPriceInFen / 100.0;
+            totalPriceLabel.setText(String.format("共 %.2f 元", finalPrice));
+            lastKnownPrice = finalPrice;
         }
 
+        // 将动画的创建和播放逻辑统一到方法末尾
         cartAnimation = new ParallelTransition(cartTransition, overlayFade);
 
-        if (!isCartVisible) { // 当关闭购物车时
-            swipeHintAnimation.play();
-            swipeHintIcon.setVisible(true);
-
-            // 【核心修正】
-            double currentPriceInFen = chosenItems.stream()
-                    .mapToDouble(item -> item.price.doubleValue()) // 使用 item.price
-                    .sum();
-            playPriceScrollAnimation(currentPriceInFen / 100.0); // 传递“元”
-
-            cartTransition.setToY(rootPane.getHeight());
-            overlayFade.setToValue(0.0);
-        } else {
+        if (!isCartVisible) { // 如果是关闭购物车，则在动画结束后执行清理
+            cartAnimation.setOnFinished(event -> {
+                overlayPane.setVisible(false);
+                overlayPane.setMouseTransparent(true); // 允许鼠标穿透
+                cartContainer.setMouseTransparent(true);
+            });
+        } else { // 如果是打开购物车，则不需要结束回调
             cartAnimation.setOnFinished(null);
         }
+
         cartAnimation.play();
     }
 
@@ -433,9 +450,8 @@ public class ShopController {
         } else {
             List<StoreItem> filteredList = new ArrayList<>();
             for (StoreItem item : allItems) {
-                if (item.getItemName().toLowerCase().contains(keyword)) {
+                if (item.getItemName().toLowerCase().contains(keyword) || item.getDescription().toLowerCase().contains(keyword))
                     filteredList.add(item);
-                }
             }
             displayedItems.setAll(filteredList);
         }
