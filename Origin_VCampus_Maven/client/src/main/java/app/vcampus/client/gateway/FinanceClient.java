@@ -164,15 +164,17 @@ public class FinanceClient extends BaseClient {
                 Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
                 List<Map<String, Object>> rawTransactions = gson.fromJson(json, listType);
 
-                // FIX: Removed special handling for "payment" type.
-                // The server response shows that for all transaction types,
-                // the 'description' field is a simple string, not a JSON object.
-                // Therefore, we process all transactions uniformly.
+                // New logic: Map raw data to DisplayableTransaction objects
+                // The parsing of the description is now handled inside the DisplayableTransaction constructor
                 return rawTransactions.stream().map(txMap -> {
                     long time = ((Number) txMap.get("time")).longValue();
+                    String type = (String) txMap.get("type");
                     double amount = ((Number) txMap.get("amount")).doubleValue();
                     String description = (String) txMap.get("description");
-                    return new DisplayableTransaction(time, description, amount);
+
+                    // The constructor of DisplayableTransaction will handle the logic
+                    // of parsing items from the description if the type is "payment".
+                    return new DisplayableTransaction(time, type, description, amount);
                 }).collect(Collectors.toList());
             }
         } catch (InterruptedException e) {

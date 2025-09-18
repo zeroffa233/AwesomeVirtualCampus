@@ -23,7 +23,6 @@ import com.jfoenix.validation.base.ValidatorBase;
 import javafx.animation.Timeline;
 import javafx.scene.Node;
 import javafx.util.Duration;
-import app.vcampus.client.scene.ShopController;
 import app.vcampus.client.util.ImageCache;
 import javafx.scene.paint.Color; // 确保导入 Color
 

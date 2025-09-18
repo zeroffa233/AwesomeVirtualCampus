@@ -1,6 +1,6 @@
 package app.vcampus.client.scene;
 
-import app.vcampus.client.gateway.StoreClient;
+import app.vcampus.client.scene.SubScene.ShopScene.ShopController;
 import app.vcampus.client.util.ImageCache;
 import app.vcampus.server.entity.StoreItem;
 import app.vcampus.server.utility.ShopTransactionRecord;

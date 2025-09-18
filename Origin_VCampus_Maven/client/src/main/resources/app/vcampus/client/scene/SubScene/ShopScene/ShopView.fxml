@@ -21,7 +21,7 @@
             style="-fx-background-color: #FAFAFA;"
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="app.vcampus.client.scene.ShopController">
+            fx:controller="app.vcampus.client.scene.SubScene.ShopScene.ShopController">
     <children>
         <!-- 1. Main content area: Product display -->
         <ScrollPane fx:id="mainScrollPane"

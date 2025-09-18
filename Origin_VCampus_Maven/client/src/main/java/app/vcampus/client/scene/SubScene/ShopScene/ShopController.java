@@ -1,4 +1,4 @@
-package app.vcampus.client.scene;
+package app.vcampus.client.scene.SubScene.ShopScene;
 
 import app.vcampus.client.gateway.FinanceClient;
 import app.vcampus.client.util.ImageCache;
@@ -29,7 +29,6 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 import javafx.application.Platform;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -473,33 +472,33 @@ public class ShopController {
         Map<String, Long> itemCounts = items.stream()
                 .collect(Collectors.groupingBy(StoreItem::getItemName, Collectors.counting()));
 
-        // 3. 为了获取每种商品的单价，我们创建一个去重后的商品Map
         Map<String, StoreItem> uniqueItems = new HashMap<>();
         for (StoreItem item : items) {
             uniqueItems.putIfAbsent(item.getItemName(), item);
         }
 
-        // 4. 构建用于生成最终JSON的数据结构
         List<Map<String, Object>> transactionDetails = new ArrayList<>();
 
-        // 遍历统计结果
         for (Map.Entry<String, Long> entry : itemCounts.entrySet()) {
-            String itemName = entry.getKey();
-            Long quantity = entry.getValue();
-            StoreItem itemInfo = uniqueItems.get(itemName);
+            String itemNameValue = entry.getKey();
+            Long quantityValue = entry.getValue();
+            StoreItem itemInfo = uniqueItems.get(itemNameValue);
 
-            // 创建一个小Map，代表JSON数组中的一个对象
             Map<String, Object> detail = new HashMap<>();
-            detail.put("商品名称", itemName);
-            detail.put("数量", quantity);
 
-            double priceInYuan = itemInfo.getPrice().doubleValue() / 100.0;
-            detail.put("单价(元)", priceInYuan); // 键名也更新为“单价(元)”
+            // --- 【核心修改】---
+            // 使用与 StoreItem 实体类字段名匹配的英文键
+            detail.put("itemName", itemNameValue);
+            detail.put("price", itemInfo.getPrice()); // 直接存储以“分”为单位的整数价格
+            detail.put("description", itemInfo.getDescription());
+            detail.put("stock", quantityValue); // 我们可以复用 stock 字段来存储购买数量
+            detail.put("pictureLink", itemInfo.getPictureLink());
+            detail.put("uuid", itemInfo.getUuid());
+            // --- 修改结束 ---
 
             transactionDetails.add(detail);
         }
 
-        // 5. 使用 Gson 库将数据结构转换为JSON字符串并返回
         return new Gson().toJson(transactionDetails);
     }
 

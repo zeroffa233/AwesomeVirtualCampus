@@ -75,7 +75,7 @@ public class StoreController {
             cardTransaction.setAmount(totalPrice);
             cardTransaction.setTime(new Date());
             cardTransaction.setDescription("商店消费");
-            cardTransaction.setType(TransactionType.credit);
+            cardTransaction.setType(TransactionType.payment);
             database.persist(cardTransaction);
 
             tx.commit();

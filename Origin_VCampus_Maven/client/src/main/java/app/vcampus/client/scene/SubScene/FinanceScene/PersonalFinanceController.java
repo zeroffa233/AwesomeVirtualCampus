@@ -78,7 +78,7 @@ public class PersonalFinanceController implements Initializable {
         private final VBox itemsContainer = new VBox();
 
         // A private record to hold grouped item data
-        private record GroupedItem(String name, int quantity, double totalPrice) {}
+        private record GroupedItem(String name, int quantity, double unitPrice) {}
 
         public TransactionListCell() {
             super();
@@ -114,10 +114,6 @@ public class PersonalFinanceController implements Initializable {
             });
         }
 
-        /**
-         * Toggles the visibility of the details container, with an optional animation.
-         * @param animated true to use a fade transition, false for immediate change.
-         */
         private void toggleDetails(boolean animated) {
             boolean isExpanding = !itemsContainer.isManaged();
 
@@ -155,7 +151,6 @@ public class PersonalFinanceController implements Initializable {
             }
         }
 
-
         @Override
         protected void updateItem(DisplayableTransaction item, boolean empty) {
             super.updateItem(item, empty);
@@ -168,22 +163,25 @@ public class PersonalFinanceController implements Initializable {
                 }
                 itemsContainer.getChildren().clear();
 
-                typeLabel.setText(item.getType());
+                typeLabel.setText(item.getType()); // Use translated type for display
                 dateLabel.setText(item.getDate());
 
-                if ("商店消费".equals(item.getType())) {
+                // **CORE LOGIC CHANGE**: Check the rawType from the server
+                if ("payment".equals(item.getRawType())) {
                     amountLabel.setText(String.format("-%.2f", item.getAmount()));
                     amountLabel.setStyle("-fx-text-fill: red;");
 
-                    if (item.getItems() != null && !item.getItems().isEmpty()) {
+                    // The item list is now pre-parsed in DisplayableTransaction
+                    List<StoreItem> items = item.getItems();
+                    if (items != null && !items.isEmpty()) {
                         expandButton.setVisible(true);
                         expandButton.setManaged(true);
-                        populateItemsContainer(item.getItems());
+                        populateItemsContainer(items);
                     } else {
                         expandButton.setVisible(false);
                         expandButton.setManaged(false);
                     }
-                } else { // For "Recharge" and other types
+                } else { // For "deposit" and other types
                     expandButton.setVisible(false);
                     expandButton.setManaged(false);
                     amountLabel.setText(String.format("+%.2f", item.getAmount()));
@@ -197,12 +195,13 @@ public class PersonalFinanceController implements Initializable {
 
         private void populateItemsContainer(List<StoreItem> items) {
             Map<String, GroupedItem> groupedItems = new LinkedHashMap<>();
+            // Group items by name to count quantity
             for (StoreItem shopItem : items) {
                 groupedItems.compute(shopItem.getItemName(), (name, grouped) -> {
                     if (grouped == null) {
-                        return new GroupedItem(name, 1, shopItem.getPrice());
+                        return new GroupedItem(name, 1, shopItem.getPrice().doubleValue() / 100.0);
                     } else {
-                        return new GroupedItem(name, grouped.quantity + 1, grouped.totalPrice + shopItem.getPrice());
+                        return new GroupedItem(name, grouped.quantity + 1, grouped.unitPrice);
                     }
                 });
             }
@@ -218,7 +217,8 @@ public class PersonalFinanceController implements Initializable {
             Label itemName = new Label(item.name() + " x" + item.quantity());
             Region itemSpacer = new Region();
             HBox.setHgrow(itemSpacer, Priority.ALWAYS);
-            Label itemPrice = new Label(String.format("%.2f", item.totalPrice()));
+            // Calculate total price for the group
+            Label itemPrice = new Label(String.format("%.2f", item.unitPrice() * item.quantity()));
             itemRow.getChildren().addAll(itemName, itemSpacer, itemPrice);
             return itemRow;
         }

@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum TransactionType implements LabelledEnum {
     deposit("充值"),
-    credit("支出");
+    payment("支出");
 
     private final String label;
 
