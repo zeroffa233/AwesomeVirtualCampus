@@ -4,9 +4,7 @@ import app.vcampus.client.net.NettyHandler;
 import app.vcampus.client.repository.FakeRepository;
 import app.vcampus.server.utility.CardInfo;
 import app.vcampus.server.utility.DisplayableTransaction;
-import app.vcampus.server.utility.ShopTransactionRecord;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import app.vcampus.server.utility.Request;
@@ -49,16 +47,21 @@ public class FinanceClient extends BaseClient {
     }
 
     /**
-     * Recharges a card with a specified amount.
+     * Recharges a card with a specified amount and description.
      *
      * @param cardNumber The card number to recharge.
      * @param amount The amount to add.
+     * @param description The description of the transaction.
      * @return true if successful, false otherwise.
      */
-    public static boolean recharge(String cardNumber, double amount) {
+    public static boolean debit(String cardNumber, double amount, String description) {
         Request request = new Request();
-        request.setUri("finance/recharge");
-        request.setParams(Map.of("cardNumber", cardNumber, "amount", String.valueOf(amount)));
+        request.setUri("finance/debit");
+        request.setParams(Map.of(
+                "cardNumber", cardNumber,
+                "amount", String.valueOf(amount),
+                "description", description
+        ));
 
         try {
             Response response = BaseClient.sendRequest(handler, request);
@@ -69,6 +72,34 @@ public class FinanceClient extends BaseClient {
             return false;
         }
     }
+
+    /**
+     * Spends from a card with a specified amount and description.
+     *
+     * @param cardNumber The card number to spend from.
+     * @param amount The amount to subtract.
+     * @param description The description of the transaction.
+     * @return true if successful, false otherwise.
+     */
+    public static boolean credit(String cardNumber, double amount, String description) {
+        Request request = new Request();
+        request.setUri("finance/credit");
+        request.setParams(Map.of(
+                "cardNumber", cardNumber,
+                "amount", String.valueOf(amount),
+                "description", description
+        ));
+
+        try {
+            Response response = BaseClient.sendRequest(handler, request);
+            return response.getStatus().equals("success");
+        } catch (InterruptedException e) {
+            log.warn("Failed to credit card: " + cardNumber, e);
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
 
     /**
      * Updates the status of a card (e.g., "冻结", "挂失").

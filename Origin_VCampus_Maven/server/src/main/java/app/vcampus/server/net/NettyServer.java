@@ -41,7 +41,7 @@ public class NettyServer {
                         @Override
                         public void initChannel(@NonNull SocketChannel ch) {
                             ch.pipeline()
-                                    .addLast(new JsonObjectDecoder(10 * 1024 * 1024))
+                                    .addLast(new JsonObjectDecoder(100 * 1024 * 1024))
                                     .addLast(new NettyHandler(router, session));
                         }
                     })

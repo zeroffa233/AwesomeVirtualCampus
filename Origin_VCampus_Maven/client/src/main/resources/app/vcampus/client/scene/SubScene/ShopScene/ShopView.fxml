@@ -90,7 +90,6 @@
         <HBox fx:id="bottomBar"
               alignment="CENTER_LEFT"
               prefHeight="56.0"
-              onMouseClicked="#toggleCart"
               style="-fx-background-color: #728748; -fx-cursor: hand;"
               spacing="15.0"
               AnchorPane.bottomAnchor="0.0"
@@ -132,7 +131,7 @@
         </padding>
     </HBox>
 
-        <StackPane fx:id="overlayPane" onMouseClicked="#toggleCart" style="-fx-background-color: rgba(0, 0, 0, 0.4);" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <StackPane fx:id="overlayPane" style="-fx-background-color: rgba(0, 0, 0, 0.4);" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
 
 
         <!-- 我们将 VBox 改为 StackPane，以便在上面叠加“下单成功”的提示 -->

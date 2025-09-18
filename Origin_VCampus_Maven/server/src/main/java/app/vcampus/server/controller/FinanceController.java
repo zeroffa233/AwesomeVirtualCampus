@@ -62,16 +62,17 @@ public class FinanceController {
 
     /**
      * Handles card recharge requests from a staff client.
-     * Corresponds to FinanceClient.recharge
+     * Corresponds to FinanceClient.debit
      *
      * @param request the request from the client
      * @param database the database session
      * @return a success or error response
      */
-    @RouteMapping(uri = "finance/recharge", role = "finance_staff")
-    public Response rechargeCard(Request request, org.hibernate.Session database) {
+    @RouteMapping(uri = "finance/debit", role = "finance_staff")
+    public Response debitCard(Request request, org.hibernate.Session database) {
         String cardNumberStr = request.getParams().get("cardNumber");
         String amountStr = request.getParams().get("amount");
+        String description = request.getParams().get("description");
 
         if (cardNumberStr == null || amountStr == null) {
             return Response.Common.error("Card number and amount are required");
@@ -104,9 +105,8 @@ public class FinanceController {
                 transaction.setAmount(amountInCents);
                 transaction.setTime(new Date());
                 transaction.setType(TransactionType.deposit);
-                transaction.setDescription("充值");
+                transaction.setDescription(description);
                 database.persist(transaction);
-
                 tx.commit();
                 return Response.Common.ok();
             } catch (Exception e) {
@@ -119,6 +119,72 @@ public class FinanceController {
             return Response.Common.error("Invalid number format for card number or amount");
         }
     }
+
+    /**
+     * Handles card payment requests from a staff client.
+     * Corresponds to FinanceClient.credit
+     *
+     * @param request the request from the client
+     * @param database the database session
+     * @return a success or error response
+     */
+    @RouteMapping(uri = "finance/credit", role = "finance_staff")
+    public Response creditCard(Request request, org.hibernate.Session database) {
+        String cardNumberStr = request.getParams().get("cardNumber");
+        String amountStr = request.getParams().get("amount");
+        String description = request.getParams().get("description");
+
+        if (cardNumberStr == null || amountStr == null || description == null) {
+            return Response.Common.error("Card number, amount, and description are required");
+        }
+
+        try {
+            Integer cardNumber = Integer.parseInt(cardNumberStr);
+            double amount = Double.parseDouble(amountStr);
+
+            if (amount <= 0) {
+                return Response.Common.error("Payment amount must be positive");
+            }
+
+            FinanceCard card = database.get(FinanceCard.class, cardNumber);
+            if (card == null) {
+                return Response.Common.error("Card not found");
+            }
+            if (card.getStatus() == CardStatus.frozen) {
+                return Response.Common.error("Cannot process payment for a frozen card");
+            }
+
+            int amountInCents = (int) Math.round(amount * 100);
+            if (card.getBalance() < amountInCents) {
+                return Response.Common.error("Insufficient balance");
+            }
+
+            Transaction tx = database.beginTransaction();
+            try {
+                card.setBalance(card.getBalance() - amountInCents);
+                database.merge(card);
+
+                CardTransaction transaction = new CardTransaction();
+                transaction.setCardNumber(cardNumber);
+                transaction.setAmount(amountInCents);
+                transaction.setTime(new Date());
+                transaction.setType(TransactionType.credit);
+                transaction.setDescription(description);
+                database.persist(transaction);
+
+                tx.commit();
+                return Response.Common.ok();
+            } catch (Exception e) {
+                if (tx != null) tx.rollback();
+                log.error("Payment failed for card: " + cardNumber, e);
+                return Response.Common.error("Payment failed due to a server error");
+            }
+
+        } catch (NumberFormatException e) {
+            return Response.Common.error("Invalid number format for card number or amount");
+        }
+    }
+
 
     /**
      * Updates the status of a finance card.

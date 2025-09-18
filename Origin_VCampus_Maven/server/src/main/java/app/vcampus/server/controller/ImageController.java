@@ -2,6 +2,7 @@
 package app.vcampus.server.controller;
 
 import app.vcampus.server.entity.CachedImage;
+import app.vcampus.server.entity.IEntity; // 确保 IEntity 导入
 import app.vcampus.server.utility.Database;
 import app.vcampus.server.utility.Request;
 import app.vcampus.server.utility.Response;
@@ -18,9 +19,7 @@ import java.util.Map;
 public class ImageController {
 
     /**
-     * 【查 - C(R)UD】
-     * 获取所有用于客户端缓存的图片资源。
-     * 通常由客户端在启动时调用。
+     * 【查】获取所有图片资源。
      */
     @RouteMapping(uri = "resource/images/all")
     public Response getAllImages(Request request, Session database) {
@@ -34,104 +33,63 @@ public class ImageController {
     }
 
     /**
-     * 【增 - (C)RUD】
-     * 添加一张新的图片到数据库。
-     * 通常由后台管理界面调用。
+     * 【增/改 - 统一入口】
+     * 添加或更新一张图片到数据库。
+     * 客户端将图片的 key (SHA256) 和 Base64 编码后的数据发送过来。
      *
-     * @param request  需要包含 "key" 和 "imageData" (Base64编码的字符串)
+     * @param request  需要包含 "key" (String) 和 "data" (Base64 String)
      * @param database Hibernate Session
      * @return 操作成功或失败的 Response
      */
-    @RouteMapping(uri = "resource/images/add")
-    public Response addImage(Request request, Session database) {
+    @RouteMapping(uri = "resource/images/addOrUpdate") // <-- 我们使用一个新的、更清晰的URI
+    public Response addOrUpdateImage(Request request, Session database) {
         Transaction tx = null;
         try {
+            // 1. 从请求中获取 key 和 Base64 编码的数据
             String key = request.getParams().get("key");
-            String base64Data = request.getParams().get("imageData");
+            String base64Data = request.getParams().get("data");
 
+            // 2. 验证输入
             if (key == null || key.isEmpty() || base64Data == null || base64Data.isEmpty()) {
-                return Response.Common.error("Key and imageData cannot be empty.");
+                return Response.Common.error("Key and image data cannot be empty.");
             }
 
-            // 检查 Key 是否已存在
-            if (database.get(CachedImage.class, key) != null) {
-                return Response.Common.error("Image with key '" + key + "' already exists.");
-            }
-
-            // 将 Base64 字符串解码为 byte[]
+            // 3. 【核心解码步骤】将 Base64 字符串解码为 byte[]
             byte[] imageData = Base64.getDecoder().decode(base64Data);
 
-            CachedImage newImage = new CachedImage(key, imageData);
+            // 4. 创建或准备要持久化的实体对象
+            CachedImage imageToSave = new CachedImage(key, imageData);
 
+            // 5. 执行数据库事务
             tx = database.beginTransaction();
-            database.persist(newImage);
+            // merge() 会自动处理：如果数据库中已存在该 key，则更新；如果不存在，则插入。
+            database.merge(imageToSave);
+
             tx.commit();
 
-            log.info("Successfully added image with key: {}", key);
+            log.info("Successfully added/updated image with key: {}", key);
             return Response.Common.ok();
 
         } catch (IllegalArgumentException e) {
-            log.error("Failed to add image due to Base64 decoding error", e);
+            // 如果 base64Data 不是合法的 Base64 字符串, decode 会抛出此异常
+            log.error("Failed to process image due to Base64 decoding error for key: {}", request.getParams().get("key"), e);
             return Response.Common.error("Invalid Base64 image data.");
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
-            log.error("Failed to add image to database", e);
-            return Response.Common.error("An internal error occurred while adding the image.");
-        }
-    }
-
-    /**
-     * 【改 - CR(U)D】
-     * 更新一张已存在的图片。
-     *
-     * @param request 需要包含 "key" 和 "imageData" (Base64编码的字符串)
-     * @param database Hibernate Session
-     * @return 操作成功或失败的 Response
-     */
-    @RouteMapping(uri = "resource/images/update") // 假设只有管理员能更新
-    public Response updateImage(Request request, Session database) {
-        Transaction tx = null;
-        try {
-            String key = request.getParams().get("key");
-            String base64Data = request.getParams().get("imageData");
-
-            if (key == null || key.isEmpty() || base64Data == null || base64Data.isEmpty()) {
-                return Response.Common.error("Key and imageData cannot be empty.");
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
             }
-
-            // 将 Base64 字符串解码为 byte[]
-            byte[] imageData = Base64.getDecoder().decode(base64Data);
-
-            CachedImage imageToUpdate = new CachedImage(key, imageData);
-
-            tx = database.beginTransaction();
-            // merge() 会自动处理插入或更新
-            database.merge(imageToUpdate);
-            tx.commit();
-
-            log.info("Successfully updated image with key: {}", key);
-            return Response.Common.ok();
-
-        } catch (IllegalArgumentException e) {
-            log.error("Failed to update image due to Base64 decoding error", e);
-            return Response.Common.error("Invalid Base64 image data.");
-        } catch (Exception e) {
-            if (tx != null) tx.rollback();
-            log.error("Failed to update image in database", e);
-            return Response.Common.error("An internal error occurred while updating the image.");
+            log.error("Failed to add/update image in database for key: {}", request.getParams().get("key"), e);
+            return Response.Common.error("An internal error occurred while saving the image.");
         }
     }
 
+    // ... 你原有的 deleteImage 方法可以保持不变，它写得很好 ...
     /**
-     * 【删 - CRU(D)】
-     * 删除一张图片。
-     *
-     * @param request 需要包含 "key"
-     * @param database Hibernate Session
-     * @return 操作成功或失败的 Response
+     * 【删】删除一张图片。
      */
-    @RouteMapping(uri = "resource/images/delete") // 假设只有管理员能删除
+    @RouteMapping(uri = "resource/images/delete")
     public Response deleteImage(Request request, Session database) {
+        // ... 此处代码无需修改 ...
         Transaction tx = null;
         try {
             String key = request.getParams().get("key");
@@ -157,4 +115,6 @@ public class ImageController {
             return Response.Common.error("An internal error occurred while deleting the image.");
         }
     }
+
+    // 为了保持清晰，你可以移除或注释掉旧的 addImage 和 updateImage 方法
 }

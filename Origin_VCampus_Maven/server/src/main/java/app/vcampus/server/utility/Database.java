@@ -36,6 +36,7 @@ public class Database {
                 .addAnnotatedClass(CardTransaction.class)
                 .addAnnotatedClass(TeachingEvaluation.class)
                 .addAnnotatedClass(LibraryTransaction.class)
+                .addAnnotatedClass(CachedImage.class)
                 .buildSessionFactory();
     }
 

@@ -64,6 +64,7 @@ public final class FakeRepository
             User u = AuthClient.login(handler, username, password);
             if (u != null) {
                 logger.debug("login user: {}", u);
+                System.out.println("[FakeRepository.login(): userCardNum]" + u.cardNum);
                 user = u;
                 isConnected = true;
                 System.out.println("[login] : ImageCache.getInstance() called");
