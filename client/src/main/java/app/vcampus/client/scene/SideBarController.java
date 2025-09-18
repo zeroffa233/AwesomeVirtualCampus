@@ -14,34 +14,72 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import app.vcampus.server.utility.Request;
 
+/**
+ * 侧边栏控制器。
+ * 负责主导航栏的按钮交互、视图切换以及根据用户角色动态生成二级菜单。
+ */
 public class SideBarController implements Initializable {
 
-    // --- FXML 注入 ---
     @FXML
     private JFXButton homeButton;
+    /**
+     * 学籍管理按钮。
+     */
     @FXML
     private JFXButton studentStatusButton;
+    /**
+     * 课程管理按钮。
+     */
     @FXML
     private JFXButton courseButton;
+    /**
+     * 图书馆按钮。
+     */
     @FXML
     private JFXButton libraryButton;
+    /**
+     * 网上商店按钮。
+     */
     @FXML
     private JFXButton shopButton;
+    /**
+     * 财务中心按钮。
+     */
     @FXML
     private JFXButton financeButton;
+    /**
+     * 管理员按钮。
+     */
     @FXML
     private JFXButton adminButton;
+    /**
+     * GPT按钮。
+     */
     @FXML
     private JFXButton gptButton;
+    /**
+     * 聊天按钮。
+     */
     @FXML
     private JFXButton chatButton;
 
+    /**
+     * 主场景控制器。
+     */
     @Setter
-    private MainSceneController mainSceneController; // 这个变量将通过下面的方法被赋值
+    private MainSceneController mainSceneController;
+    /**
+     * 当前激活的按钮。
+     */
     private JFXButton activeButton;
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     *
+     * @param location  URL定位资源。
+     * @param resources 资源包。
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         homeButton.setUserData("home");
@@ -54,15 +92,12 @@ public class SideBarController implements Initializable {
         gptButton.setUserData("llm");
         chatButton.setUserData("chat");
 
-        // Bind managed property to visible property to remove from layout when not visible
         adminButton.managedProperty().bind(adminButton.visibleProperty());
         studentStatusButton.managedProperty().bind(studentStatusButton.visibleProperty());
 
-        // Default to hiding permissioned buttons
         adminButton.setVisible(false);
         studentStatusButton.setVisible(false);
 
-        // Set visibility based on user roles
         if (FakeRepository.user != null) {
             List<String> roles = Arrays.asList(FakeRepository.user.getRoles());
             boolean isAdmin = roles.contains("admin");
@@ -76,23 +111,14 @@ public class SideBarController implements Initializable {
         }
     }
 
-    /**
-     * 【关键改动】创建二级菜单按钮的辅助方法。
-     * 它现在接收一个 FXML 路径，并为按钮绑定加载该路径的动作。
-     * @param text 按钮显示的文本
-     * @param subViewFxmlPath 点击后要加载的子视图 FXML 路径
-     * @return 配置好的 JFXButton
-     */
     private JFXButton createSecondaryMenuButton(String text, String subViewFxmlPath) {
         JFXButton button = new JFXButton(text);
-        button.setMaxHeight(Double.MAX_VALUE); // 确保按钮填满顶栏高度
+        button.setMaxHeight(Double.MAX_VALUE);
         button.getStyleClass().add("top-bar-menu-button");
 
         button.setOnAction(event -> {
-            // 1. 调用 MainSceneController 加载子视图
             mainSceneController.loadSubScene(subViewFxmlPath);
 
-            // 2. 管理高亮状态
             if (button.getParent() != null) {
                 button.getParent().getChildrenUnmodifiable().forEach(node ->
                         node.getStyleClass().remove("active"));
@@ -102,6 +128,11 @@ public class SideBarController implements Initializable {
         return button;
     }
 
+    /**
+     * 设置当前激活的按钮。
+     *
+     * @param newActiveButton 新的激活按钮。
+     */
     private void setActiveButton(JFXButton newActiveButton) {
         if (activeButton == newActiveButton) {
             return;
@@ -113,31 +144,28 @@ public class SideBarController implements Initializable {
         }
         if (newActiveButton != null) {
             newActiveButton.getStyleClass().add("active");
-            updateButtonIcon(newActiveButton, true); // 设置为高亮图标
+            updateButtonIcon(newActiveButton, true);
             activeButton = newActiveButton;
         }
     }
 
     /**
-     * 【新增】根据按钮的活动状态更新其图标的辅助方法
-     * @param button 目标按钮
-     * @param isActive 是否为活动状态
+     * 更新按钮图标。
+     *
+     * @param button 按钮。
+     * @param isActive 是否激活。
      */
-
     private void updateButtonIcon(JFXButton button, boolean isActive) {
         if (button == null || button.getGraphic() == null) return;
 
-        // 直接从按钮的 userData 获取图标的基础名
         String baseName = (String) button.getUserData();
         if (baseName == null || baseName.isEmpty()) {
             System.err.println("错误：按钮 [" + button.getText() + "] 没有在 initialize 方法中设置 userData!");
             return;
         }
 
-        // 根据 isActive 状态，构建出【目标文件名】
         String targetFilename = isActive ? baseName + "_white.png" : baseName + ".png";
 
-        // 构建标准的类路径并加载图标
         String newClassPath = "/images/" + targetFilename;
         java.io.InputStream resourceStream = getClass().getResourceAsStream(newClassPath);
 
@@ -146,18 +174,27 @@ public class SideBarController implements Initializable {
             return;
         }
 
-        // 更新 ImageView
         Node graphic = button.getGraphic();
         if (graphic instanceof ImageView imageView) {
             imageView.setImage(new Image(resourceStream));
         }
     }
 
+    /**
+     * 切换视图。
+     *
+     * @param fxmlPath FXML文件路径。
+     * @param title 标题。
+     * @param menuItems 菜单项。
+     */
     private void switchView(String fxmlPath, String title, List<Node> menuItems) {
         mainSceneController.toggleNavRail();
         mainSceneController.switchView(fxmlPath, title, menuItems);
     }
 
+    /**
+     * 处理主页按钮点击事件。
+     */
     @FXML
     private void handleHome() {
         setActiveButton(homeButton);
@@ -173,24 +210,24 @@ public class SideBarController implements Initializable {
                 fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewStudent.fxml";
             }
         } else {
-            // Default to student view if user is null for some reason
             fxmlPath = "/app/vcampus/client/scene/SubScene/HomeScene/HomeViewStudent.fxml";
         }
 
         switchView(fxmlPath, "主页", List.of());
     }
 
+    /**
+     * 处理学籍管理按钮点击事件。
+     */
     @FXML
     private void handleStudentStatus() {
         setActiveButton(studentStatusButton);
         List<Node> menuItems = new ArrayList<>();
-        // if a user is a student
         if (FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
             JFXButton studentButton = createSecondaryMenuButton("我的学籍", "/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml");
             menuItems.add(studentButton);
             studentButton.getStyleClass().add("active");
             }
-        // if a user is an administrator
         if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
             JFXButton studentmButton = createSecondaryMenuButton("修改学籍", "/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusManagementView.fxml");
             menuItems.add(studentmButton);
@@ -198,6 +235,9 @@ public class SideBarController implements Initializable {
         switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml", "我的学籍", menuItems);
     }
 
+    /**
+     * 处理教务系统按钮点击事件。
+     */
     @FXML
     private void handleTeachingAffairs() {
         setActiveButton(courseButton);
@@ -214,7 +254,7 @@ public class SideBarController implements Initializable {
             JFXButton classButton = createSecondaryMenuButton("我的课堂", "/app/vcampus/client/scene/SubScene/CourseScene/MyClassSubscene.fxml");
             menuItems.add(classButton);
 
-        }// 初始加载的父视图
+        }
         if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("admin"))
         {
             JFXButton addcourseButton = createSecondaryMenuButton("添加课程", "/app/vcampus/client/scene/SubScene/CourseScene/add_course.fxml");
@@ -225,6 +265,9 @@ public class SideBarController implements Initializable {
         switchView("/app/vcampus/client/scene/SubScene/CourseScene/TeachingAffairsView.fxml", "教务系统",menuItems);
     }
 
+    /**
+     * 处理图书馆按钮点击事件。
+     */
     @FXML
     private void handleLibrary() {
         setActiveButton(libraryButton);
@@ -260,11 +303,12 @@ public class SideBarController implements Initializable {
         switchView("/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml", "书籍检索", menuItems);
     }
 
-    // ... 对 handleShop, handleFinance, handleAdmin 等方法进行类似的修改 ...
+    /**
+     * 处理网上商店按钮点击事件。
+     */
     @FXML
     private void handleShop() {
         setActiveButton(shopButton);
-        // ... 创建二级菜单按钮
         JFXButton shopButton = createSecondaryMenuButton("购物页面", "/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml");
         JFXButton orderButton = createSecondaryMenuButton("我的订单", "/app/vcampus/client/scene/SubScene/ShopScene/OrderView.fxml");
         JFXButton uploadButton = createSecondaryMenuButton("上传商品", "/app/vcampus/client/scene/SubScene/ShopScene/UploadView.fxml");
@@ -272,16 +316,21 @@ public class SideBarController implements Initializable {
         switchView("/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml", "网上商店", List.of(shopButton, orderButton, uploadButton));
     }
     
+    /**
+     * 处理财务中心按钮点击事件。
+     */
     @FXML
     private void handleFinance() {
         setActiveButton(financeButton);
         JFXButton personalButton = createSecondaryMenuButton("个人财务管理", "/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml");
         JFXButton manageButton = createSecondaryMenuButton("一卡通管理", "/app/vcampus/client/scene/SubScene/FinanceScene/ManageFinanceView.fxml");
         personalButton.getStyleClass().add("active");
-        // ... 创建二级菜单按钮
         switchView("/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml", "财务中心", List.of(personalButton, manageButton));
     }
 
+    /**
+     * 处理系统管理按钮点击事件。
+     */
     @FXML
     private void handleAdmin() {
         setActiveButton(adminButton);
@@ -290,12 +339,18 @@ public class SideBarController implements Initializable {
         switchView("/app/vcampus/client/scene/SubScene/AdminScene/AdminView.fxml", "系统管理", List.of(userManagementButton));
     }
 
+    /**
+     * 处理GPT按钮点击事件。
+     */
     @FXML
     private void handleGpt() {
         setActiveButton(gptButton);
         switchView("/app/vcampus/client/scene/SubScene/LlmScene/GptView.fxml", "VCampus GPT", List.of());
     }
 
+    /**
+     * 处理聊天按钮点击事件。
+     */
     @FXML
     private void handleChat() {
         List<Node> menuItems = new ArrayList<>();

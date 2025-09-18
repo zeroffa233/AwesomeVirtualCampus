@@ -7,21 +7,43 @@ import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 登录视图模型。
+ * 负责处理登录界面的逻辑，包括用户输入、登录状态和错误消息。
+ */
 @Slf4j
 public class LoginViewModel {
+    /**
+     * 用户名（卡号）输入框的属性。
+     */
     public final StringProperty username = new SimpleStringProperty("");
+    /**
+     * 密码输入框的属性。
+     */
     public final StringProperty password = new SimpleStringProperty("");
+    /**
+     * 登录状态的布尔属性。
+     */
     public final BooleanProperty loginState = new SimpleBooleanProperty(false);
+    /**
+     * 错误消息文本属性。
+     */
     public final StringProperty errorMessage = new SimpleStringProperty("");
+    /**
+     * 服务器地址输入框的属性。
+     */
     public final StringProperty serverAddress = new SimpleStringProperty("127.0.0.1:9091");
 
+    /**
+     * 执行登录操作。
+     * 在后台线程中连接服务器并验证用户凭据。
+     */
     public void login() {
         errorMessage.set("");
 
         Task<Boolean> loginTask = new Task<>() {
             @Override
             protected Boolean call() throws Exception {
-                // Always disconnect before trying to connect
                 app.vcampus.client.repository.FakeRepository.disconnect();
 
                 try {

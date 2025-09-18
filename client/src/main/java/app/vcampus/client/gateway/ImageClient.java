@@ -27,6 +27,9 @@ import app.vcampus.server.entity.IEntity;
 @Slf4j
 public class ImageClient extends BaseClient {
 
+    /**
+     * Gson实例，用于JSON序列化和反序列化。
+     */
     private static final Gson gson = new Gson();
 
     /**
@@ -55,20 +58,11 @@ public class ImageClient extends BaseClient {
     }
 
     /**
-     * 【已补全】
      * 向服务器添加或更新一张图片。
      * 服务端的 `updateImage` 方法可以同时处理新增和更新，
      * 因此我们在客户端可以将其合并为一个便捷的方法。
      *
      * @param key       图片的SHA256哈希值。
-     * @param base64ImageData 经过 Base64 编码后的图片数据字符串。
-     * @return 如果操作成功，返回 true；否则记录日志并返回 false。
-     */
-    /**
-     * 【异步版】向服务器添加或更新一张图片。
-     * 这个方法会立即返回一个 "Future"，你可以用它来获取最终的操作结果。
-     *
-     * @param key           图片的 SHA256 哈希值。
      * @param base64ImageData 经过 Base64 编码后的图片数据字符串。
      * @return 一个 CompletableFuture<Boolean>，当操作完成时，它会包含 true (成功) 或 false (失败)。
      */
@@ -109,7 +103,6 @@ public class ImageClient extends BaseClient {
         return future;
     }
     /**
-     * 【已补全】
      * 向服务器删除一张图片。
      *
      * @param key     要删除的图片的哈希值。
@@ -131,6 +124,13 @@ public class ImageClient extends BaseClient {
         }
     }
 
+    /**
+     * 计算给定字节数组的SHA-256哈希值。
+     *
+     * @param data 要计算哈希值的数据。
+     * @return 数据的SHA-256哈希值的十六进制字符串表示。
+     * @throws RuntimeException 如果无法获取SHA-256哈希算法实例。
+     */
     public static String calculateSHA256(byte[] data) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

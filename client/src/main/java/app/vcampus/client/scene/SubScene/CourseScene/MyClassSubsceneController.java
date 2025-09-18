@@ -1,36 +1,45 @@
 package app.vcampus.client.scene.SubScene.CourseScene;
 
-import app.vcampus.client.scene.SubScene.CourseScene.MyClassListItem;
 import app.vcampus.client.viewmodel.TeachingAffairsViewModel;
 import app.vcampus.server.entity.TeachingClass;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
 
-import java.io.File;
-
+/**
+ * “我的课程”子场景控制器。
+ * 负责展示教师的授课列表。
+ */
 public class MyClassSubsceneController {
 
     @FXML
     private VBox classListVBox;
 
+    /**
+     * 教务视图模型。
+     */
     private TeachingAffairsViewModel viewModel;
 
+    /**
+     * 设置视图模型，并初始化数据和监听器。
+     *
+     * @param viewModel 教务视图模型。
+     */
     public void setViewModel(TeachingAffairsViewModel viewModel) {
         this.viewModel = viewModel;
 
-        // 初始化数据（会异步加载）
         viewModel.myTeachingClasses.init();
 
-        // 监听列表变化，变化时在 FX 线程重建 UI
         viewModel.myTeachingClasses.myClasses.addListener((javafx.collections.ListChangeListener<TeachingClass>) change -> {
             Platform.runLater(this::rebuildList);
         });
 
-        // 如果已经有数据，先构建一次
         rebuildList();
     }
 
+    /**
+     * 重建课程列表。
+     */
     private void rebuildList() {
         classListVBox.getChildren().clear();
         for (TeachingClass tc : viewModel.myTeachingClasses.myClasses) {
@@ -41,4 +50,3 @@ public class MyClassSubsceneController {
         }
     }
 }
-

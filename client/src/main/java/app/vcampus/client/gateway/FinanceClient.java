@@ -16,15 +16,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * 财务客户端，提供与财务系统交互的功能，例如查询卡片信息、充值、消费、更新卡片状态和查询交易历史。
+ */
 @Slf4j
 public class FinanceClient extends BaseClient {
+    /**
+     * Netty处理器，用于发送请求。
+     */
     private static final NettyHandler handler = FakeRepository.handler;
 
     /**
-     * Finds card information by card number.
+     * 根据卡号查找卡片信息。
      *
-     * @param cardNumber The card number to search for.
-     * @return An Optional containing the CardInfo if found, otherwise empty.
+     * @param cardNumber 要搜索的卡号。
+     * @return 包含CardInfo的Optional对象，如果找到则包含信息，否则为空。
      */
     public static Optional<CardInfo> findCardInfo(String cardNumber) {
         Gson gson = new Gson();
@@ -40,19 +46,19 @@ public class FinanceClient extends BaseClient {
                 return Optional.ofNullable(cardInfo);
             }
         } catch (InterruptedException e) {
-            log.warn("Failed to find card info for card: " + cardNumber, e);
+            log.warn("查找卡号 {} 的卡片信息失败", cardNumber, e);
             Thread.currentThread().interrupt();
         }
         return Optional.empty();
     }
 
     /**
-     * Recharges a card with a specified amount and description.
+     * 为指定卡号充值。
      *
-     * @param cardNumber The card number to recharge.
-     * @param amount The amount to add.
-     * @param description The description of the transaction.
-     * @return true if successful, false otherwise.
+     * @param cardNumber 要充值的卡号。
+     * @param amount 充值金额。
+     * @param description 交易描述。
+     * @return 如果成功则返回true，否则返回false。
      */
     public static boolean debit(String cardNumber, double amount, String description) {
         Request request = new Request();
@@ -67,19 +73,19 @@ public class FinanceClient extends BaseClient {
             Response response = BaseClient.sendRequest(handler, request);
             return response.getStatus().equals("success");
         } catch (InterruptedException e) {
-            log.warn("Failed to recharge card: " + cardNumber, e);
+            log.warn("卡号 {} 充值失败", cardNumber, e);
             Thread.currentThread().interrupt();
             return false;
         }
     }
 
     /**
-     * Spends from a card with a specified amount and description.
+     * 从指定卡号消费。
      *
-     * @param cardNumber The card number to spend from.
-     * @param amount The amount to subtract.
-     * @param description The description of the transaction.
-     * @return true if successful, false otherwise.
+     * @param cardNumber 要消费的卡号。
+     * @param amount 消费金额。
+     * @param description 交易描述。
+     * @return 如果成功则返回true，否则返回false。
      */
     public static boolean credit(String cardNumber, double amount, String description) {
         Request request = new Request();
@@ -94,7 +100,7 @@ public class FinanceClient extends BaseClient {
             Response response = BaseClient.sendRequest(handler, request);
             return response.getStatus().equals("success");
         } catch (InterruptedException e) {
-            log.warn("Failed to credit card: " + cardNumber, e);
+            log.warn("卡号 {} 消费失败", cardNumber, e);
             Thread.currentThread().interrupt();
             return false;
         }
@@ -102,11 +108,11 @@ public class FinanceClient extends BaseClient {
 
 
     /**
-     * Updates the status of a card (e.g., "冻结", "挂失").
+     * 更新卡片状态（例如，“冻结”，“挂失”）。
      *
-     * @param cardNumber The card number to update.
-     * @param newStatus The new status.
-     * @return true if successful, false otherwise.
+     * @param cardNumber 要更新的卡号。
+     * @param newStatus 新的状态。
+     * @return 如果成功则返回true，否则返回false。
      */
     public static boolean updateCardStatus(String cardNumber, String newStatus) {
         Request request = new Request();
@@ -117,15 +123,15 @@ public class FinanceClient extends BaseClient {
             Response response = BaseClient.sendRequest(handler, request);
             return response.getStatus().equals("success");
         } catch (InterruptedException e) {
-            log.warn("Failed to update status for card: " + cardNumber, e);
+            log.warn("更新卡号 {} 状态失败", cardNumber, e);
             Thread.currentThread().interrupt();
             return false;
         }
     }
 
     /**
-     * Gets the balance of the current user's card.
-     * @return the balance, or 0.0 if failed.
+     * 获取当前用户卡片的余额。
+     * @return 余额，如果失败则返回0.0。
      */
     public static double getBalance() {
         Request request = new Request();
@@ -142,15 +148,15 @@ public class FinanceClient extends BaseClient {
                 }
             }
         } catch (InterruptedException e) {
-            log.warn("Failed to get balance", e);
+            log.warn("获取余额失败", e);
             Thread.currentThread().interrupt();
         }
         return 0.0;
     }
 
     /**
-     * Gets the transaction history of the current user.
-     * @return A list of DisplayableTransaction, or empty list on failure.
+     * 获取当前用户的交易历史记录。
+     * @return DisplayableTransaction列表，失败时返回空列表。
      */
     public static List<DisplayableTransaction> getTransactionHistory() {
         Gson gson = new Gson();
@@ -178,7 +184,7 @@ public class FinanceClient extends BaseClient {
                 }).collect(Collectors.toList());
             }
         } catch (InterruptedException e) {
-            log.warn("Failed to get transaction history", e);
+            log.warn("获取交易历史失败", e);
             Thread.currentThread().interrupt();
         }
         return List.of(); // Return empty list on failure

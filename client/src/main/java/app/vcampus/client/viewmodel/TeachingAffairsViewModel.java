@@ -15,30 +15,57 @@ import java.util.concurrent.*;
 import java.util.Base64;
 
 /**
- * TeachingAffairsViewModel（包含 MyClasses 内部类）
+ * 教务视图模型。
+ * 负责处理学生、教师和管理员的教务相关逻辑。
  */
 public class TeachingAffairsViewModel {
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    //public final List<String> identity = new ArrayList<>(FakeRepository.user.roles);
+    /**
+     * 学生教务视图模型。
+     */
     public final MyClasses myClasses = new MyClasses(executor);
 
-     public final MyTeachingClasses myTeachingClasses = new MyTeachingClasses(executor);
+    /**
+     * 教师教务视图模型。
+     */
+    public final MyTeachingClasses myTeachingClasses = new MyTeachingClasses(executor);
 
-    // ---------------- 学生部分 ----------------
+    /**
+     * 管理员教务工具视图模型。
+     */
+    public final AdminTools adminTools = new AdminTools(executor);
+
+    /**
+     * 学生课程视图模型内部类。
+     * 管理学生的选课、退课以及课程列表的获取。
+     */
     public class MyClasses {
         private final ExecutorService executor;
 
-        // ObservableList，UI 可以直接监听
+        /**
+         * 已选课程的可观察列表。
+         */
         public final ObservableList<TeachingClass> selected = FXCollections.observableArrayList();
+        /**
+         * 所有可选课程的可观察列表。
+         */
         public final ObservableList<Course> allCourses = FXCollections.observableArrayList();
 
         private boolean inited = false;
 
+        /**
+         * 构造函数。
+         *
+         * @param executor 线程池执行器。
+         */
         public MyClasses(ExecutorService executor) {
             this.executor = executor;
         }
 
+        /**
+         * 初始化，获取已选课程和可选课程。
+         */
         public void init() {
             if (inited) return;
             inited = true;
@@ -46,12 +73,15 @@ public class TeachingAffairsViewModel {
             getSelectableCourses();
         }
 
+        /**
+         * 异步获取学生已选课程列表。
+         */
         public void getSelectedClasses() {
             executor.submit(() -> {
                 try {
                     List<TeachingClass> result = FakeRepository.getSelectedClasses();
                     Platform.runLater(() -> {
-                        selected.setAll(result); // 更新 ObservableList
+                        selected.setAll(result);
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -59,6 +89,9 @@ public class TeachingAffairsViewModel {
             });
         }
 
+        /**
+         * 异步获取所有可选课程列表。
+         */
         public void getSelectableCourses() {
             executor.submit(() -> {
                 try {
@@ -70,28 +103,16 @@ public class TeachingAffairsViewModel {
             });
         }
 
+        /**
+         * 异步选择一门课程。
+         *
+         * @param teachingClassUuid 教学班的UUID。
+         * @return 一个包含操作是否成功的 CompletableFuture。
+         */
         public CompletableFuture<Boolean> chooseClass(UUID teachingClassUuid) {
-//            return CompletableFuture.supplyAsync(() -> {
-//                try {
-//                    boolean ok = FakeRepository.chooseClass(teachingClassUuid);
-//                    // 刷新可选与已选（在后台线程触发，结果会在 Platform.runLater 中应用）
-//                    getSelectableCourses();
-//                    getSelectedClasses();
-//                    return ok;
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    return false;
-//                }
-//            }, executor);
             return CompletableFuture.supplyAsync(() -> {
                 try {
-                    System.out.println("[DEBUG] chooseClass called for: " + teachingClassUuid);
-                    System.out.println("[DEBUG] FakeRepository.user = " + FakeRepository.user);
-                    System.out.println("[DEBUG] FakeRepository.getSelf() = " + FakeRepository.getSelf());
                     boolean ok = FakeRepository.chooseClass(teachingClassUuid);
-                    System.out.println("[DEBUG] FakeRepository.chooseClass returned: " + ok);
-
-                    // 刷新可选与已选
                     getSelectableCourses();
                     getSelectedClasses();
                     return ok;
@@ -102,6 +123,12 @@ public class TeachingAffairsViewModel {
             }, executor);
         }
 
+        /**
+         * 异步退选一门课程。
+         *
+         * @param teachingClassUuid 教学班的UUID。
+         * @return 一个包含操作是否成功的 CompletableFuture。
+         */
         public CompletableFuture<Boolean> dropClass(UUID teachingClassUuid) {
             return CompletableFuture.supplyAsync(() -> {
                 try {
@@ -117,22 +144,40 @@ public class TeachingAffairsViewModel {
         }
     }
 
+    /**
+     * 教师课程视图模型内部类。
+     * 管理教师的授课列表以及相关操作，如导出学生名单、成绩模板和导入成绩。
+     */
     public class MyTeachingClasses {
         private final ExecutorService executor;
-        public final javafx.collections.ObservableList<TeachingClass> myClasses = javafx.collections.FXCollections.observableArrayList();
+        /**
+         * 教师授课列表的可观察列表。
+         */
+        public final ObservableList<TeachingClass> myClasses = FXCollections.observableArrayList();
 
         private boolean inited = false;
 
+        /**
+         * 构造函数。
+         *
+         * @param executor 线程池执行器。
+         */
         public MyTeachingClasses(ExecutorService executor) {
             this.executor = executor;
         }
 
+        /**
+         * 初始化，获取教师的授课列表。
+         */
         public void init() {
             if (inited) return;
             inited = true;
             getMyTeachingClasses();
         }
 
+        /**
+         * 异步获取教师的授课列表。
+         */
         public void getMyTeachingClasses() {
             executor.submit(() -> {
                 try {
@@ -146,10 +191,13 @@ public class TeachingAffairsViewModel {
             });
         }
 
-        // saveStudentList / gradeTemplate / importGrade 不变
-
-
-    public void saveStudentList(TeachingClass teachingClass, File file) {
+        /**
+         * 异步导出学生名单到指定文件。
+         *
+         * @param teachingClass 教学班对象。
+         * @param file          要保存的文件。
+         */
+        public void saveStudentList(TeachingClass teachingClass, File file) {
             executor.submit(() -> {
                 try {
                     String encoded = FakeRepository.exportStudentList(teachingClass);
@@ -160,6 +208,12 @@ public class TeachingAffairsViewModel {
             });
         }
 
+        /**
+         * 异步导出成绩模板到指定文件。
+         *
+         * @param teachingClass 教学班对象。
+         * @param file          要保存的文件。
+         */
         public void gradeTemplate(TeachingClass teachingClass, File file) {
             executor.submit(() -> {
                 try {
@@ -171,6 +225,12 @@ public class TeachingAffairsViewModel {
             });
         }
 
+        /**
+         * 异步从文件导入成绩。
+         *
+         * @param teachingClass 教学班对象。
+         * @param file          包含成绩信息的Excel文件。
+         */
         public void importGrade(TeachingClass teachingClass, File file) {
             executor.submit(() -> {
                 try {
@@ -182,31 +242,36 @@ public class TeachingAffairsViewModel {
             });
         }
     }
-    // ... existing code ...
 
-    // ---------------- 管理员部分 ----------------
-    public final AdminTools adminTools = new AdminTools(executor);
-
+    /**
+     * 管理员工具视图模型内部类。
+     * 提供管理员添加课程和教学班的功能。
+     */
     public class AdminTools {
         private final ExecutorService executor;
 
+        /**
+         * 构造函数。
+         *
+         * @param executor 线程池执行器。
+         */
         public AdminTools(ExecutorService executor) {
             this.executor = executor;
         }
 
         /**
-         * 添加新课程
-         * @param courseId 课程代码
-         * @param courseName 课程名称
-         * @param school 开课学院
-         * @param credit 学分
-         * @return 操作结果的CompletableFuture
+         * 异步添加新课程。
+         *
+         * @param courseId   课程代码。
+         * @param courseName 课程名称。
+         * @param school     开课学院。
+         * @param credit     学分。
+         * @return 一个包含操作是否成功的 CompletableFuture。
          */
         public CompletableFuture<Boolean> addCourse(String courseId, String courseName, String school, float credit) {
             return CompletableFuture.supplyAsync(() -> {
                 try {
-                    boolean success = FakeRepository.addCourse(courseId, courseName, school, credit);
-                    return success;
+                    return FakeRepository.addCourse(courseId, courseName, school, credit);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return false;
@@ -215,19 +280,19 @@ public class TeachingAffairsViewModel {
         }
 
         /**
-         * 添加新教学班
-         * @param courseUuid 课程UUID
-         * @param teacherId 教师工号
-         * @param place 上课地点
-         * @param capacity 容量
-         * @param schedule 课程表
-         * @return 操作结果的CompletableFuture
+         * 异步添加新教学班。
+         *
+         * @param courseUuid 课程UUID。
+         * @param teacherId  教师工号。
+         * @param place      上课地点。
+         * @param capacity   容量。
+         * @param schedule   课程表。
+         * @return 一个包含操作是否成功的 CompletableFuture。
          */
         public CompletableFuture<Boolean> addTeachingClass(UUID courseUuid, int teacherId, String place, int capacity, List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule) {
             return CompletableFuture.supplyAsync(() -> {
                 try {
-                    boolean success = FakeRepository.addTeachingClass(courseUuid, teacherId, place, capacity, schedule);
-                    return success;
+                    return FakeRepository.addTeachingClass(courseUuid, teacherId, place, capacity, schedule);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return false;
@@ -236,10 +301,9 @@ public class TeachingAffairsViewModel {
         }
     }
 
-// ... existing code ...
-
     /**
-     * 可选：在程序退出时调用，停止线程池，防止进程无法结束
+     * 关闭线程池。
+     * 在程序退出时调用，以确保所有后台线程都能正常结束。
      */
     public void shutdown() {
         executor.shutdown();

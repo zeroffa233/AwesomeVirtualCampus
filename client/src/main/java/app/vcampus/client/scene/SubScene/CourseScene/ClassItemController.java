@@ -5,14 +5,33 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
 
+/**
+ * 课程表中的课程项控制器。
+ * 负责展示单个课程格子的信息，并根据课程名称动态生成背景颜色。
+ */
 public class ClassItemController {
-    @FXML private VBox root;
+        @FXML private VBox root;
+    /**
+     * 课程标签。
+     */
     @FXML private Label courseLabel;
+    /**
+     * 教师标签。
+     */
     @FXML private Label teacherLabel;
+    /**
+     * 地点标签。
+     */
     @FXML private Label placeLabel;
 
+    /**
+     * 设置课程项显示的数据。
+     *
+     * @param courseName  课程名称。
+     * @param teacherName 教师姓名。
+     * @param place       上课地点。
+     */
     public void setData(String courseName, String teacherName, String place) {
-        // 设置文本（保底）
         String c = courseName == null || courseName.isBlank() ? "未命名课程" : courseName;
         String t = teacherName == null ? "" : teacherName;
         String p = place == null ? "" : place;
@@ -21,28 +40,23 @@ public class ClassItemController {
         teacherLabel.setText(t);
         placeLabel.setText(p);
 
-        // tooltip 显示完整课程名
         Tooltip tt = new Tooltip(c);
         Tooltip.install(root, tt);
 
-        // 生成一对颜色（基于课程名的稳定哈希）
         String key = c;
         int hash = Math.abs(key.hashCode() == Integer.MIN_VALUE ? 0 : key.hashCode());
         double hue = (hash % 360);
-        double sat = 0.62;    // 饱和度
-        double light1 = 0.90; // 上方较亮
-        double light2 = 0.78; // 下方稍暗一点
+        double sat = 0.62;
+        double light1 = 0.90;
+        double light2 = 0.78;
 
-        // 转成 RGB hex
         String c1 = hslToHex(hue, sat, light1);
         String c2 = hslToHex(hue, sat * 0.9, light2);
 
-        // 计算适合的文字颜色（根据较暗 color2 的亮度）
         double[] rgb = hexToRgbNormalized(c2);
         double luminance = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
         String textColor = luminance < 0.6 ? "#FFFFFF" : "#123754";
 
-        // 应用内联样式（渐变 + 圆角 + 边框阴影）
         String style = String.join(" ",
                 "-fx-background-color: " + c1 + ";",
                 "-fx-background-radius: 10;",
@@ -50,15 +64,11 @@ public class ClassItemController {
         );
         root.setStyle(style);
 
-        // 设置文字颜色
         courseLabel.setStyle("-fx-text-fill: " + textColor + "; -fx-font-weight: 700;");
         teacherLabel.setStyle("-fx-text-fill: " + textColor + "; -fx-opacity: 0.95; -fx-font-size: 12;");
         placeLabel.setStyle("-fx-text-fill: " + textColor + "; -fx-opacity: 0.85; -fx-font-size: 12;");
     }
 
-    // ----------------- 辅助函数 -----------------
-
-    // HSL -> hex (#RRGGBB)
     private static String hslToHex(double h, double s, double l) {
         double[] rgb = hslToRgb(h, s, l);
         int r = (int) Math.round(rgb[0] * 255);
@@ -67,8 +77,15 @@ public class ClassItemController {
         return String.format("#%02x%02x%02x", clampByte(r), clampByte(g), clampByte(b));
     }
 
+    /**
+     * 将HSL颜色转换为RGB颜色。
+     *
+     * @param h 色相。
+     * @param s 饱和度。
+     * @param l 亮度。
+     * @return RGB颜色数组。
+     */
     private static double[] hslToRgb(double h, double s, double l) {
-        // h: 0-360, s,l: 0-1
         double c = (1 - Math.abs(2 * l - 1)) * s;
         double hh = h / 60.0;
         double x = c * (1 - Math.abs(hh % 2 - 1));
@@ -83,14 +100,25 @@ public class ClassItemController {
         return new double[]{r1 + m, g1 + m, b1 + m};
     }
 
+    /**
+     * 限制字节值在0-255之间。
+     *
+     * @param v 字节值。
+     * @return 限制后的字节值。
+     */
     private static int clampByte(int v) {
         if (v < 0) return 0;
         if (v > 255) return 255;
         return v;
     }
 
+    /**
+     * 将十六进制颜色转换为归一化的RGB颜色。
+     *
+     * @param hex 十六进制颜色字符串。
+     * @return 归一化的RGB颜色数组。
+     */
     private static double[] hexToRgbNormalized(String hex) {
-        // hex like #rrggbb
         hex = hex.replace("#", "");
         int r = Integer.parseInt(hex.substring(0, 2), 16);
         int g = Integer.parseInt(hex.substring(2, 4), 16);

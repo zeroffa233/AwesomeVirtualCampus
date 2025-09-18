@@ -21,6 +21,10 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 图书馆借阅历史视图控制器。
+ * 负责显示用户当前的借阅记录，并提供还书功能。
+ */
 public class LibraryHistoryViewController {
 
     @FXML
@@ -28,6 +32,9 @@ public class LibraryHistoryViewController {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     @FXML
     public void initialize() {
         loadUserTransactions();
@@ -87,7 +94,6 @@ public class LibraryHistoryViewController {
         col4.setHgrow(Priority.ALWAYS);
         grid.getColumnConstraints().addAll(col1, col2, col3, col4);
 
-        // Row 1
         Label nameLabel = new Label("书名:");
         nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         Label nameContent = new Label(transaction.getBook().getName());
@@ -102,7 +108,6 @@ public class LibraryHistoryViewController {
         grid.add(placeLabel, 2, 0);
         grid.add(placeContent, 3, 0);
 
-        // Row 2
         Label borrowLabel = new Label("借阅时间:");
         borrowLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         Label borrowContent = new Label(dateFormat.format(transaction.getBorrowTime()));
@@ -117,7 +122,6 @@ public class LibraryHistoryViewController {
         grid.add(dueLabel, 2, 1);
         grid.add(dueContent, 3, 1);
 
-        // Action Buttons
         JFXButton returnButton = new JFXButton("还书");
         returnButton.setStyle("-fx-background-color: #607830DE; -fx-text-fill: white;");
         returnButton.setButtonType(JFXButton.ButtonType.RAISED);
@@ -127,7 +131,6 @@ public class LibraryHistoryViewController {
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         grid.add(actionBox, 0, 2, 4, 1);
 
-        // Button Actions
         returnButton.setOnAction(event -> handleReturn(transaction, returnButton));
 
         return grid;
@@ -140,7 +143,6 @@ public class LibraryHistoryViewController {
             Platform.runLater(() -> {
                 if (success) {
                     showAlert(Alert.AlertType.INFORMATION, "还书成功!");
-                    // Refresh the list
                     loadUserTransactions();
                 } else {
                     showAlert(Alert.AlertType.ERROR, "还书失败，请稍后再试。");

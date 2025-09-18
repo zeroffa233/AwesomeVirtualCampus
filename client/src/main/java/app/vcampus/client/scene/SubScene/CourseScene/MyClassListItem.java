@@ -19,29 +19,55 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
- * 列表项控件：展示一个 TeachingClass 的信息，并支持导出学生名单（通过回调）。
+ * “我的课程”列表项控件。
+ * <p>
+ * 负责展示一个教学班的详细信息，并提供导出学生名单的功能（通过回调实现）。
+ * </p>
  */
 public class MyClassListItem extends HBox {
 
     @FXML
     private javafx.scene.control.Label courseNameLabel;
+    /**
+     * 课程ID标签。
+     */
     @FXML
     private javafx.scene.control.Label courseIdLabel;
+    /**
+     * 课程表标签。
+     */
     @FXML
     private javafx.scene.control.Label scheduleLabel;
+    /**
+     * 地点标签。
+     */
     @FXML
     private javafx.scene.control.Label placeLabel;
+    /**
+     * 导出按钮。
+     */
     @FXML
     private JFXButton exportButton;
 
+    /**
+     * 教学班对象。
+     */
     private final TeachingClass tc;
+    /**
+     * 保存回调函数。
+     */
     private final BiConsumer<TeachingClass, File> saveCallback;
 
+    /**
+     * 构造函数。
+     *
+     * @param tc           教学班对象。
+     * @param saveCallback 保存学生名单的回调函数。
+     */
     public MyClassListItem(TeachingClass tc, BiConsumer<TeachingClass, File> saveCallback) {
         this.tc = Objects.requireNonNull(tc, "TeachingClass must not be null");
         this.saveCallback = saveCallback;
 
-        // 加载 FXML（使用 fx:root，资源必须在 resources 下）
         String resourcePath = "/app/vcampus/client/scene/SubScene/CourseScene/MyClassListItem.fxml";
         URL fxmlUrl = getClass().getResource(resourcePath);
         if (fxmlUrl == null) {
@@ -61,13 +87,10 @@ public class MyClassListItem extends HBox {
             return;
         }
 
-        // 注入完成后安全地初始化 UI
         safeInit();
     }
 
-    /** 初始化显示与事件 */
     private void safeInit() {
-        // 显示基础信息（若需要更动态的更新，请把 TeachingClass 包装为属性 view-model）
         if (courseNameLabel != null) courseNameLabel.setText(tc.getCourse() != null ? tc.getCourse().getCourseName() : "");
         if (courseIdLabel != null) courseIdLabel.setText(tc.getCourse() != null ? tc.getCourse().getCourseId() : "");
         if (scheduleLabel != null) scheduleLabel.setText(tc.humanReadableSchedule() != null ? tc.humanReadableSchedule() : "");
@@ -80,31 +103,28 @@ public class MyClassListItem extends HBox {
         }
     }
 
-    /** 打开文件选择器并触发回调进行导出 */
+    /**
+     * 打开文件选择器并导出学生名单。
+     */
     private void openFileChooserAndExport() {
-        // 弹出保存对话框
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("导出学生名单");
-        // 初始文件名：课程名-教学班UUID.xlsx（若课程名包含文件系统不支持字符，可进一步 sanitize）
         String baseName = (tc.getCourse() != null && tc.getCourse().getCourseName() != null)
                 ? tc.getCourse().getCourseName()
                 : "students";
         String uuid = tc.getUuid() != null ? tc.getUuid().toString() : "";
         fileChooser.setInitialFileName(baseName + (uuid.isEmpty() ? "" : "-" + uuid) + ".xlsx");
 
-        // 限制文件类型为 xlsx（便于用户）
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel 工作簿 (*.xlsx)", "*.xlsx"));
 
         Window owner = (getScene() != null) ? getScene().getWindow() : null;
         File file = fileChooser.showSaveDialog(owner);
 
         if (file == null) {
-            // 用户取消保存
             return;
         }
 
         if (saveCallback == null) {
-            // 没有回调：提示用户并打印日志
             Platform.runLater(() -> {
                 Alert alert = new Alert(AlertType.ERROR, "导出功能未绑定，无法保存到文件。", ButtonType.OK);
                 alert.setHeaderText("导出失败");
@@ -115,17 +135,14 @@ public class MyClassListItem extends HBox {
         }
 
         try {
-            // 触发回调（一般由 ViewModel 负责异步写入文件）
             saveCallback.accept(tc, file);
 
-            // 给用户一个非阻塞提示：已开始导出（具体成功/失败由 ViewModel/Repository 日志或后续回调处理）
             Platform.runLater(() -> {
                 Alert info = new Alert(AlertType.INFORMATION, "已开始导出。导出过程在后台执行，完成后请检查所选文件。", ButtonType.OK);
                 info.setHeaderText("导出已启动");
                 info.show();
             });
         } catch (Exception ex) {
-            // 若回调抛出异常，告知用户
             ex.printStackTrace();
             Platform.runLater(() -> {
                 Alert alert = new Alert(AlertType.ERROR, "导出时出现错误：" + ex.getMessage(), ButtonType.OK);
@@ -135,9 +152,10 @@ public class MyClassListItem extends HBox {
         }
     }
 
-    /** 如果需要释放资源或解绑绑定，请调用此方法（当前实现为占位） */
+    /**
+     * 释放资源或解除绑定。
+     */
     public void dispose() {
-        // 如果将来对 Label 做了绑定，需要在这里解除绑定以避免内存泄露
         try {
             if (courseNameLabel != null) courseNameLabel.textProperty().unbind();
             if (courseIdLabel != null) courseIdLabel.textProperty().unbind();

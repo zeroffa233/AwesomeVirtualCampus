@@ -18,33 +18,46 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * GptClient provides a gateway to access GPT chat history.
- * Holding chat records in memory as a cache.
+ * GptClient 提供了一个网关，用于访问GPT聊天历史记录。
+ * 在内存中作为缓存保存聊天记录。
  */
 @Slf4j
 public class GptClient extends BaseClient {
     private static final GptClient instance = new GptClient(FakeRepository.handler);
 
-    // In-memory store to simulate a remote database
+    /**
+     * 内存存储，模拟远程数据库。
+     */
     private Map<UUID, ChatSession> inMemoryStore = new ConcurrentHashMap<>();
+    /**
+     * Netty处理器，用于发送请求。
+     */
     private NettyHandler handler;
 
+    /**
+     * 构造函数。
+     * @param handler Netty处理器。
+     */
     private GptClient(NettyHandler handler) {
         this.handler = handler;
         initializeData();
     }
 
+    /**
+     * 获取GptClient的单例实例。
+     * @return GptClient的单例实例。
+     */
     public static GptClient getInstance() {
         return instance;
     }
 
     /**
-     * Retrieves a list of summaries for all available chat sessions.
+     * 获取所有可用聊天会话的摘要列表。
      *
-     * @return A sorted list of ChatSessionSummary objects.
+     * @return 聊天会话摘要的排序列表。
      */
     public List<ChatSessionSummary> getChatHistorySummaries() {
-        System.out.println("[GptClient] Fetching chat history summaries...");
+        System.out.println("[GptClient] 正在获取聊天历史摘要...");
         return inMemoryStore.values().stream()
                 .map(ChatSession::getSummary)
                 .sorted(Comparator.comparingLong(ChatSessionSummary::getLastModified).reversed())
@@ -52,38 +65,41 @@ public class GptClient extends BaseClient {
     }
 
     /**
-     * Loads a full chat session by its unique ID.
+     * 根据其唯一ID加载完整的聊天会话。
      *
-     * @param sessionId The UUID of the session to load.
-     * @return The ChatSession object, or null if not found.
+     * @param sessionId 要加载的会话的UUID。
+     * @return ChatSession对象，如果未找到则返回null。
      */
     public ChatSession loadChatSession(UUID sessionId) {
-        System.out.println("[GptClient] Loading session: " + sessionId);
-        // In a real scenario, this would return a defensive copy.
+        System.out.println("[GptClient] 正在加载会话: " + sessionId);
+        // 在实际场景中，这将返回一个防御性副本。
         return inMemoryStore.get(sessionId);
     }
 
     /**
-     * Saves a chat session to the data store.
+     * 将聊天会话保存到数据存储中。
      *
-     * @param session The ChatSession object to save.
+     * @param session 要保存的ChatSession对象。
      */
     public void saveChatSession(ChatSession session) {
-        System.out.println("[GptClient] Saving session: " + session.getId());
-        // Create a copy to avoid reference issues, simulating a real save.
+        System.out.println("[GptClient] 正在保存会话: " + session.getId());
+        // 创建一个副本以避免引用问题，模拟实际保存。
         inMemoryStore.put(session.getId(), new ChatSession(session));
     }
 
     /**
-     * Deletes a chat session from the data store.
+     * 从数据存储中删除聊天会话。
      *
-     * @param sessionId The UUID of the session to delete.
+     * @param sessionId 要删除的会话的UUID。
      */
     public void deleteChatSession(UUID sessionId) {
-        System.out.println("[GptClient] Deleting session: " + sessionId);
+        System.out.println("[GptClient] 正在删除会话: " + sessionId);
         inMemoryStore.remove(sessionId);
     }
 
+    /**
+     * 初始化数据，从服务器拉取GPT上下文。
+     */
     private void initializeData() {
         Gson gs = new Gson();
         Request request = new Request();
@@ -111,16 +127,19 @@ public class GptClient extends BaseClient {
                 }
             }
         } catch (InterruptedException e) {
-            log.warn("Fail to pull context", e);
+            log.warn("拉取上下文失败", e);
             return;
         }
         Type mapType = new TypeToken<Map<UUID, ChatSession>>() {
         }.getType();
         inMemoryStore = gs.fromJson(serStorage, mapType);
         if (inMemoryStore==null){inMemoryStore=new HashMap<>();        }
-        System.out.println("[GptClient] initialized with " + inMemoryStore.size() + " sessions.");
+        System.out.println("[GptClient] 已初始化 " + inMemoryStore.size() + " 个会话。");
     }
 
+    /**
+     * 保存数据，将GPT上下文推送到服务器。
+     */
     public void saveData() {
         Gson gs = new Gson();
         Request request = new Request();
@@ -130,7 +149,7 @@ public class GptClient extends BaseClient {
             Response response = BaseClient.sendRequest(handler, request);
             if (!response.getStatus().equals("success")){throw new InterruptedException();}
         } catch (InterruptedException e) {
-            log.warn("Fail to push context");
+            log.warn("推送上下文失败");
         }
     }
 }

@@ -13,13 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * 教务客户端，提供与教务系统交互的功能，包括学生选课、教师管理课程、成绩导入等。
+ */
 @Slf4j
 public class TeachingAffairsClient extends BaseClient {
     /**
-     * Used to get selected class.
-     * @param handler
-     * @return if the response is success,List<TeachingClass>,else throw exception.
-     * @throws Exception If an error occurs.
+     * 用于获取学生已选课程。
+     * @param handler Netty处理器。
+     * @return 如果响应成功，返回List<TeachingClass>，否则抛出异常。
      */
     public static List<TeachingClass> getSelectedClasses(NettyHandler handler) {
         Request request = new Request();
@@ -35,16 +37,15 @@ public class TeachingAffairsClient extends BaseClient {
                 throw new Exception(response.getMessage());
             }
         } catch (Exception e) {
-            log.warn("Fail to get selected classes", e);
+            log.warn("获取已选课程失败", e);
             return null;
         }
     }
 
     /**
-     Used to get selected classes information.
-     @param evaluationResult
-     @return if response is success , return List<TeachingClass>
-     @throws Exception If an error occurs.
+     * 用于提交学生对课程的评价结果。
+     * @param evaluationResult 包含评价结果的Pair对象。
+     * @return 如果响应成功，返回true，否则返回false。
      */
     public static Boolean sendEvaluationResult(NettyHandler handler, Pair<UUID, Pair<List<Integer>, String>> evaluationResult) {
         Request request = new Request();
@@ -58,16 +59,16 @@ public class TeachingAffairsClient extends BaseClient {
 
             return response.getStatus().equals("success");
         } catch (Exception e) {
-            log.warn("Fail to submit evaluation", e);
+            log.warn("提交评价失败", e);
             return false;
         }
     }
 
 
     /**
-     This method is used to get selected classes information table.
-     @return List<Course>
-     @throws Exception If an error occurs.
+     * 用于获取学生可选课程的信息。
+     * @param handler Netty处理器。
+     * @return 可选课程的列表，如果获取失败则返回null。
      */
     public static List<Course> getSelectableCourses(NettyHandler handler) {
         Request request = new Request();
@@ -83,16 +84,15 @@ public class TeachingAffairsClient extends BaseClient {
                 throw new Exception(response.getMessage());
             }
         } catch (Exception e) {
-            log.warn("Fail to get selectable courses", e);
+            log.warn("获取可选课程失败", e);
             return null;
         }
     }
 
     /**
-     Used to choose class.
-     @param classUuid
-     @return if response is success , return success, else false.
-     @throws Exception If an error occurs.
+     * 用于学生选择课程。
+     * @param classUuid 课程的UUID。
+     * @return 如果响应成功，返回true，否则返回false。
      */
     public static Boolean chooseClass(NettyHandler handler, UUID classUuid) {
         Request request = new Request();
@@ -106,17 +106,15 @@ public class TeachingAffairsClient extends BaseClient {
 
             return response.getStatus().equals("success");
         } catch (Exception e) {
-            log.warn("Fail to choose class", e);
+            log.warn("选课失败", e);
             return false;
         }
     }
 
     /**
-     Used to drop class.
-     @param  classUuid
-     @return if response is success , return success, else false.
-
-     @throws Exception If an error occurs.
+     * 用于学生退选课程。
+     * @param  classUuid 课程的UUID。
+     * @return 如果响应成功，返回true，否则返回false。
      */
     public static Boolean dropClass(NettyHandler handler, UUID classUuid) {
         Request request = new Request();
@@ -130,17 +128,16 @@ public class TeachingAffairsClient extends BaseClient {
 
             return response.getStatus().equals("success");
         } catch (Exception e) {
-            log.warn("Fail to drop class", e);
+            log.warn("退课失败", e);
             return false;
         }
     }
 
 
     /**
-     * Used to get my teaching classes for teachers.
-     * @param handler
-     * @return List<TeachingClass>
-     * @throws Exception If an error occurs.
+     * 用于教师获取自己所教的课程。
+     * @param handler Netty处理器。
+     * @return 教师所教课程的列表，如果获取失败则返回null。
      */
     public static List<TeachingClass> getMyTeachingClasses(NettyHandler handler) {
         Request request = new Request();
@@ -156,17 +153,16 @@ public class TeachingAffairsClient extends BaseClient {
                 throw new Exception(response.getMessage());
             }
         } catch (Exception e) {
-            log.warn("Fail to get teaching classes", e);
+            log.warn("获取所教课程失败", e);
             return null;
         }
     }
 
     /**
-     * Used to drop class.
-     * @param handler
-     * @param classUuid
-     * @return String
-     * @throws Exception If an error occurs.
+     * 用于导出学生名单。
+     * @param handler Netty处理器。
+     * @param classUuid 课程的UUID。
+     * @return 学生名单的字符串表示，如果导出失败则返回null。
      */
     public static String exportStudentList(NettyHandler handler, UUID classUuid) {
         Request request = new Request();
@@ -184,17 +180,16 @@ public class TeachingAffairsClient extends BaseClient {
                 throw new Exception(response.getMessage());
             }
         } catch (Exception e) {
-            log.warn("Fail to export student list", e);
+            log.warn("导出学生名单失败", e);
             return null;
         }
     }
 
     /**
-     * Used to export grade template.
-     * @param handler
-     * @param classUuid
-     * @return String
-     * @throws Exception If an error occurs.
+     * 用于导出成绩模板。
+     * @param handler Netty处理器。
+     * @param classUuid 课程的UUID。
+     * @return 成绩模板的字符串表示，如果导出失败则返回null。
      */
     public static String exportGradeTemplate(NettyHandler handler, UUID classUuid) {
         Request request = new Request();
@@ -212,18 +207,17 @@ public class TeachingAffairsClient extends BaseClient {
                 throw new Exception(response.getMessage());
             }
         } catch (Exception e) {
-            log.warn("Fail to export grade template", e);
+            log.warn("导出成绩模板失败", e);
             return null;
         }
     }
 
     /**
-     * Used to export grade template.
-     * @param handler
-     * @param classUuid
-     * @param file The file name.
-     * @return true if success
-     * @throws Exception If an error occurs.
+     * 用于导入成绩。
+     * @param handler Netty处理器。
+     * @param classUuid 课程的UUID。
+     * @param file 文件内容。
+     * @return 如果导入成功则返回true，否则返回false。
      */
     public static Boolean importGrade(NettyHandler handler, UUID classUuid, String file) {
         Request request = new Request();
@@ -238,20 +232,20 @@ public class TeachingAffairsClient extends BaseClient {
 
             return response.getStatus().equals("success");
         } catch (Exception e) {
-            log.warn("Fail to import grade", e);
+            log.warn("导入成绩失败", e);
             return false;
         }
     }
     // ... existing code ...
 
     /**
-     * Used to add a new course by admin.
-     * @param handler Netty handler
-     * @param courseId Course ID
-     * @param courseName Course name
-     * @param school School name
-     * @param credit Credit
-     * @return true if success
+     * 用于管理员添加新课程。
+     * @param handler Netty处理器。
+     * @param courseId 课程ID。
+     * @param courseName 课程名称。
+     * @param school 学院名称。
+     * @param credit 学分。
+     * @return 如果添加成功则返回true，否则返回false。
      */
     public static Boolean addCourse(NettyHandler handler, String courseId, String courseName, String school, float credit) {
         Request request = new Request();
@@ -267,20 +261,20 @@ public class TeachingAffairsClient extends BaseClient {
             Response response = BaseClient.sendRequest(handler, request);
             return response.getStatus().equals("success");
         } catch (Exception e) {
-            log.warn("Fail to add course", e);
+            log.warn("添加课程失败", e);
             return false;
         }
     }
 
     /**
-     * Used to add a new teaching class by admin.
-     * @param handler Netty handler
-     * @param courseUuid Course UUID
-     * @param teacherId Teacher ID
-     * @param place Classroom
-     * @param capacity Maximum students
-     * @param schedule Course schedule
-     * @return true if success
+     * 用于管理员添加新教学班。
+     * @param handler Netty处理器。
+     * @param courseUuid 课程UUID。
+     * @param teacherId 教师ID。
+     * @param place 教室地点。
+     * @param capacity 最大学生容量。
+     * @param schedule 课程时间表。
+     * @return 如果添加成功则返回true，否则返回false。
      */
     public static Boolean addTeachingClass(NettyHandler handler, UUID courseUuid, int teacherId, String place, int capacity, List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule) {
         Request request = new Request();
@@ -297,7 +291,7 @@ public class TeachingAffairsClient extends BaseClient {
             Response response = BaseClient.sendRequest(handler, request);
             return response.getStatus().equals("success");
         } catch (Exception e) {
-            log.warn("Fail to add teaching class", e);
+            log.warn("添加教学班失败", e);
             return false;
         }
     }

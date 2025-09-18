@@ -16,19 +16,33 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 /**
- * NettyHandler class.
+ * Netty客户端处理器，负责处理入站和出站消息。
+ * 继承自SimpleChannelInboundHandler，用于处理特定类型的入站消息（此处为String）。
  */
 @Slf4j
 public class NettyHandler extends SimpleChannelInboundHandler<String> {
+    /**
+     * Gson实例，用于JSON序列化和反序列化。
+     */
     private final Gson gson = new Gson();
+    /**
+     * 存储请求ID与对应回调函数的映射，用于处理异步响应。
+     */
     private final Map<UUID, Consumer<Response>> callbacks = new HashMap<>();
+    /**
+     * 用于同步连接建立的计数器。
+     */
     private final CountDownLatch connectionLatch = new CountDownLatch(1);
+    /**
+     * ChannelHandlerContext实例，代表当前通道的上下文。
+     */
     private ChannelHandlerContext ctx;
 
     /**
-     * Called when a new connection is made.
+     * 当通道激活（连接建立）时调用。
+     * 记录连接信息，保存上下文，并释放连接等待锁。
      *
-     * @param ctx The channel handler context.
+     * @param ctx 通道处理器上下文。
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -38,9 +52,10 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     }
 
     /**
-     * Called when a connection is closed.
+     * 当通道不激活（连接关闭）时调用。
+     * 记录断开连接信息，并清除上下文。
      *
-     * @param ctx The channel handler context.
+     * @param ctx 通道处理器上下文。
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
@@ -48,43 +63,55 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         this.ctx = null;
     }
 
+    /**
+     * 读取服务器发送的入站消息。
+     * 将接收到的JSON字符串反序列化为Response对象，并调用对应的回调函数。
+     *
+     * @param ctx 通道处理器上下文。
+     * @param msg 从服务器接收到的消息字符串。
+     */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) {
         try {
             Response response = gson.fromJson(msg, Response.class);
             if (!callbacks.containsKey(response.getId())) {
-                throw new IllegalStateException("Callback not found");
+                throw new IllegalStateException("未找到回调函数");
             }
             callbacks.get(response.getId()).accept(response);
             callbacks.remove(response.getId());
         } catch (Exception e) {
-            log.error("[{}] Exception: {}", ctx.channel().id(), e.getMessage());
+            log.error("[{}] 异常: {}", ctx.channel().id(), e.getMessage());
         }
     }
 
     /**
-     * Send a request to the server.
+     * 向服务器发送请求。
+     * 等待连接建立，将请求序列化为JSON字符串并发送，同时注册回调函数以处理响应。
      *
-     * @param request The request.
-     * @param callback The callback.
+     * @param request 要发送的请求对象。
+     * @param callback 处理服务器响应的回调函数。
      */
     public void sendRequest(Request request, Consumer<Response> callback) {
         try {
             connectionLatch.await();
         } catch (InterruptedException e) {
-            log.error("Waiting for connection interrupted", e);
+            log.error("等待连接被中断", e);
             Thread.currentThread().interrupt();
             return;
         }
 
         if (ctx == null) {
-            throw new IllegalStateException("Channel not connected");
+            throw new IllegalStateException("通道未连接");
         }
 
         callbacks.put(request.getId(), callback);
         ctx.writeAndFlush(Unpooled.copiedBuffer(gson.toJson(request), CharsetUtil.UTF_8));
     }
 
+    /**
+     * 断开与服务器的连接。
+     * 如果通道已连接，则关闭通道。
+     */
     public void disconnect() {
         if (ctx != null) {
             ctx.close();

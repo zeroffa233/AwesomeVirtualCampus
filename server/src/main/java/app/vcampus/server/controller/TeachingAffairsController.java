@@ -17,8 +17,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * 教务控制器。
+ * 处理与学生、教师和管理员相关的教务操作。
+ */
 @Slf4j
 public class TeachingAffairsController {
+    /**
+     * 获取学生已选课程列表。
+     *
+     * @param request  请求对象，包含会话信息。
+     * @param database 数据库会话。
+     * @return 包含学生已选课程列表的响应。
+     */
     @RouteMapping(uri = "teaching/student/getMyClasses", role = "student")
     public Response getSelectedClasses(Request request, org.hibernate.Session database) {
         int cardNumber = request.getSession().getCardNum();
@@ -55,6 +66,13 @@ public class TeachingAffairsController {
         return Response.Common.ok(Map.of("classes", teachingClasses.stream().map(TeachingClass::toJson).toList()));
     }
 
+    /**
+     * 提交教学评估。
+     *
+     * @param request  请求对象，包含评估信息。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
     @RouteMapping(uri = "teaching/student/submitEvaluation", role = "student")
     public Response submitEvaluation(Request request, org.hibernate.Session database) {
         int cardNumber = request.getSession().getCardNum();
@@ -79,6 +97,13 @@ public class TeachingAffairsController {
         }
     }
 
+    /**
+     * 获取所有可选课程列表。
+     *
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含可选课程列表的响应。
+     */
     @RouteMapping(uri = "teaching/student/getSelectableCourses", role = "student")
     public Response getSelectableCourses(Request request, org.hibernate.Session database) {
         List<Course> courses = Database.loadAllData(Course.class, database);
@@ -101,6 +126,13 @@ public class TeachingAffairsController {
         return Response.Common.ok(Map.of("courses", courses.stream().map(Course::toJson).toList()));
     }
 
+    /**
+     * 评价课程。
+     *
+     * @param request  请求对象，包含评价信息。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
     @RouteMapping(uri = "teaching/student/evaluate", role = "student")
     public Response evaluateClass(Request request, org.hibernate.Session database) {
         int cardNumber = request.getSession().getCardNum();
@@ -119,6 +151,13 @@ public class TeachingAffairsController {
         }
     }
 
+    /**
+     * 学生选课。
+     *
+     * @param request  请求对象，包含课程UUID。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
     @RouteMapping(uri = "teaching/student/chooseClass", role = "student")
     public Response selectClass(Request request, org.hibernate.Session database) {
         int cardNumber = request.getSession().getCardNum();
@@ -141,6 +180,13 @@ public class TeachingAffairsController {
         }
     }
 
+    /**
+     * 学生退课。
+     *
+     * @param request  请求对象，包含课程UUID。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
     @RouteMapping(uri = "teaching/student/dropClass", role = "student")
     public Response dropClass(Request request, org.hibernate.Session database) {
         int cardNumber = request.getSession().getCardNum();
@@ -169,6 +215,13 @@ public class TeachingAffairsController {
         }
     }
 
+    /**
+     * 教师获取其教授的课程列表。
+     *
+     * @param request  请求对象，包含会话信息。
+     * @param database 数据库会话。
+     * @return 包含教师课程列表的响应。
+     */
     @RouteMapping(uri = "teaching/teacher/getMyClasses", role = "teacher")
     public Response getMyClasses(Request request, org.hibernate.Session database) {
         int cardNumber = request.getSession().getCardNum();
@@ -201,6 +254,13 @@ public class TeachingAffairsController {
         return Response.Common.ok(Map.of("classes", teachingClasses.stream().map(TeachingClass::toJson).toList()));
     }
 
+    /**
+     * 导出学生名单为 Excel 文件。
+     *
+     * @param request  请求对象，包含课程UUID。
+     * @param database 数据库会话。
+     * @return 包含Base64编码的Excel文件的响应。
+     */
     @RouteMapping(uri = "teaching/teacher/exportStudentList", role = "teacher")
     public Response exportStudentList(Request request, org.hibernate.Session database) {
         try {
@@ -223,6 +283,13 @@ public class TeachingAffairsController {
         }
     }
 
+    /**
+     * 导出成绩模板为 Excel 文件。
+     *
+     * @param request  请求对象，包含课程UUID。
+     * @param database 数据库会话。
+     * @return 包含Base64编码的Excel文件的响应。
+     */
     @RouteMapping(uri = "teaching/teacher/exportGradeTemplate", role = "teacher")
     public Response getGradeTemplate(Request request, org.hibernate.Session database) {
         try {
@@ -254,6 +321,13 @@ public class TeachingAffairsController {
         }
     }
 
+    /**
+     * 从 Excel 文件导入学生成绩。
+     *
+     * @param request  请求对象，包含课程UUID和Base64编码的Excel文件。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
     @RouteMapping(uri = "teaching/teacher/importGrade", role = "teacher")
     public Response importGrade(Request request, org.hibernate.Session database) {
         try {
@@ -297,14 +371,19 @@ public class TeachingAffairsController {
             return Response.Common.error("Failed to import");
         }
     }
-    // ... existing code ...
 
+    /**
+     * 管理员添加新课程。
+     *
+     * @param request  请求对象，包含课程信息。
+     * @param database 数据库会话。
+     * @return 包含新课程信息的响应。
+     */
     @RouteMapping(uri = "teaching/admin/addCourse", role = "admin")
     public Response addCourse(Request request, org.hibernate.Session database) {
         try {
             Transaction tx = database.beginTransaction();
 
-            // 创建新课程对象
             Course course = new Course();
             course.setUuid(UUID.randomUUID());
             course.setCourseId(request.getParams().get("courseId"));
@@ -312,7 +391,6 @@ public class TeachingAffairsController {
             course.setSchool(request.getParams().get("school"));
             course.setCredit(Float.parseFloat(request.getParams().get("credit")));
 
-            // 保存课程
             database.persist(course);
             tx.commit();
 
@@ -323,14 +401,18 @@ public class TeachingAffairsController {
         }
     }
 
-// ... existing code ...
-
+    /**
+     * 管理员添加新教学班。
+     *
+     * @param request  请求对象，包含教学班信息。
+     * @param database 数据库会话。
+     * @return 包含新教学班信息的响应。
+     */
     @RouteMapping(uri = "teaching/admin/addTeachingClass", role = "admin")
     public Response addTeachingClass(Request request, org.hibernate.Session database) {
         try {
             Transaction tx = database.beginTransaction();
 
-            // 创建新教学班对象
             TeachingClass teachingClass = new TeachingClass();
             teachingClass.setUuid(UUID.randomUUID());
             teachingClass.setCourseUuid(UUID.fromString(request.getParams().get("courseUuid")));
@@ -338,13 +420,11 @@ public class TeachingAffairsController {
             teachingClass.setPlace(request.getParams().get("place"));
             teachingClass.setCapacity(Integer.parseInt(request.getParams().get("capacity")));
 
-            // 解析课程表
             Type scheduleType = new TypeToken<List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>>>() {}.getType();
             List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule =
                 new Gson().fromJson(request.getParams().get("schedule"), scheduleType);
             teachingClass.setSchedule(schedule);
 
-            // 保存教学班
             database.persist(teachingClass);
             tx.commit();
 

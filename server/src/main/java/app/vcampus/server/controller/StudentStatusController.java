@@ -14,15 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 学籍信息控制器。
+ * 处理学生学籍信息的获取、更新和搜索。
+ */
 @Slf4j
 public class StudentStatusController {
     /**
-     *    Solve client to update student status information and update to the database
-     *     The constraint is cardNumber  != null and when no such student throw exception
-     *     Test passed on 2023/08/27
-     * @param request  from client with role and uri
-     * @param database database
-     * @return  it returns an “OK” response with a map containing a JSON string representing the student information
+     * 更新学生学籍信息。
+     *
+     * @param request  包含学生信息的请求。
+     * @param database 数据库会话。
+     * @return 包含更新后学生信息的响应。
      */
     @RouteMapping(uri = "student/updateInfo", role = "affairs_staff")
     public Response updateInfo(Request request, org.hibernate.Session database) {
@@ -40,12 +43,11 @@ public class StudentStatusController {
     }
 
     /**
-     * Solve client to get now student status information
-     *     The constraint are cardNumber  != null and when no such student throw exception
-     *     Test passed on 2023/08/27
-     * @param request  from client with role and uri
-     * @param database database
-     * @return  it returns an “OK” response with a map containing a JSON string representing the student information
+     * 获取当前登录学生自己的学籍信息。
+     *
+     * @param request  请求对象，包含会话信息。
+     * @param database 数据库会话。
+     * @return 包含学生信息的响应。
      */
     @RouteMapping(uri = "student/getSelf", role = "student")
     public Response getSelf(Request request, org.hibernate.Session database) {
@@ -70,11 +72,11 @@ public class StudentStatusController {
 
 
     /**
-     *    Solve client to search student status information and update to the database
-     *     The constraint is that students obtained by keyword search are not empty
-     * @param request  from client with role and uri
-     * @param database database
-     * @return  it returns an “OK” response with a map list containing a JSON string representing the student information
+     * 根据关键词筛选学生信息。
+     *
+     * @param request  包含搜索关键词的请求。
+     * @param database 数据库会话。
+     * @return 包含匹配学生列表的响应。
      */
     @RouteMapping(uri = "student/filter", role = "affairs_staff")
     public Response filter(Request request, org.hibernate.Session database) {
@@ -96,10 +98,11 @@ public class StudentStatusController {
     }
 
     /**
-     * 支持完整姓名搜索的学生查询方法
-     * @param keyword 搜索关键词
-     * @param database 数据库会话
-     * @return 匹配的学生列表
+     * 使用支持完整姓名搜索的自定义查询方法来查找学生。
+     *
+     * @param keyword  搜索关键词。
+     * @param database 数据库会话。
+     * @return 匹配的学生列表。
      */
     private List<Student> searchStudentWithFullName(String keyword, org.hibernate.Session database) {
         jakarta.persistence.criteria.CriteriaBuilder builder = database.getCriteriaBuilder();
@@ -133,4 +136,3 @@ public class StudentStatusController {
         return database.createQuery(criteria).getResultList();
     }
 }
-

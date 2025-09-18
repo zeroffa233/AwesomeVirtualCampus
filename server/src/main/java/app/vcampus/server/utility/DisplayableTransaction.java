@@ -17,23 +17,43 @@ import java.util.Locale;
  * 它直接从服务器的原始数据构造，并在内部处理所有解析逻辑。
  */
 public class DisplayableTransaction {
+    /**
+     * 交易时间戳。
+     */
     private final long time;
-    private final String rawType; // 从服务器接收的原始类型, e.g., "deposit" or "payment"
+    /**
+     * 从服务器接收的原始类型, e.g., "deposit" or "payment"。
+     */
+    private final String rawType;
+    /**
+     * 交易描述，可能包含商品列表的JSON。
+     */
     private final String description;
+    /**
+     * 交易金额。
+     */
     private final double amount;
-    private final List<StoreItem> items; // 解析后的商品列表，仅用于商店消费或售出
+    /**
+     * 解析后的商品列表，仅用于商店消费。
+     */
+    private final List<StoreItem> items;
 
-    // 使用静态实例以提高性能
+    /**
+     * Gson 实例，用于 JSON 解析，设为静态以提高性能。
+     */
     private static final Gson gson = new Gson();
+    /**
+     * 日期格式化实例，设为静态以提高性能。
+     */
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
     /**
      * 唯一的、统一的构造函数。
      *
-     * @param time        交易时间戳 (long)
-     * @param rawType     从服务器接收的原始交易类型 ("deposit", "payment")
-     * @param description 交易描述 (可能包含商品列表的JSON)
-     * @param amount      交易金额
+     * @param time        交易时间戳 (long)。
+     * @param rawType     从服务器接收的原始交易类型 ("deposit", "payment")。
+     * @param description 交易描述 (可能包含商品列表的JSON)。
+     * @param amount      交易金额。
      */
     public DisplayableTransaction(long time, String rawType, String description, double amount) {
         this.time = time;
@@ -113,12 +133,18 @@ public class DisplayableTransaction {
         return dateFormat.format(new Date(time));
     }
 
-    // --- 其他简单的 Getters ---
-
+    /**
+     * 获取交易金额。
+     * @return 交易金额。
+     */
     public double getAmount() {
         return amount;
     }
 
+    /**
+     * 获取与此交易关联的商品列表。
+     * @return 商品列表；如果不是商店交易，则为空列表。
+     */
     public List<StoreItem> getItems() {
         return items;
     }

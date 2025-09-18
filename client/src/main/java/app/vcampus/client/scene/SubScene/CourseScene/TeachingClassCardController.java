@@ -12,6 +12,10 @@ import javafx.scene.control.ToggleButton;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 教学班卡片控制器。
+ * 负责展示单个教学班的详细信息，并处理选课/退课的交互逻辑。
+ */
 public class TeachingClassCardController {
 
     @FXML private Label teacherLabel;
@@ -26,6 +30,12 @@ public class TeachingClassCardController {
     private TeachingAffairsViewModel vm;
     private boolean listenersAttached = false;
 
+    /**
+     * 绑定教学班数据和视图模型到卡片。
+     *
+     * @param tc 教学班对象。
+     * @param vm 教务视图模型。
+     */
     public void bind(TeachingClass tc, TeachingAffairsViewModel vm) {
         this.teachingClass = tc;
         this.vm = vm;
@@ -36,7 +46,6 @@ public class TeachingClassCardController {
         capacityLabel.setText(String.valueOf(tc.getCapacity()));
         selectedCountLabel.setText(String.valueOf(tc.getSelectedCount()));
 
-        // attach listeners once per card to react to VM changes
         if (!listenersAttached && vm != null && vm.myClasses != null) {
             try {
                 vm.myClasses.selected.addListener((ListChangeListener<TeachingClass>) change -> {
@@ -47,21 +56,18 @@ public class TeachingClassCardController {
                 });
                 listenersAttached = true;
             } catch (Exception ignored) {
-                // 如果 vm.myClasses.selected 不是 ObservableList，会抛异常（但你已定义为 ObservableList）
             }
         }
 
         refreshState();
     }
 
-    /** 刷新状态 + 按钮行为 */
     private void refreshState() {
         if (teachingClass == null || vm == null || vm.myClasses == null) return;
 
         boolean isChosen = vm.myClasses.selected.stream()
                 .anyMatch(it -> it.getUuid() != null && it.getUuid().equals(teachingClass.getUuid()));
 
-        // 【新增】同一门课程是否已经有别的班级被选中
         boolean sameCourseAlreadyChosen = vm.myClasses.selected.stream()
                 .anyMatch(it -> it.getCourseUuid() != null
                         && it.getCourseUuid().equals(teachingClass.getCourseUuid())
@@ -69,11 +75,9 @@ public class TeachingClassCardController {
 
         boolean isConflict = checkConflict(teachingClass) || sameCourseAlreadyChosen;
 
-        // 更新 selectedCount
         int visibleSelectedCount = findSelectedCountFromVM(teachingClass.getUuid());
         selectedCountLabel.setText(String.valueOf(visibleSelectedCount));
 
-        // 状态显示
         if (sameCourseAlreadyChosen && !isChosen) {
             statusLabel.setText("已选该课程的其他班级");
             statusLabel.getStyleClass().setAll("tc-status", "conflict-badge");
@@ -88,7 +92,6 @@ public class TeachingClassCardController {
             statusLabel.getStyleClass().setAll("tc-status");
         }
 
-        // 按钮逻辑
         actionBtn.setOnAction(null);
         if (isChosen) {
             actionBtn.setText("退选");
@@ -124,7 +127,6 @@ public class TeachingClassCardController {
 
     }
 
-    /** 从 vm.myClasses.allCourses 中查找最新的 selectedCount；没有找到时回退到 teachingClass.getSelectedCount() */
     private int findSelectedCountFromVM(UUID uuid) {
         if (vm == null || vm.myClasses == null) return teachingClass.getSelectedCount();
         for (Course c : vm.myClasses.allCourses) {
@@ -135,18 +137,15 @@ public class TeachingClassCardController {
                 }
             }
         }
-        // 回退
         return teachingClass.getSelectedCount();
     }
 
-    /** 检查是否冲突（改进过的重叠判断 + 跳过自身） */
     @SuppressWarnings({"rawtypes", "unchecked"})
     private boolean checkConflict(TeachingClass tc) {
         if (tc == null || tc.getSchedule() == null) return false;
 
         for (TeachingClass chosen : vm.myClasses.selected) {
             if (chosen == null || chosen.getSchedule() == null) continue;
-            // 跳过同一教学班（避免自己与自己比较）
             if (chosen.getUuid() != null && chosen.getUuid().equals(tc.getUuid())) continue;
 
             List scheduleThis = tc.getSchedule();
@@ -178,7 +177,6 @@ public class TeachingClassCardController {
                     int itStart = ((Number) itTimePair.getFirst()).intValue();
                     int itEnd = ((Number) itTimePair.getSecond()).intValue();
 
-                    // 修正：使用 aStart < bEnd && bStart < aEnd 判定重叠（避免端点误判）
                     if (thisDay == itDay && thisStart < itEnd && itStart < thisEnd) {
                         return true;
                     }

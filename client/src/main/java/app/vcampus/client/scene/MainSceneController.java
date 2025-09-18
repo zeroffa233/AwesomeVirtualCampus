@@ -10,7 +10,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
-// import javafx.stage.Stage; // Stage 相关的导入已移除
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -19,26 +18,61 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
+/**
+ * 主场景控制器。
+ * 负责管理应用的主界面，包括侧边栏、内容窗格以及子场景之间的切换和动画效果。
+ */
 public class MainSceneController implements Initializable {
 
-    // FXML Injections
     @FXML
     private StackPane contentPane;
+    /**
+     * 侧边栏。
+     */
     @FXML
     private VBox sideBar;
+    /**
+     * 侧边栏控制器。
+     */
     @FXML
     private SideBarController sideBarController;
+    /**
+     * 覆盖面板。
+     */
     @FXML
     private Pane overlayPane;
+    /**
+     * 视图标题。
+     */
     @FXML
     private Label viewTitle;
+    /**
+     * 背景动画面板。
+     */
     @FXML
     private Pane backgroundAnimationPane;
+    /**
+     * 菜单按钮。
+     */
     @FXML
     private JFXButton menuButton;
+    /**
+     * 二级菜单容器。
+     */
     @FXML
     private HBox secondaryMenuContainer;
 
+    /**
+     * 共享的教学事务视图模型。
+     */
+    private final app.vcampus.client.viewmodel.TeachingAffairsViewModel sharedVm = new app.vcampus.client.viewmodel.TeachingAffairsViewModel();
+
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     *
+     * @param location  URL定位资源。
+     * @param resources 资源包。
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         sideBar.setMaxWidth(Region.USE_PREF_SIZE);
@@ -60,7 +94,6 @@ public class MainSceneController implements Initializable {
                 }
             }
 
-            // Use loadSubScene to ensure controller is initialized for the welcome message
             loadSubScene(fxmlPath);
             updateTitle("主页");
         });
@@ -68,53 +101,29 @@ public class MainSceneController implements Initializable {
             sideBarController.setMainSceneController(this);
         }
 
-        // Programmatically set the ripple color to ensure it overrides any default styles.
         menuButton.setRipplerFill(Paint.valueOf("#607830DE"));
-
     }
 
-//    // public void setStage(Stage stage) { ... } // 此方法已根据您的要求被完全移除
-//
-//    public void loadSubScene(String fxmlPath) {
-//        try {
-//            Node view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxmlPath)));
-//            FadeTransition fadeOut = new FadeTransition(Duration.millis(150), contentPane);
-//            fadeOut.setFromValue(1.0);
-//            fadeOut.setToValue(0.0);
-//            fadeOut.setOnFinished(event -> {
-//                contentPane.getChildren().setAll(view);
-//                FadeTransition fadeIn = new FadeTransition(Duration.millis(150), contentPane);
-//                fadeIn.setFromValue(0.0);
-//                fadeIn.setToValue(1.0);
-//                fadeIn.play();
-//            });
-//            fadeOut.play();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-    private final app.vcampus.client.viewmodel.TeachingAffairsViewModel sharedVm = new app.vcampus.client.viewmodel.TeachingAffairsViewModel();
-
+    /**
+     * 加载子场景到主内容窗格。
+     *
+     * @param fxmlPath 要加载的 FXML 文件路径。
+     */
     public void loadSubScene(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(fxmlPath)));
             Node view = loader.load();
-            // 在这里拿到 controller 并尝试注入 sharedVm（如果 controller 支持）
             Object controller = loader.getController();
             if (controller != null) {
-                // 注入常见需要 ViewModel 的控制器
                 if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) {
                     ((app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) controller).setViewModel(sharedVm);
                 } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) {
                     ((app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) controller).setViewModel(sharedVm);
-                }
-                else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) {
+                } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) {
                     ((app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) controller).setViewModel(sharedVm);
-                }
-                else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.AddCourseController) {
+                } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.AddCourseController) {
                     ((app.vcampus.client.scene.SubScene.CourseScene.AddCourseController) controller).setViewModel(sharedVm);
-                }
-                else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.AddTeachingClassController) {
+                } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.AddTeachingClassController) {
                     ((app.vcampus.client.scene.SubScene.CourseScene.AddTeachingClassController) controller).setViewModel(sharedVm);
                 }
             }
@@ -135,6 +144,13 @@ public class MainSceneController implements Initializable {
         }
     }
 
+    /**
+     * 切换主视图内容。
+     *
+     * @param fxmlPath           要加载的 FXML 文件路径。
+     * @param title              视图标题。
+     * @param secondaryMenuItems 二级菜单项列表。
+     */
     public void switchView(String fxmlPath, String title, List<Node> secondaryMenuItems) {
         updateTitle(title);
 
@@ -156,28 +172,9 @@ public class MainSceneController implements Initializable {
         }
     }
 
-
-    @FXML
-    private void handleMenuButtonClick() {
-        // Delay the animation slightly to allow the UI to render the :pressed state
-        PauseTransition pause = new PauseTransition(Duration.millis(50));
-        pause.setOnFinished(event -> toggleNavRail());
-        pause.play();
-    }
-
-    @FXML
-    private void handleOverlayClick() {
-        if (isNavRailVisible) {
-            toggleNavRail();
-        }
-    }
-
-    // region --- NavRail (Sidebar) Animation ---
-    private boolean isNavRailVisible = false;
-    private static final Duration ANIMATION_SPEED = Duration.millis(350);
-    private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.4, 0.1, 0.2, 1.0);
-    private ParallelTransition parallelTransition;
-
+    /**
+     * 切换导航栏（侧边栏）的显示和隐藏。
+     */
     public void toggleNavRail() {
         if (parallelTransition != null) {
             parallelTransition.stop();
@@ -211,9 +208,12 @@ public class MainSceneController implements Initializable {
         parallelTransition.play();
         isNavRailVisible = show;
     }
-    // endregion
 
-    // region --- TopBar Animation Logic ---
+    /**
+     * 更新视图标题。
+     *
+     * @param newTitle 新的标题文本。
+     */
     public void updateTitle(String newTitle) {
         if (viewTitle.getText() != null && viewTitle.getText().equals(newTitle)) return;
 
@@ -233,6 +233,46 @@ public class MainSceneController implements Initializable {
         fadeOut.play();
     }
 
+    /**
+     * 导航栏是否可见。
+     */
+    private boolean isNavRailVisible = false;
+    /**
+     * 动画速度。
+     */
+    private static final Duration ANIMATION_SPEED = Duration.millis(350);
+    /**
+     * 自定义缓动插值器。
+     */
+    private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.4, 0.1, 0.2, 1.0);
+    /**
+     * 并行过渡动画。
+     */
+    private ParallelTransition parallelTransition;
+
+    /**
+     * 处理菜单按钮点击事件。
+     */
+    @FXML
+    private void handleMenuButtonClick() {
+        PauseTransition pause = new PauseTransition(Duration.millis(50));
+        pause.setOnFinished(event -> toggleNavRail());
+        pause.play();
+    }
+
+    /**
+     * 处理覆盖面板点击事件。
+     */
+    @FXML
+    private void handleOverlayClick() {
+        if (isNavRailVisible) {
+            toggleNavRail();
+        }
+    }
+
+    /**
+     * 隐藏二级菜单。
+     */
     private void hideSecondaryMenu() {
         FadeTransition fade = new FadeTransition(ANIMATION_SPEED, secondaryMenuContainer);
         fade.setFromValue(1.0);
@@ -245,6 +285,9 @@ public class MainSceneController implements Initializable {
         fade.play();
     }
 
+    /**
+     * 显示二级菜单。
+     */
     private void showSecondaryMenu() {
         if (secondaryMenuContainer.getChildren().isEmpty()) return;
 
@@ -257,5 +300,4 @@ public class MainSceneController implements Initializable {
         fade.setInterpolator(CUSTOM_EASING);
         fade.play();
     }
-    // endregion
 }

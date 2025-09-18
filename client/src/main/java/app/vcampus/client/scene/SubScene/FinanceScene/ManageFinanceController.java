@@ -11,6 +11,10 @@ import javafx.scene.layout.VBox;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * 财务管理场景控制器。
+ * 负责将财务管理界面的UI组件与 `ManageFinanceViewModel` 进行数据绑定和事件处理。
+ */
 public class ManageFinanceController implements Initializable {
 
     @FXML
@@ -18,7 +22,7 @@ public class ManageFinanceController implements Initializable {
     @FXML
     private JFXButton searchButton;
     @FXML
-    private Label statusLabel; // Added for status messages
+    private Label statusLabel;
     @FXML
     private VBox resultPane;
     @FXML
@@ -29,30 +33,29 @@ public class ManageFinanceController implements Initializable {
     private JFXTextField rechargeTextField;
     @FXML
     private JFXButton rechargeButton;
-    // The reportLossButton field has been removed
 
     private final ManageFinanceViewModel viewModel = new ManageFinanceViewModel();
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     *
+     * @param location  URL定位资源。
+     * @param resources 资源包。
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Bind inputs
         searchTextField.textProperty().bindBidirectional(viewModel.searchCardNumber);
         rechargeTextField.textProperty().bindBidirectional(viewModel.rechargeAmount);
 
-        // Bind visibility and display texts
         resultPane.visibleProperty().bind(viewModel.searchResultVisible);
         resultPane.managedProperty().bind(viewModel.searchResultVisible);
         cardInfoLabel.textProperty().bind(viewModel.cardInfoText);
 
-        // Bind status message label
         statusLabel.textProperty().bind(viewModel.statusMessage);
         statusLabel.styleProperty().bind(viewModel.statusMessageStyle);
 
-        // Bind freeze/unfreeze toggle button
         freezeButton.textProperty().bind(viewModel.freezeButtonText);
 
-
-        // Set button actions
         searchButton.setOnAction(event -> viewModel.search());
         rechargeButton.setOnAction(event -> viewModel.recharge());
         freezeButton.setOnAction(event -> viewModel.toggleFreezeState());

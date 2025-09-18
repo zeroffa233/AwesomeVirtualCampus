@@ -14,15 +14,18 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 商店控制器。
+ * 处理与商店相关的操作，如购买、查询、添加和更新商品等。
+ */
 @Slf4j
-
 public class StoreController {
     /**
-     * for shop_user to buy store item
-     * The constraints are buy's cardNumber != null, the item != null, the stock is enough,the balance is enough
-     * @param request  from client with role and uri
-     * @param database database
-     * @return the response with ok or error
+     * 用户购买商品。
+     *
+     * @param request  包含购买商品列表的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
      */
     @RouteMapping(uri = "store/buy")
     public Response buy(Request request, org.hibernate.Session database) {
@@ -87,10 +90,11 @@ public class StoreController {
     }
 
     /**
-     * get all store transaction now
-     * @param request  from client with role and uri
-     * @param database database
-     * @return return list<StoreTransaction>
+     * 获取所有商店交易记录。
+     *
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含所有交易记录列表的响应。
      */
     @RouteMapping(uri = "store/user/getAllTransactions")
     public Response getAllTransactions(Request request, org.hibernate.Session database) {
@@ -104,10 +108,11 @@ public class StoreController {
     }
 
     /**
-     * for shop_staff to get todaySales
-     * @param request  from client with role and uri
-     * @param database database
-     * @returnit returns an “OK” response with a map containing a JSON string representing the salesVolume information
+     * 获取当日销售额。
+     *
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含当日销售额的响应。
      */
     @RouteMapping(uri = "store/staff/getTodaySales")
     public Response getTodaySales(Request request, org.hibernate.Session database) {
@@ -127,11 +132,11 @@ public class StoreController {
     }
 
     /**
-     * for shop_staff to search store Item
-     * The constraints is the keyword != null
-     * @param request  from client with role and uri
-     * @param database database
-     * @return response with the searched Items
+     * 根据关键词搜索商品。
+     *
+     * @param request  包含搜索关键词的请求。
+     * @param database 数据库会话。
+     * @return 包含匹配商品列表的响应。
      */
     @RouteMapping(uri = "storeItem/searchItem")
     public Response searchItem(Request request, org.hibernate.Session database) {
@@ -141,10 +146,6 @@ public class StoreController {
                 return Response.Common.error("Keyword cannot be empty");
             List<StoreItem> items = Database.likeQuery(StoreItem.class,
                     new String[]{"uuid", "itemName", "price", "pictureLink", "barcode", "description"}, keyword, database);
-//            return Response.Common.ok(items.stream().collect(Collectors.groupingBy(w -> w.itemName)).entrySet().stream().collect(Collectors.toMap(
-//                    Map.Entry::getKey,
-//                    e -> e.getValue().stream().map(StoreItem::toJson).collect(Collectors.toList())
-//            )));
             return Response.Common.ok(Map.of("items", items.stream().map(StoreItem::toJson).collect(Collectors.toList())));
         } catch (Exception e) {
             return Response.Common.error("Failed to search item");
@@ -152,11 +153,11 @@ public class StoreController {
     }
 
     /**
-     * for shop_staff to search store Item by itemID
-     * The constraints is the uuid != null and storeItem != null
-     * @param request  from client with role and uri
-     * @param database database
-     * @return response with the searched Items
+     * 根据商品ID搜索商品。
+     *
+     * @param request  包含商品UUID的请求。
+     * @param database 数据库会话。
+     * @return 包含商品信息的响应。
      */
     @RouteMapping(uri = "storeItem/searchId")
     public Response searchId(Request request, org.hibernate.Session database) {
@@ -176,10 +177,11 @@ public class StoreController {
     }
 
     /**
-     * for shop_user to get all store items
-     * @param request  from client with role and uri
-     * @param database database
-     * @return response with the all items
+     * 获取所有商品列表。
+     *
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含所有商品列表的响应。
      */
     @RouteMapping(uri = "store/filter")
     public Response filter(Request request, org.hibernate.Session database) {
@@ -194,42 +196,31 @@ public class StoreController {
     }
 
     /**
-     * for shop_staff to add store item
-     * The constraints is the newStoreItem != null
-     * @param request  from client with role and uri
-     * @param database database
-     * @return  response with ok or error
+     * 添加新商品。
+     *
+     * @param request  包含新商品信息的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
      */
     @RouteMapping(uri = "storeItem/addItem")
     public Response addItem(Request request, org.hibernate.Session database) {
-        // 1. 从请求中获取 item 的 JSON 字符串
         String storeItemJson = request.getParams().get("item");
         if (storeItemJson == null) {
             return Response.Common.badRequest();
         }
 
-        // 2. 将 JSON 字符串解析成 StoreItem 对象
         StoreItem newStoreItem = IEntity.fromJson(storeItemJson, StoreItem.class);
 
-        // 3. 【核心修正 1】增加对解析结果的非空检查，防止 NullPointerException
         if (newStoreItem == null) {
             return Response.Common.badRequest();
         }
 
-        // 4. 【核心修正 2】移除对 barcode 的强制非空检查
-        // if (Objects.equals(newStoreItem.barcode, "")) {
-        //     return Response.Common.badRequest();
-        // }
-
-        // 5. 执行你原有的其他验证逻辑
         if (Objects.equals(newStoreItem.itemName, "")) {
             return Response.Common.badRequest();
         }
         if (newStoreItem.price <= 0) {
             return Response.Common.badRequest();
         }
-        // 注意：客户端传过来的 stock 是 1，所以 stock <= 0 没问题。
-        // 如果允许库存为0，则应改为 stock < 0
         if (newStoreItem.stock <= 0) {
             return Response.Common.badRequest();
         }
@@ -237,23 +228,23 @@ public class StoreController {
             return Response.Common.badRequest();
         }
 
-        // 6. 执行数据库操作 (与你提供的代码完全一致)
         Transaction tx = database.beginTransaction();
         database.persist(newStoreItem);
         tx.commit();
 
         return Response.Common.ok();
     }
+
     /**
-     * for shop_staff to get transaction records
-     * @param request  from client with role and uri
-     * @param database datebase
-     * @return   it returns an “OK” response with a map containing a list of JSON strings representing the transaction records grouped by date
+     * 获取当前用户的交易记录。
+     *
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 按日期分组的交易记录列表的响应。
      */
     @RouteMapping(uri = "storeTransaction/getRecords")
     public Response getRecords(Request request, org.hibernate.Session database) {
         try {
-//            List<StoreTransaction> allRecords = Database.loadAllData(StoreTransaction.class, database);
             List<StoreTransaction> allRecords = Database.getWhereString(StoreTransaction.class, "cardNumber", Integer.toString(request.getSession().getCardNum()), database);
             allRecords = allRecords.stream().peek(w -> {
                 StoreItem storeItem = database.get(StoreItem.class, w.getItemUUID());
@@ -268,11 +259,13 @@ public class StoreController {
             return Response.Common.error("Failed to get transaction records");
         }
     }
+
     /**
-     * for shop_staff to search store transaction
-     * @param request  from client with role and uri
-     * @param database database
-     * @return  it returns an “OK” response with a map containing a JSON string representing storeTransaction
+     * 根据关键词搜索交易记录。
+     *
+     * @param request  包含搜索关键词的请求。
+     * @param database 数据库会话。
+     * @return 按UUID分组的交易记录列表的响应。
      */
     @RouteMapping(uri = "storeTransaction/searchTransaction")
     public Response searchTransaction(Request request, org.hibernate.Session database) {
@@ -292,10 +285,11 @@ public class StoreController {
     }
 
     /**
-     * for shop_staff to update store item
-     * @param request  from client with role and uri
-     * @param database database
-     * @return response with ok or error
+     * 更新商品信息。
+     *
+     * @param request  包含更新后商品信息的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
      */
     @RouteMapping(uri = "storeItem/updateItem")
     public Response updateItem(Request request, org.hibernate.Session database) {
@@ -308,4 +302,3 @@ public class StoreController {
         return Response.Common.ok();
     }
 }
-

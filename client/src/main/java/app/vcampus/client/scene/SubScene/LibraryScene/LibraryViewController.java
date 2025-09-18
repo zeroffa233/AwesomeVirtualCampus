@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 图书馆视图控制器。
+ * 负责处理图书馆主界面的逻辑，包括图书搜索、结果展示和详细信息显示。
+ */
 public class LibraryViewController {
 
     @FXML
@@ -69,9 +73,11 @@ public class LibraryViewController {
     @FXML
     private TableColumn<LibraryBook, String> pressColumn;
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     @FXML
     public void initialize() {
-        // Initialize TableView columns
         bookNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         pressColumn.setCellValueFactory(new PropertyValueFactory<>("press"));
         callNumberColumn.setCellValueFactory(new PropertyValueFactory<>("callNumber"));
@@ -80,7 +86,6 @@ public class LibraryViewController {
 
         searchButton.setOnAction(event -> searchBooks());
 
-        // Initially load all books
         loadAllBooks();
     }
 
@@ -172,10 +177,8 @@ public class LibraryViewController {
         String keyword = searchTextField.getText();
 
         if (keyword == null || keyword.trim().isEmpty()) {
-            // Path for "Get All Books"
             loadAllBooks();
         } else {
-            // Path for "Search by Keyword"
             new Thread(() -> {
                 Map<String, List<LibraryBook>> booksMap = LibraryClient.searchBook(FakeRepository.handler, keyword);
                 List<LibraryBook> allCopies = (booksMap == null) ? Collections.emptyList() :

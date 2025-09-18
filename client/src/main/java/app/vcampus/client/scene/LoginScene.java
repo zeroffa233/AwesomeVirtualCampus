@@ -24,28 +24,58 @@ import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+/**
+ * 登录场景控制器。
+ * 负责处理登录界面的UI逻辑、数据绑定和用户交互。
+ */
 public class LoginScene implements Initializable {
 
     @FXML
     private JFXTextField usernameField;
+    /**
+     * 密码输入框。
+     */
     @FXML
     private JFXPasswordField passwordField;
+    /**
+     * 服务器地址输入框。
+     */
     @FXML
     private JFXTextField serverAddressField;
+    /**
+     * 错误信息标签。
+     */
     @FXML
     private Label errorLabel;
+    /**
+     * 登录按钮。
+     */
     @FXML
     private JFXButton loginButton;
+    /**
+     * 服务器地址设置按钮。
+     */
     @FXML
     private JFXButton serverAddressButton;
+    /**
+     * 动画面板。
+     */
     @FXML
     private Pane animationPane;
 
+    /**
+     * 登录视图模型。
+     */
     private final LoginViewModel viewModel = new LoginViewModel();
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     *
+     * @param location  URL定位资源。
+     * @param resources 资源包。
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Bindings
         usernameField.textProperty().bindBidirectional(viewModel.username);
         passwordField.textProperty().bindBidirectional(viewModel.password);
         serverAddressField.textProperty().bindBidirectional(viewModel.serverAddress);
@@ -53,7 +83,6 @@ public class LoginScene implements Initializable {
         errorLabel.visibleProperty().bind(viewModel.errorMessage.isNotEmpty());
         errorLabel.managedProperty().bind(viewModel.errorMessage.isNotEmpty());
 
-        // Login state listener
         viewModel.loginState.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 Platform.runLater(() -> {
@@ -67,15 +96,14 @@ public class LoginScene implements Initializable {
             }
         });
 
-        // Start background animation
         createFlowingLightAnimation();
     }
 
     private void createFlowingLightAnimation() {
         Random random = new Random();
         List<Color> colors = List.of(
-                Color.web("#A5D6A7", 1.0), // Gentle Green
-                Color.web("#FFF59D", 1.0), // Gentle Yellow
+                Color.web("#A5D6A7", 1.0),
+                Color.web("#FFF59D", 1.0),
                 Color.web("#C8E6C9", 1.0),
                 Color.web("#FFF9C4", 1.0)
         );
@@ -109,11 +137,17 @@ public class LoginScene implements Initializable {
         }
     }
 
+    /**
+     * 处理登录操作。
+     */
     @FXML
     private void handleLogin() {
         viewModel.login();
     }
 
+    /**
+     * 处理设置服务器地址操作。
+     */
     @FXML
     private void handleSetServerAddress() {
         boolean isVisible = serverAddressField.isVisible();

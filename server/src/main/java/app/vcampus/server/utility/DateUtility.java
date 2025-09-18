@@ -4,14 +4,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Date utility class.
+ * 日期工具类。
+ * 提供日期和字符串之间的转换功能。
  */
 public class DateUtility {
     /**
-     * Format a date to string.
+     * 将 Date 对象格式化为 "yyyy-MM-dd" 格式的字符串。
      *
-     * @param date The date to format.
-     * @return The formatted string.
+     * @param date 要格式化的 Date 对象。
+     * @return 格式化后的日期字符串；如果输入为 null，则返回空字符串。
      */
     public static String fromDate(Date date) {
         if (date == null) return "";
@@ -19,11 +20,11 @@ public class DateUtility {
     }
 
     /**
-     * Format a date to string with a format.
+     * 使用指定的格式将 Date 对象格式化为字符串。
      *
-     * @param date The date to format.
-     * @param format The format to use.
-     * @return The formatted string.
+     * @param date   要格式化的 Date 对象。
+     * @param format 格式化字符串 (例如, "yyyy-MM-dd HH:mm:ss")。
+     * @return 格式化后的日期字符串；如果输入日期为 null，则返回空字符串。
      */
     public static String fromDate(Date date, String format) {
         if (date == null) return "";
@@ -31,10 +32,10 @@ public class DateUtility {
     }
 
     /**
-     * Parse a string to date.
+     * 将 "yyyy-MM-dd" 格式的字符串解析为 Date 对象。
      *
-     * @param date The string to parse.
-     * @return The parsed date.
+     * @param date 要解析的日期字符串。
+     * @return 解析后的 Date 对象；如果解析失败，则返回 null。
      */
     public static Date toDate(String date) {
         try {

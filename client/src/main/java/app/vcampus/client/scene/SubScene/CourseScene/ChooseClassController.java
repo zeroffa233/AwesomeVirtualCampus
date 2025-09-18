@@ -15,34 +15,50 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.*;
 
+/**
+ * 选课场景控制器。
+ * 负责展示所有可选课程及其教学班的列表。
+ */
 public class ChooseClassController {
 
     @FXML private Label headingLabel;
+    /**
+     * 标题标签。
+     */
     @FXML private Label captionLabel;
+    /**
+     * 滚动面板。
+     */
     @FXML private ScrollPane scrollPane;
+    /**
+     * 课程容器。
+     */
     @FXML private VBox coursesContainer;
 
+    /**
+     * 教务视图模型。
+     */
     private TeachingAffairsViewModel vm;
 
+    /**
+     * 设置视图模型，并初始化数据和监听器。
+     *
+     * @param vm 教务视图模型。
+     */
     public void setViewModel(TeachingAffairsViewModel vm) {
-        System.out.println("[ChooseClass] setViewModel vm=" + (vm == null ? "null" : vm.hashCode()));
         this.vm = vm;
         if (this.vm == null) return;
 
-        // 启动/初始化数据（幂等）
         this.vm.myClasses.init();
 
-        // 初次填充（可能已有数据）
         Platform.runLater(() -> populateCourses(this.vm.myClasses.allCourses));
 
-        // 订阅数据变化（当 allCourses 被填充时刷新 UI）
         try {
             this.vm.myClasses.allCourses.addListener((ListChangeListener<Course>) change -> {
                 Platform.runLater(() -> populateCourses(this.vm.myClasses.allCourses));
             });
         } catch (Exception ignored) {}
 
-        // 短期轮询备援：如果数据短时间内没来则再次检查（兼容性）
         final ScheduledExecutorService poller = Executors.newSingleThreadScheduledExecutor();
         final int[] tries = {0};
         ScheduledFuture<?> future = poller.scheduleAtFixedRate(() -> {
@@ -57,9 +73,9 @@ public class ChooseClassController {
         }, 150, 400, TimeUnit.MILLISECONDS);
     }
 
-
-    private final ScheduledExecutorService poller = Executors.newSingleThreadScheduledExecutor();
-
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     @FXML
     public void initialize() {
 
@@ -73,7 +89,7 @@ public class ChooseClassController {
                 Node node = loader.load();
                 CourseListItemController ctrl = loader.getController();
                 ctrl.bind(c, vm);
-                ctrl.registerSelf(node); // 注册到 node 的 properties
+                ctrl.registerSelf(node);
                 coursesContainer.getChildren().add(node);
             } catch (IOException e) {
                 e.printStackTrace();

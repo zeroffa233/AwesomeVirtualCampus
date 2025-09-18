@@ -1,37 +1,34 @@
 package app.vcampus.server;
 
 import app.vcampus.server.controller.*;
-import app.vcampus.server.entity.Course;
-import app.vcampus.server.entity.TeachingClass;
 import app.vcampus.server.net.NettyServer;
 import app.vcampus.server.utility.Database;
-import app.vcampus.server.utility.Pair;
 import app.vcampus.server.utility.router.Router;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 import java.io.Console;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
- * Main class of the server.
+ * 服务器主类。
  */
-public class
-Main {
+public class Main {
 
     /**
-     * Entry function of the server.
-     *
-     * @param args Command line arguments.
-     * @throws Exception Any exception that may occur.
+     * 数据库用户名。
      */
     private static String DB_USERNAME;
+    /**
+     * 数据库密码。
+     */
     private static String DB_PASSWORD;
 
+    /**
+     * 服务器程序入口点。
+     *
+     * @param args 命令行参数。
+     * @throws Exception 启动过程中可能发生的任何异常。
+     */
     public static void main(String[] args) throws Exception {
         Router router = new Router();
         router.addController(AuthController.class);
@@ -47,17 +44,17 @@ Main {
         router.addController(ChatController.class);
         router.addController(HistoryController.class);
 
-        // 读取数据库用户名 & 密码
+        // 从控制台读取数据库用户名和密码
         Console console = System.console();
         if (console == null) {
-            System.err.println("❌ 控制台不可用。请在终端中运行此程序！");
+            System.err.println("❌ 控制台不可用。请在终端中运行此程序！ ");
             System.exit(-1);
         }
         DB_USERNAME = console.readLine("Enter database username: ");
-        // 读取密码（输入不会显示）
         char[] passwordChars = console.readPassword("database password:");
         DB_PASSWORD = new String(passwordChars);
 
+        // 初始化数据库和服务器
         SessionFactory databaseFactory = Database.init(DB_USERNAME, DB_PASSWORD);
         org.hibernate.Session database = databaseFactory.openSession();
         Transaction tx = database.beginTransaction();

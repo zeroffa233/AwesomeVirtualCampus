@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Router class. Used to route requests to controllers, annotation and reflection based.
+ * 路由器类。
+ * 用于将请求路由到控制器。
+ * 基于注解和反射实现。
  */
 @Slf4j
 public class Router {
@@ -21,9 +23,9 @@ public class Router {
     private final Map<String, String> uri2Role = new HashMap<>();
 
     /**
-     * Add a controller to the router.
+     * 向路由器添加一个控制器。
      *
-     * @param cls The class of the controller.
+     * @param cls 控制器的类。
      */
     public void addController(Class<?> cls) {
         try {
@@ -53,31 +55,31 @@ public class Router {
     }
 
     /**
-     * Check if the router has a route.
+     * 检查路由器是否包含某个路由。
      *
-     * @param uri The uri to check.
-     * @return Whether the router has the route.
+     * @param uri 要检查的 URI。
+     * @return 如果路由器包含该路由，则返回 true。
      */
     public boolean hasRoute(String uri) {
         return uri2Action.containsKey(uri);
     }
 
     /**
-     * Get the role of a route.
+     * 获取路由所需的角色。
      *
-     * @param uri The uri to check.
-     * @return The role of the route.
+     * @param uri 要检查的 URI。
+     * @return 路由所需的角色。
      */
     public String getRole(String uri) {
         return uri2Role.get(uri);
     }
 
     /**
-     * Invoke a route.
+     * 调用一个路由。
      *
-     * @param request The request to invoke.
-     * @param database The database session.
-     * @return The response of the route.
+     * @param request  要调用的请求。
+     * @param database 数据库会话。
+     * @return 路由的响应。
      */
     public Response invoke(Request request, Session database) {
         Action action = uri2Action.get(request.getUri());
@@ -90,10 +92,11 @@ public class Router {
     }
 
     /**
-     * Action class. Used to store the action of a route.
+     * Action 记录类。
+     * 用于存储路由的操作。
      *
-     * @param object The controller to call.
-     * @param method The method to call.
+     * @param object 要调用的控制器。
+     * @param method 要调用的方法。
      */
     private record Action(Object object, Method method) {
 

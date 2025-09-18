@@ -24,6 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+/**
+ * 个人财务场景控制器。
+ * 负责展示用户的余额和交易历史记录。
+ */
 public class PersonalFinanceController implements Initializable {
 
     @FXML
@@ -34,12 +38,16 @@ public class PersonalFinanceController implements Initializable {
 
     private final PersonalFinanceViewModel viewModel = new PersonalFinanceViewModel();
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     *
+     * @param location  URL定位资源。
+     * @param resources 资源包。
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         balanceLabel.textProperty().bind(viewModel.balanceProperty().asString("%.2f 元"));
 
-        // --- 开始修改 ---
-        // 1. 将CSS规则定义为一个字符串
         final String inlineCss = """
             .jfx-list-cell:selected {
                 -fx-background-color: #B2C926B2;
@@ -52,9 +60,7 @@ public class PersonalFinanceController implements Initializable {
             }
         """;
 
-        // 2. 创建Data URL并添加到ListView的样式表中
         transactionsListView.getStylesheets().add("data:text/css," + inlineCss);
-        // --- 结束修改 ---
 
         transactionsListView.setCellFactory(param -> new TransactionListCell());
         transactionsListView.setItems(viewModel.getTransactionHistory());
@@ -62,8 +68,8 @@ public class PersonalFinanceController implements Initializable {
     }
 
     /**
-     * Custom ListCell to display DisplayableTransaction objects.
-     * Supports expandable view for shop transactions with animation.
+     * 自定义 ListCell 用于显示 DisplayableTransaction 对象。
+     * 支持带动画效果的商店交易记录展开视图。
      */
     private static class TransactionListCell extends JFXListCell<DisplayableTransaction> {
         private final VBox layout = new VBox();
@@ -77,7 +83,6 @@ public class PersonalFinanceController implements Initializable {
 
         private final VBox itemsContainer = new VBox();
 
-        // A private record to hold grouped item data
         private record GroupedItem(String name, int quantity, double unitPrice) {}
 
         public TransactionListCell() {
@@ -101,10 +106,8 @@ public class PersonalFinanceController implements Initializable {
 
             layout.getChildren().addAll(summaryContent, itemsContainer);
 
-            // Handle expansion/collapse with animation on button click
             expandButton.setOnAction(event -> toggleDetails(true));
 
-            // Add a listener to change background color on selection
             selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
                 if (isNowSelected) {
                     setStyle("-fx-background-color: #B2C926B2;");
@@ -122,13 +125,12 @@ public class PersonalFinanceController implements Initializable {
                 itemsContainer.setManaged(isExpanding);
                 expandButton.setText(isExpanding ? "▲" : "▼");
                 if (!isExpanding) {
-                    itemsContainer.setOpacity(1.0); // Reset opacity for future animations
+                    itemsContainer.setOpacity(1.0);
                 }
                 return;
             }
 
             if (isExpanding) {
-                // Expand with fade-in animation
                 itemsContainer.setOpacity(0.0);
                 itemsContainer.setVisible(true);
                 itemsContainer.setManaged(true);
@@ -138,7 +140,6 @@ public class PersonalFinanceController implements Initializable {
                 ft.play();
                 expandButton.setText("▲");
             } else {
-                // Collapse with fade-out animation
                 FadeTransition ft = new FadeTransition(Duration.millis(300), itemsContainer);
                 ft.setFromValue(1.0);
                 ft.setToValue(0.0);
@@ -217,29 +218,20 @@ public class PersonalFinanceController implements Initializable {
         }
 
         private Node createItemRow(GroupedItem item) {
-            // 减小 HBox 元素间的默认间距，让数量和价格靠得更近
             HBox itemRow = new HBox(4);
             itemRow.setAlignment(Pos.CENTER_LEFT);
 
-            // 1. 只显示商品名称的 Label
             Label itemName = new Label(item.name());
 
-            // 2. 依然使用 Region 作为弹簧，将右侧内容推到最右边
             Region itemSpacer = new Region();
             HBox.setHgrow(itemSpacer, Priority.ALWAYS);
 
-            // 3. 【新增】创建数量 Label，并设置期望的文本格式
             Label quantityLabel = new Label(String.format("%d个，共", item.quantity()));
-            // 给数量文本一个次要的颜色，突出价格
             quantityLabel.setStyle("-fx-text-fill: #616161;");
 
-            // 4. 创建价格 Label，并添加货币符号
             Label itemPrice = new Label(String.format("¥%.2f", item.unitPrice() * item.quantity()));
-            // 可以稍微加粗或调整字体，让价格更显眼
             itemPrice.setFont(Font.font("System", FontWeight.MEDIUM, 14));
 
-
-            // 5. 【核心】按新的顺序将所有控件添加到 HBox 中
             itemRow.getChildren().addAll(itemName, itemSpacer, quantityLabel, itemPrice);
 
             return itemRow;

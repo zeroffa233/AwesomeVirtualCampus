@@ -9,14 +9,34 @@ import lombok.NoArgsConstructor; // <-- 导入
 
 @Data // <-- 【核心】添加@Data，它会自动生成 getter, setter, toString, equals, hashCode
 @NoArgsConstructor
+/**
+ * 商店交易记录类。
+ * 用于封装一次商店交易的详细信息。
+ */
 public class ShopTransactionRecord {
-    private long timestamp;
-    private List<StoreItem> items;
-    private double totalPrice;
+public class ShopTransactionRecord {
+    /**
+     * 交易发生时的时间戳。
+     */
+    private final long timestamp;
+    /**
+     * 交易所包含的商品列表。
+     */
+    private final List<StoreItem> items;
+    /**
+     * 交易的总价。
+     */
+    private final double totalPrice;
 
+    /**
+     * 构造一个新的商店交易记录。
+     *
+     * @param items      交易的商品列表。
+     * @param totalPrice 交易的总价。
+     */
     public ShopTransactionRecord(List<StoreItem> items, double totalPrice) {
         this.timestamp = System.currentTimeMillis();
-        this.items = new ArrayList<>(items); // 创建副本
+        this.items = new ArrayList<>(items); // 创建副本以确保不可变性
         this.totalPrice = totalPrice;
     }
 

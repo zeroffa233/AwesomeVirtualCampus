@@ -17,30 +17,73 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
+/**
+ * 消息控制器。
+ * 负责展示单条消息及其关联的评论，并处理点赞和发表评论等用户交互。
+ */
 public class MessageController {
 
     @FXML private VBox rootMessagePane;
+    /**
+     * 用户名标签。
+     */
     @FXML private Label usernameLabel;
+    /**
+     * 时间戳标签。
+     */
     @FXML private Label timestampLabel;
+    /**
+     * 内容标签。
+     */
     @FXML private Label contentLabel;
+    /**
+     * 点赞按钮。
+     */
     @FXML private JFXButton likeButton;
-    @FXML private Text likeIconText; // 引用 FXML 中的 Text 节点 for Message
+    /**
+     * 点赞图标文本。
+     */
+    @FXML private Text likeIconText;
+    /**
+     * 点赞计数标签。
+     */
     @FXML private Label likeCountLabel;
+    /**
+     * 评论VBox。
+     */
     @FXML private VBox commentsVBox;
+    /**
+     * 新评论文本字段。
+     */
     @FXML private JFXTextField newCommentTextField;
+    /**
+     * 发表评论按钮。
+     */
     @FXML private JFXButton postCommentButton;
 
+    /**
+     * 消息视图模型。
+     */
     private MessageViewModel messageViewModel;
+    /**
+     * 聊天视图模型。
+     */
     private ChatViewModel chatViewModel;
 
+    /**
+     * 设置此控制器所需的数据模型。
+     *
+     * @param mvm 消息视图模型。
+     * @param cvm 聊天视图模型。
+     */
     public void setData(MessageViewModel mvm, ChatViewModel cvm) {
         this.messageViewModel = mvm;
         this.chatViewModel = cvm;
 
         setupBindings();
         setupListeners();
-        updateLikeButtonState(mvm.isLikedByMeProperty().get()); // 设置初始的点赞按钮状态
-        loadComments(); // 立即加载一次已有的评论
+        updateLikeButtonState(mvm.isLikedByMeProperty().get());
+        loadComments();
     }
 
     private void setupBindings() {
@@ -50,20 +93,18 @@ public class MessageController {
         likeCountLabel.textProperty().bind(messageViewModel.likeCountProperty().asString());
     }
 
+    /**
+     * 设置监听器。
+     */
     private void setupListeners() {
-        // 监听消息点赞状态的变化，并更新UI
         messageViewModel.isLikedByMeProperty().addListener((obs, oldVal, newVal) -> updateLikeButtonState(newVal));
 
-        // 监听评论列表的变化
         messageViewModel.getComments().addListener((ListChangeListener<CommentViewModel>) c -> {
-            // 在重新加载评论时，确保在JavaFX应用线程上执行
-            // 以避免在后台线程（例如轮询线程）直接修改UI
             if (!c.getList().isEmpty() || commentsVBox.getChildren().size() > 0) {
                 loadComments();
             }
         });
 
-        // 为评论输入框添加回车键监听
         newCommentTextField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 onPostCommentClicked();
@@ -72,19 +113,21 @@ public class MessageController {
     }
 
     /**
-     * 【修改点 1】: 更新消息点赞按钮的状态 (👍)
-     * 通过改变颜色来清晰地表示用户是否已点赞。
-     * @param isLiked 用户是否点赞了这条消息
+     * 更新点赞按钮状态。
+     *
+     * @param isLiked 是否已点赞。
      */
     private void updateLikeButtonState(boolean isLiked) {
-        System.out.println("Trigger like:"+isLiked);
         if (isLiked) {
-            likeIconText.setFill(Color.web("#607830")); // 点赞后为绿色 (SEU Blue)
+            likeIconText.setFill(Color.web("#607830"));
         } else {
-            likeIconText.setFill(Color.GRAY); // 未点赞为灰色
+            likeIconText.setFill(Color.GRAY);
         }
     }
 
+    /**
+     * 加载评论。
+     */
     private void loadComments() {
         commentsVBox.getChildren().clear();
         for (CommentViewModel cvm : messageViewModel.getComments()) {
@@ -93,9 +136,10 @@ public class MessageController {
     }
 
     /**
-     * 【修改点 2】: 创建评论节点
-     * @param cvm 评论的ViewModel
-     * @return 代表一条评论的UI节点
+     * 创建评论节点。
+     *
+     * @param cvm 评论视图模型。
+     * @return 评论节点。
      */
     private Node createCommentNode(CommentViewModel cvm) {
         HBox commentBox = new HBox(5);
@@ -110,18 +154,15 @@ public class MessageController {
         contentValueText.textProperty().bind(cvm.contentProperty());
         contentValueText.setWrappingWidth(500);
 
-        // 评论的点赞按钮
         JFXButton commentLikeButton = new JFXButton();
-        Text commentIconText = new Text(); // 初始文本在下面设置
-        commentIconText.setText("❤");
-        commentIconText.setStyle("-fx-font-size: 14px;"); // 稍微放大爱心图标
+        Text commentIconText = new Text("❤");
+        commentIconText.setStyle("-fx-font-size: 14px;");
         commentLikeButton.setGraphic(commentIconText);
         commentLikeButton.setOnAction(e -> chatViewModel.toggleCommentLike(cvm));
 
         Label commentLikeCount = new Label();
         commentLikeCount.textProperty().bind(cvm.likeCountProperty().asString());
 
-        // 核心逻辑：监听评论的点赞状态，并切换图标和颜色
         cvm.isLikedByMeProperty().addListener((obs, oldVal, isNowLiked) -> {
             if (isNowLiked) {
                 commentIconText.setFill(Color.RED);
@@ -130,7 +171,6 @@ public class MessageController {
             }
         });
 
-        // 初始化第一次加载时的状态
         boolean isInitiallyLiked = cvm.isLikedByMeProperty().get();
         if (isInitiallyLiked) {
             commentIconText.setFill(Color.RED);
@@ -145,11 +185,17 @@ public class MessageController {
         return commentBox;
     }
 
+    /**
+     * 点赞按钮点击事件处理。
+     */
     @FXML
     private void onLikeButtonClicked() {
         chatViewModel.toggleMessageLike(messageViewModel);
     }
 
+    /**
+     * 发表评论按钮点击事件处理。
+     */
     @FXML
     private void onPostCommentClicked() {
         String content = newCommentTextField.getText().trim();

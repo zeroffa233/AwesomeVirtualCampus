@@ -17,23 +17,66 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
+/**
+ * 课程列表项控制器。
+ * 负责展示单个课程的信息，并提供展开/折叠功能以显示其下的教学班列表。
+ */
 public class CourseListItemController {
 
     @FXML private Label courseNameLabel;
+    /**
+     * 课程ID标签。
+     */
     @FXML private Label courseIdLabel;
+    /**
+     * 芯片盒。
+     */
     @FXML private HBox chipBox;
+    /**
+     * 展开/折叠切换按钮。
+     */
     @FXML private ToggleButton expandToggle;
+    /**
+     * 教学班滚动面板。
+     */
     @FXML private ScrollPane tcScroll;
+    /**
+     * 教学班容器。
+     */
     @FXML private HBox teachingClassBox;
+    /**
+     * 展开容器。
+     */
     @FXML private VBox expandContainer;
 
+    /**
+     * 课程对象。
+     */
     private Course course;
+    /**
+     * 教务视图模型。
+     */
     private TeachingAffairsViewModel vm;
 
+    /**
+     * 上次展开的高度。
+     */
     private double lastExpandedHeight = 0.0;
-    private static final double MAX_ALLOWED_EXPANDED_HEIGHT = 600.0; // 展开最大高度
+    /**
+     * 允许的最大展开高度。
+     */
+    private static final double MAX_ALLOWED_EXPANDED_HEIGHT = 600.0;
+    /**
+     * 动画持续时间。
+     */
     private static final Duration ANIM_DURATION = Duration.millis(300);
 
+    /**
+     * 绑定课程数据和视图模型到列表项。
+     *
+     * @param course 课程对象。
+     * @param vm     教务视图模型。
+     */
     public void bind(Course course, TeachingAffairsViewModel vm) {
         this.course = course;
         this.vm = vm;
@@ -49,16 +92,24 @@ public class CourseListItemController {
 
         expandToggle.selectedProperty().addListener((obs, oldV, newV) -> {
             expandToggle.setText(newV ? "收起" : "展开");
-            if (newV) collapseOthers(); // 展开时折叠其它项
+            if (newV) collapseOthers();
             animateExpand(newV);
         });
 
-        // 初始为收起
         tcScroll.setVisible(false);
         tcScroll.setManaged(false);
         expandContainer.setMaxHeight(0);
         expandContainer.setPrefHeight(0);
         expandContainer.setMinHeight(0);
+    }
+
+    /**
+     * 将此控制器实例注册到根节点，以便父控制器可以访问。
+     *
+     * @param root 列表项的根节点。
+     */
+    public void registerSelf(Node root) {
+        root.getProperties().put("controller", this);
     }
 
     private Label createChip(String text) {
@@ -68,6 +119,9 @@ public class CourseListItemController {
         return l;
     }
 
+    /**
+     * 填充教学班信息。
+     */
     private void populateTeachingClasses() {
         teachingClassBox.getChildren().clear();
         if (course.getTeachingClasses() == null) return;
@@ -84,14 +138,13 @@ public class CourseListItemController {
             }
         }
 
-        // 测量展开高度
         Platform.runLater(() -> {
             teachingClassBox.applyCss();
             teachingClassBox.layout();
 
             double measured = teachingClassBox.prefHeight(-1);
             if (measured <= 0) {
-                measured = teachingClassBox.getChildren().size() * 240.0; // 兜底估算
+                measured = teachingClassBox.getChildren().size() * 240.0;
             }
             lastExpandedHeight = Math.min(MAX_ALLOWED_EXPANDED_HEIGHT, measured + 20.0);
 
@@ -105,9 +158,13 @@ public class CourseListItemController {
         });
     }
 
+    /**
+     * 动画展开/折叠。
+     *
+     * @param expand 是否展开。
+     */
     private void animateExpand(boolean expand) {
         if (expand && lastExpandedHeight <= 1.0) {
-            // 高度未测量，稍后再试
             Platform.runLater(() -> animateExpand(true));
             return;
         }
@@ -140,17 +197,15 @@ public class CourseListItemController {
     }
 
     /**
-     * 展开当前课程时，折叠同一个父容器里的其它课程
+     * 折叠其他课程列表项。
      */
     private void collapseOthers() {
         if (expandToggle.getScene() == null) return;
 
-        // 遍历父容器中所有 CourseListItemController
         VBox parent = (VBox) this.expandToggle.getScene().lookup("#coursesContainer");
         if (parent != null) {
             for (Node child : parent.getChildren()) {
                 if (child != this.expandToggle.getParent().getParent().getParent()) {
-                    // 查找子控制器
                     CourseListItemController ctrl = (CourseListItemController) child.getProperties().get("controller");
                     if (ctrl != null && ctrl != this && ctrl.expandToggle.isSelected()) {
                         ctrl.expandToggle.setSelected(false);
@@ -159,12 +214,5 @@ public class CourseListItemController {
                 }
             }
         }
-    }
-
-    /**
-     * 在 ChooseClassController.populateCourses() 里绑定 controller
-     */
-    public void registerSelf(Node root) {
-        root.getProperties().put("controller", this);
     }
 }

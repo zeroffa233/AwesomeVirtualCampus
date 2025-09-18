@@ -18,13 +18,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.text.Text;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 图书信息更新视图控制器。
+ * 负责处理图书管理员搜索和更新图书信息的界面逻辑。
+ */
 public class LibraryUpdateBookViewController {
 
     @FXML
@@ -39,6 +40,9 @@ public class LibraryUpdateBookViewController {
     @FXML
     private VBox resultsVBox;
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     @FXML
     public void initialize() {
         searchButton.setOnAction(event -> searchBooks());
@@ -86,7 +90,6 @@ public class LibraryUpdateBookViewController {
         GridPane grid = new GridPane();
         grid.setVgap(20);
         grid.setPadding(new Insets(30));
-        // Set background to Gray, with a border to distinguish it from the main background
         grid.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #BDBDBD; -fx-border-width: 1; -fx-border-radius: 8; -fx-font-size: 14px;");
 
         ColumnConstraints labelCol = new ColumnConstraints();
@@ -95,13 +98,11 @@ public class LibraryUpdateBookViewController {
         fieldCol.setHgrow(Priority.ALWAYS);
         grid.getColumnConstraints().addAll(labelCol, fieldCol, labelCol, fieldCol, labelCol, fieldCol);
 
-        // Row 1: Name, Author, Press
         JFXTextField nameField = createStyledTextField(book.getName());
         JFXTextField authorField = createStyledTextField(book.getAuthor());
         JFXTextField pressField = createStyledTextField(book.getPress());
         grid.addRow(0, new Label("书名:"), nameField, new Label("作者:"), authorField, new Label("出版社:"), pressField);
 
-        // Row 2: Cover, ISBN
         JFXTextField coverField = createStyledTextField(book.getCover());
         JFXTextField isbnField = createStyledTextField(book.getIsbn());
         isbnField.setEditable(false);
@@ -110,13 +111,11 @@ public class LibraryUpdateBookViewController {
         grid.add(new Label("ISBN:"), 4, 1);
         grid.add(isbnField, 5, 1);
 
-        // Row 3: Description
         JFXTextArea descriptionArea = new JFXTextArea(book.getDescription());
         descriptionArea.setWrapText(true);
         grid.add(new Label("简介:"), 0, 2);
         grid.add(descriptionArea, 1, 2, 5, 1);
 
-        // Row 4: Call Number, Place, Status
         JFXTextField callNumberField = createStyledTextField(book.getCallNumber());
         JFXTextField placeField = createStyledTextField(book.getPlace());
         JFXComboBox<BookStatus> statusComboBox = new JFXComboBox<>();
@@ -125,7 +124,6 @@ public class LibraryUpdateBookViewController {
         statusComboBox.setPromptText("书籍状态");
         grid.addRow(3, new Label("索书号:"), callNumberField, new Label("馆藏地:"), placeField, new Label("状态:"), statusComboBox);
 
-        // Row 5: Save Button
         JFXButton saveButton = new JFXButton("保存此副本修改");
         saveButton.setButtonType(JFXButton.ButtonType.RAISED);
         saveButton.setStyle("-fx-background-color: #607830; -fx-text-fill: white;");
@@ -133,7 +131,6 @@ public class LibraryUpdateBookViewController {
         HBox buttonBox = new HBox(10, saveButton, feedbackLabel);
         grid.add(buttonBox, 0, 4, 6, 1);
 
-        // Set style for all labels in the grid to bold
         grid.getChildren().forEach(node -> {
             if (node instanceof Label) {
                 node.setStyle("-fx-font-weight: bold;");
@@ -167,11 +164,9 @@ public class LibraryUpdateBookViewController {
         return grid;
     }
 
-    // Helper method to create a JFXTextField with the desired prompt text behavior
     private JFXTextField createStyledTextField(String text) {
         JFXTextField textField = new JFXTextField(text);
 
-        // This listener hides the prompt text label when there is content
         textField.promptTextProperty().addListener((obs, oldVal, newVal) -> {
             if (textField.lookup(".prompt-text") instanceof Label) {
                 Label promptText = (Label) textField.lookup(".prompt-text");

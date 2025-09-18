@@ -22,6 +22,10 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 图书归还视图控制器。
+ * 负责处理图书馆工作人员为用户办理还书和续借的界面逻辑。
+ */
 public class LibraryReturnBookViewController {
 
     @FXML
@@ -35,6 +39,9 @@ public class LibraryReturnBookViewController {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     @FXML
     public void initialize() {
         searchButton.setOnAction(event -> searchUserTransactions());
@@ -50,7 +57,6 @@ public class LibraryReturnBookViewController {
         new Thread(() -> {
             try {
                 List<LibraryTransaction> transactions = LibraryClient.staffGetRecords(FakeRepository.handler, cardNumber);
-                // Filter for books that are not yet returned
                 List<LibraryTransaction> activeTransactions = transactions.stream()
                         .filter(t -> t.getReturnTime() == null)
                         .collect(Collectors.toList());
@@ -94,7 +100,6 @@ public class LibraryReturnBookViewController {
         col5.setPrefWidth(100);
         grid.getColumnConstraints().addAll(col1, col2, col3, col4, col5);
 
-        // Row 1
         Label nameLabel = new Label("书名:");
         nameLabel.setStyle("-fx-font-weight: bold;");
         Label nameContent = new Label(transaction.getBook().getName());
@@ -107,7 +112,6 @@ public class LibraryReturnBookViewController {
         grid.add(placeLabel, 2, 0);
         grid.add(placeContent, 3, 0);
 
-        // Row 2
         Label borrowLabel = new Label("借阅时间:");
         borrowLabel.setStyle("-fx-font-weight: bold;");
         Label borrowContent = new Label(dateFormat.format(transaction.getBorrowTime()));
@@ -120,7 +124,6 @@ public class LibraryReturnBookViewController {
         grid.add(dueLabel, 2, 1);
         grid.add(dueContent, 3, 1);
 
-        // Action Buttons
         JFXButton renewButton = new JFXButton("续借");
         renewButton.setStyle("-fx-background-color: #FFC107; -fx-text-fill: white;");
         renewButton.setButtonType(JFXButton.ButtonType.RAISED);
@@ -138,7 +141,6 @@ public class LibraryReturnBookViewController {
         Label feedbackLabel = new Label();
         grid.add(feedbackLabel, 0, 2, 4, 1);
 
-        // Button Actions
         renewButton.setOnAction(event -> handleRenew(transaction, feedbackLabel, renewButton, returnButton));
         returnButton.setOnAction(event -> handleReturn(transaction, feedbackLabel, renewButton, returnButton));
 

@@ -9,8 +9,20 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+/**
+ * 认证客户端，提供用户认证相关的功能。
+ * 继承自BaseClient，用于与服务器进行通信。
+ */
 @Slf4j
 public class AuthClient extends BaseClient {
+    /**
+     * 用户登录。
+     *
+     * @param handler Netty处理器。
+     * @param username 用户名（卡号）。
+     * @param password 密码。
+     * @return 登录成功的User对象，如果登录失败则返回null。
+     */
     public static User login(NettyHandler handler, String username, String password) {
         Request request = new Request();
         request.setUri("auth/login");

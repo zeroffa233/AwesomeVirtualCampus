@@ -1,4 +1,3 @@
-//FinanceController.java
 package app.vcampus.server.controller;
 
 import app.vcampus.server.entity.CardTransaction;
@@ -19,18 +18,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 财务控制器。
+ * 处理与一卡通金融相关的操作，如查询、充值、消费、状态更新和交易记录查询。
+ */
 @Slf4j
 public class FinanceController {
 
-    private final Gson gson = new Gson();
-
     /**
-     * Handles the request for card information from a staff client.
-     * Corresponds to FinanceClient.findCardInfo
+     * 财务工作人员获取指定卡号的金融信息。
      *
-     * @param request the request from the client
-     * @param database the database session
-     * @return a response containing the card info or an error
+     * @param request  包含卡号的请求。
+     * @param database 数据库会话。
+     * @return 包含卡信息的响应或错误信息。
      */
     @RouteMapping(uri = "finance/info", role = "finance_staff")
     public Response getCardInfo(Request request, org.hibernate.Session database) {
@@ -47,11 +47,10 @@ public class FinanceController {
                 return Response.Common.error("Card not found");
             }
 
-            // Use the label from the enum directly
             Map<String, Object> cardInfo = Map.of(
                     "cardNumber", card.getCardNumber().toString(),
-                    "status", card.getStatus().getLabel(), // Optimized
-                    "balance", card.getBalance() / 100.0 // Convert cents to yuan
+                    "status", card.getStatus().getLabel(),
+                    "balance", card.getBalance() / 100.0
             );
 
             return Response.Common.ok(cardInfo);
@@ -61,12 +60,11 @@ public class FinanceController {
     }
 
     /**
-     * Handles card recharge requests from a staff client.
-     * Corresponds to FinanceClient.debit
+     * 财务工作人员为指定一卡通充值。
      *
-     * @param request the request from the client
-     * @param database the database session
-     * @return a success or error response
+     * @param request  包含卡号、金额和描述的请求。
+     * @param database 数据库会话。
+     * @return 操作成功或失败的响应。
      */
     @RouteMapping(uri = "finance/debit")
     public Response debitCard(Request request, org.hibernate.Session database) {
@@ -121,12 +119,11 @@ public class FinanceController {
     }
 
     /**
-     * Handles card payment requests from a staff client.
-     * Corresponds to FinanceClient.credit
+     * 财务工作人员为指定一卡通进行消费操作。
      *
-     * @param request the request from the client
-     * @param database the database session
-     * @return a success or error response
+     * @param request  包含卡号、金额和描述的请求。
+     * @param database 数据库会话。
+     * @return 操作成功或失败的响应。
      */
     @RouteMapping(uri = "finance/credit")
     public Response creditCard(Request request, org.hibernate.Session database) {
@@ -187,12 +184,11 @@ public class FinanceController {
 
 
     /**
-     * Updates the status of a finance card.
-     * Corresponds to FinanceClient.updateCardStatus
+     * 财务工作人员更新一卡通的状态。
      *
-     * @param request the request from the client
-     * @param database the database session
-     * @return a success or error response
+     * @param request  包含卡号和新状态的请求。
+     * @param database 数据库会话。
+     * @return 操作成功或失败的响应。
      */
     @RouteMapping(uri = "finance/updateStatus", role = "finance_staff")
     public Response updateCardStatus(Request request, org.hibernate.Session database) {
@@ -210,7 +206,6 @@ public class FinanceController {
                 return Response.Common.error("Card not found");
             }
 
-            // Convert string status to CardStatus enum by matching label
             CardStatus newStatus = Arrays.stream(CardStatus.values())
                     .filter(status -> status.getLabel().equals(newStatusStr))
                     .findFirst()
@@ -238,12 +233,11 @@ public class FinanceController {
     }
 
     /**
-     * Gets the balance for the current user's card.
-     * Corresponds to FinanceClient.getBalance
+     * 获取当前用户的余额。
      *
-     * @param request the request from the client
-     * @param database the database session
-     * @return a response containing the balance
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含余额信息的响应。
      */
     @RouteMapping(uri = "finance/balance", role = "finance_user")
     public Response getBalance(Request request, org.hibernate.Session database) {
@@ -264,12 +258,11 @@ public class FinanceController {
     }
 
     /**
-     * Gets the transaction history for the current user's card.
-     * Corresponds to FinanceClient.getTransactionHistory
+     * 获取当前用户的交易记录。
      *
-     * @param request the request from the client
-     * @param database the database session
-     * @return a response containing a list of transactions
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含交易记录列表的响应。
      */
     @RouteMapping(uri = "finance/transactions", role = "finance_user")
     public Response getTransactionHistory(Request request, org.hibernate.Session database) {

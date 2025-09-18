@@ -4,48 +4,65 @@ import app.vcampus.client.gateway.*;
 import app.vcampus.client.net.NettyHandler;
 import app.vcampus.server.entity.*;
 import app.vcampus.server.utility.Pair;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
+import app.vcampus.client.util.ImageCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import app.vcampus.client.util.ImageCache; // 【重要】导入 ImageCache
 
-import java.awt.Window;
 import java.util.*;
 
 /**
- * Java 版 FakeRepository
- * 提供静态方法以兼容现有前端调用。
+ * 伪仓库类。
+ * <p>
+ * 提供静态方法，作为UI/ViewModel层与网络网关客户端之间的桥梁。
+ * 为应用程序的其余部分提供一个简化的、类似同步的接口来与服务器交互。
+ * </p>
  */
-public final class FakeRepository
-{
-    // Netty handler（需要外部注入/设置）
+public final class FakeRepository {
+    /**
+     * Netty 网络处理器。
+     */
     public static NettyHandler handler;
+    /**
+     * 网络连接状态。
+     */
     public static boolean isConnected = false;
 
+    /**
+     * 当前登录的用户信息。
+     */
     public static User user;
+    /**
+     * 当前会话信息。
+     */
     public static app.vcampus.server.utility.Session session;
+    /**
+     * 日志记录器。
+     */
     private static final Logger logger = LoggerFactory.getLogger(FakeRepository.class);
 
-    // ComposeWindow 在 Java 中不是标准类型，这里用 java.awt.Window 占位（按需替换）
-    public static Window window;
-
-    // 用于在非 JavaFX 线程中创建 WebView 的桥接
-    public static final JFXPanel gptJfxPanel = new JFXPanel();
-
     private FakeRepository() {
-        // 不可实例化
     }
 
+    /**
+     * 复制一个商店物品对象。
+     *
+     * @param src 要复制的源对象。
+     * @return 复制后的新对象。
+     */
     public static StoreItem copyStoreItem(StoreItem src) {
         return copyStoreItem(src, src == null ? 0 : src.getStock());
     }
 
+    /**
+     * 复制一个商店物品对象，并指定新的库存。
+     *
+     * @param src   要复制的源对象。
+     * @param stock 新的库存量。
+     * @return 复制后的新对象。
+     */
     public static StoreItem copyStoreItem(StoreItem src, int stock) {
         if (src == null) return null;
         StoreItem copied = new StoreItem();
-        // 假设这些 setter/getter 存在
         copied.setStock(stock);
         copied.setUuid(src.getUuid());
         copied.setPictureLink(src.getPictureLink());
@@ -57,18 +74,21 @@ public final class FakeRepository
         return copied;
     }
 
-
+    /**
+     * 用户登录。
+     *
+     * @param username 用户名（卡号）。
+     * @param password 密码。
+     * @return 登录成功返回 true，否则返回 false。
+     */
     public static boolean login(String username, String password) {
         try {
             User u = AuthClient.login(handler, username, password);
             if (u != null) {
                 logger.debug("login user: {}", u);
-                System.out.println("[FakeRepository.login(): userCardNum]" + u.cardNum);
                 user = u;
                 isConnected = true;
-                System.out.println("[login] : ImageCache.getInstance() called");
                 ImageCache.getInstance();
-
                 return true;
             }
         } catch (Exception e) {
@@ -76,6 +96,10 @@ public final class FakeRepository
         }
         return false;
     }
+
+    /**
+     * 断开网络连接。
+     */
     public static void disconnect() {
         if (handler != null) handler.disconnect();
         isConnected = false;
@@ -83,6 +107,11 @@ public final class FakeRepository
         user = null;
     }
 
+    /**
+     * 获取当前用户的学籍信息。
+     *
+     * @return 学生对象，失败则返回 null。
+     */
     public static Student getSelf() {
         try {
             return StudentStatusClient.getSelf(handler);
@@ -92,6 +121,12 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 根据关键词搜索学生。
+     *
+     * @param keyword 搜索关键词。
+     * @return 学生列表，失败则返回空列表。
+     */
     public static List<Student> searchStudent(String keyword) {
         try {
             List<Student> res = StudentStatusClient.searchInfo(handler, keyword);
@@ -102,6 +137,12 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 更新学生信息。
+     *
+     * @param student 包含更新信息的学生对象。
+     * @return 更新成功返回 true，否则返回 false。
+     */
     public static boolean updateStudent(Student student) {
         try {
             return StudentStatusClient.updateInfo(handler, student);
@@ -111,9 +152,11 @@ public final class FakeRepository
         }
     }
 
-
-
-    // ------------------ Teaching affairs ------------------
+    /**
+     * 获取已选课程列表。
+     *
+     * @return 教学班列表。
+     */
     public static List<TeachingClass> getSelectedClasses() {
         try {
             List<TeachingClass> r = TeachingAffairsClient.getSelectedClasses(handler);
@@ -124,6 +167,12 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 发送教学评估结果。
+     *
+     * @param result 评估结果。
+     * @return 发送成功返回 true，否则返回 false。
+     */
     public static boolean sendEvaluationResult(Pair<UUID, Pair<List<Integer>, String>> result) {
         try {
             return TeachingAffairsClient.sendEvaluationResult(handler, result);
@@ -133,6 +182,11 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 获取可选课程列表。
+     *
+     * @return 课程列表。
+     */
     public static List<Course> getSelectableCourses() {
         try {
             List<Course> r = TeachingAffairsClient.getSelectableCourses(handler);
@@ -143,6 +197,12 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 选择课程。
+     *
+     * @param uuid 教学班UUID。
+     * @return 操作成功返回 true，否则返回 false。
+     */
     public static boolean chooseClass(UUID uuid) {
         try {
             return TeachingAffairsClient.chooseClass(handler, uuid);
@@ -152,6 +212,12 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 退选课程。
+     *
+     * @param uuid 教学班UUID。
+     * @return 操作成功返回 true，否则返回 false。
+     */
     public static boolean dropClass(UUID uuid) {
         try {
             return TeachingAffairsClient.dropClass(handler, uuid);
@@ -161,6 +227,11 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 获取教师的授课列表。
+     *
+     * @return 教学班列表。
+     */
     public static List<TeachingClass> getMyTeachingClasses() {
         try {
             List<TeachingClass> r = TeachingAffairsClient.getMyTeachingClasses(handler);
@@ -171,6 +242,12 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 导出学生名单。
+     *
+     * @param tc 教学班对象。
+     * @return Base64编码的Excel文件内容。
+     */
     public static String exportStudentList(TeachingClass tc) {
         try {
             return TeachingAffairsClient.exportStudentList(handler, tc.getUuid());
@@ -180,6 +257,12 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 导出成绩模板。
+     *
+     * @param tc 教学班对象。
+     * @return Base64编码的Excel文件内容。
+     */
     public static String exportGradeTemplate(TeachingClass tc) {
         try {
             return TeachingAffairsClient.exportGradeTemplate(handler, tc.getUuid());
@@ -189,6 +272,13 @@ public final class FakeRepository
         }
     }
 
+    /**
+     * 导入成绩。
+     *
+     * @param tc   教学班对象。
+     * @param file Base64编码的Excel文件内容。
+     * @return 操作成功返回 true，否则返回 false。
+     */
     public static boolean importGrade(TeachingClass tc, String file) {
         try {
             return TeachingAffairsClient.importGrade(handler, tc.getUuid(), file);
@@ -197,8 +287,15 @@ public final class FakeRepository
             return false;
         }
     }
+
     /**
-     * 添加课程
+     * 添加课程。
+     *
+     * @param courseId   课程ID。
+     * @param courseName 课程名称。
+     * @param school     开课学院。
+     * @param credit     学分。
+     * @return 操作成功返回 true，否则返回 false。
      */
     public static boolean addCourse(String courseId, String courseName, String school, float credit) {
         try {
@@ -210,7 +307,14 @@ public final class FakeRepository
     }
 
     /**
-     * 添加教学班
+     * 添加教学班。
+     *
+     * @param courseUuid 课程UUID。
+     * @param teacherId  教师ID。
+     * @param place      上课地点。
+     * @param capacity   容量。
+     * @param schedule   课程安排。
+     * @return 操作成功返回 true，否则返回 false。
      */
     public static boolean addTeachingClass(UUID courseUuid, int teacherId, String place, int capacity, List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule) {
         try {

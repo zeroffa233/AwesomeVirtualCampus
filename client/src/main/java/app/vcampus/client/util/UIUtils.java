@@ -12,8 +12,17 @@ import javafx.util.Duration;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * UI 工具类。
+ * 提供用于创建用户界面效果的静态方法。
+ */
 public class UIUtils {
 
+    /**
+     * 在指定的 Pane 上创建流光动画效果。
+     *
+     * @param animationPane 要添加动画的 Pane。
+     */
     public static void createFlowingLightAnimation(Pane animationPane) {
         Random random = new Random();
         List<Color> colors = List.of(

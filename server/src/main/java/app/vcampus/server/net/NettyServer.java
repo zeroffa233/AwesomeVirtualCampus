@@ -23,21 +23,30 @@ import org.hibernate.SessionFactory;
 // import javax.net.ssl.KeyManagerFactory;
 
 /**
- * NettyServer class.
+ * Netty 服务器类。
+ * 负责启动和配置基于 Netty 的网络服务器。
  */
 public class NettyServer {
+    /**
+     * 服务器监听的端口号。
+     */
     private final int port;
 
+    /**
+     * 构造一个 NettyServer 实例。
+     *
+     * @param port 服务器要监听的端口。
+     */
     public NettyServer(int port) {
         this.port = port;
     }
 
     /**
-     * Run the server.
+     * 启动服务器。
      *
-     * @param router The router.
-     * @param session The session factory.
-     * @throws Exception If an error occurs.
+     * @param router  用于处理请求的路由器。
+     * @param session Hibernate 的 SessionFactory，用于数据库操作。
+     * @throws Exception 如果服务器启动过程中发生错误。
      */
     public void run(Router router, SessionFactory session) throws Exception {
         // 1. 在内存中配置SSL

@@ -16,7 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.SessionFactory;
 
 /**
- * NettyHandler class.
+ * Netty 处理器类。
+ * 负责处理客户端连接、消息读取和响应发送。
  */
 @Slf4j
 public class NettyHandler extends ChannelInboundHandlerAdapter {
@@ -25,15 +26,21 @@ public class NettyHandler extends ChannelInboundHandlerAdapter {
     private final SessionFactory database;
     private Session session;
 
+    /**
+     * 构造一个新的 NettyHandler。
+     *
+     * @param router   请求路由器。
+     * @param database 数据库会话工厂。
+     */
     public NettyHandler(Router router, SessionFactory database) {
         this.router = router;
         this.database = database;
     }
 
     /**
-     * Called when a new connection is made.
+     * 当一个新的连接建立时被调用。
      *
-     * @param ctx The channel handler context.
+     * @param ctx Channel 处理器上下文。
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -42,9 +49,9 @@ public class NettyHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Called when a connection is closed.
+     * 当连接关闭时被调用。
      *
-     * @param ctx The channel handler context.
+     * @param ctx Channel 处理器上下文。
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
@@ -52,10 +59,10 @@ public class NettyHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Called when a message is received.
+     * 当接收到消息时被调用。
      *
-     * @param ctx The channel handler context.
-     * @param msg The message.
+     * @param ctx Channel 处理器上下文。
+     * @param msg 接收到的消息。
      */
     @Override
     public void channelRead(@NonNull ChannelHandlerContext ctx, @NonNull Object msg) {
@@ -65,7 +72,7 @@ public class NettyHandler extends ChannelInboundHandlerAdapter {
             Request request = gson.fromJson(in.toString(CharsetUtil.UTF_8), Request.class);
             request.setSession(session);
 
-            Response response = null;
+            Response response;
 
             if (!router.hasRoute(request.getUri())) {
                 log.info("[{}] Route not found: {}", ctx.channel().id(), request.getUri());
@@ -92,20 +99,20 @@ public class NettyHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Send a response to the client.
+     * 发送响应给客户端。
      *
-     * @param ctx The channel handler context.
-     * @param response The response.
+     * @param ctx      Channel 处理器上下文。
+     * @param response 要发送的响应。
      */
     private void sendResponse(ChannelHandlerContext ctx, Response response) {
         ctx.writeAndFlush(Unpooled.copiedBuffer(gson.toJson(response), CharsetUtil.UTF_8));
     }
 
     /**
-     * Called when an exception is caught.
+     * 当捕获到异常时被调用。
      *
-     * @param ctx The channel handler context.
-     * @param cause The exception.
+     * @param ctx   Channel 处理器上下文。
+     * @param cause 异常。
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

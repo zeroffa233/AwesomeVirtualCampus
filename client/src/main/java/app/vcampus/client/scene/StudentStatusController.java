@@ -9,33 +9,73 @@ import javafx.fxml.Initializable;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * 学籍信息场景控制器。
+ * 负责展示学生本人的学籍信息。
+ */
 public class StudentStatusController implements Initializable {
 
-    // 学籍信息字段
     @FXML private JFXTextField familyNameField;
+    /**
+     * 名输入框。
+     */
     @FXML private JFXTextField givenNameField;
+    /**
+     * 性别输入框。
+     */
     @FXML private JFXTextField genderField;
+    /**
+     * 出生日期输入框。
+     */
     @FXML private JFXTextField birthDateField;
+    /**
+     * 出生地输入框。
+     */
     @FXML private JFXTextField birthPlaceField;
+    /**
+     * 政治面貌输入框。
+     */
     @FXML private JFXTextField politicalStatusField;
+    /**
+     * 学籍状态输入框。
+     */
     @FXML private JFXTextField statusField;
+    /**
+     * 专业输入框。
+     */
     @FXML private JFXTextField majorField;
+    /**
+     * 学院输入框。
+     */
     @FXML private JFXTextField schoolField;
+    /**
+     * 学号输入框。
+     */
     @FXML private JFXTextField studentNumberField;
+    /**
+     * 卡号输入框。
+     */
     @FXML private JFXTextField cardNumberField;
 
+    /**
+     * 学生学籍视图模型。
+     */
     private final StudentStatusViewModel viewModel = new StudentStatusViewModel();
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     *
+     * @param location  URL定位资源。
+     * @param resources 资源包。
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 当 ViewModel 的 currentStudent 改变时刷新界面
         viewModel.currentStudentProperty().addListener((obs, oldS, newS) -> {
             if (newS != null) {
                 loadStudentInfo(newS);
             }
         });
 
-        // 初始加载当前用户学籍
         viewModel.getStudentStatus();
     }
 
@@ -54,6 +94,12 @@ public class StudentStatusController implements Initializable {
         cardNumberField.setText(String.valueOf(s.getCardNumber() == null ? 0 : s.getCardNumber()));
     }
 
+    /**
+     * 处理空字符串。
+     *
+     * @param s 字符串。
+     * @return 如果字符串为空，则返回空字符串，否则返回原字符串。
+     */
     private String nullSafe(String s) {
         return s == null ? "" : s;
     }

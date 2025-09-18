@@ -29,9 +29,12 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture; // 【修改】导入 CompletableFuture
 import java.util.stream.Collectors;
 
+/**
+ * GPT 视图模型。
+ * 负责处理与 AI 助手聊天相关的所有逻辑，包括会话管理、API 调用和 UI 数据绑定。
+ */
 public class GptViewModel {
 
-    // Properties for UI binding
     private final StringProperty userInput = new SimpleStringProperty("");
     private final ObservableList<Message> chatMessages = FXCollections.observableArrayList();
     private final BooleanProperty sendButtonDisabled = new SimpleBooleanProperty(false);
@@ -106,6 +109,11 @@ public class GptViewModel {
 
 
     // 【修改】重写初始化方法，以支持异步加载
+
+    /**
+     * 初始化会话。
+     * 加载聊天历史记录，并打开最近的一个会话或创建一个新会话。
+     */
     public void initializeSession() {
         // UI立即响应，显示加载信息
         Platform.runLater(() -> {
@@ -152,35 +160,64 @@ public class GptViewModel {
         });
     }
 
+    /**
+     * 删除指定的聊天会话。
+     *
+     * @param sessionIdToDelete 要删除的会话ID。
+     */
     public void deleteSession(UUID sessionIdToDelete) {
         if (sessionIdToDelete == null) return;
-
         boolean wasActiveSession = currentSessionProperty.get() != null && currentSessionProperty.get().getId().equals(sessionIdToDelete);
-
         gptClient.deleteChatSession(sessionIdToDelete);
-
         if (wasActiveSession) {
             currentSessionProperty.set(null);
             createNewSession();
         }
-
         loadChatHistorySummaries();
     }
 
-    // #region Properties for UI Binding
+    /**
+     * 获取用户输入属性。
+     *
+     * @return 用户输入的 StringProperty。
+     */
     public StringProperty userInputProperty() { return userInput; }
-    public ObservableList<Message> getChatMessages() { return chatMessages; }
-    public BooleanProperty sendButtonDisabledProperty() { return sendButtonDisabled; }
-    public ObservableList<app.vcampus.server.utility.ChatSession.ChatSessionSummary> getChatHistory() { return chatHistory; }
-    public ReadOnlyObjectProperty<ChatSession> currentSessionProperty() { return currentSessionProperty; }
-    // #endregion
 
-    // #region Session Management Core Logic
+    /**
+     * 获取聊天消息列表。
+     *
+     * @return 聊天消息的 ObservableList。
+     */
+    public ObservableList<Message> getChatMessages() { return chatMessages; }
+
+    /**
+     * 获取发送按钮禁用状态的属性。
+     *
+     * @return 发送按钮禁用状态的 BooleanProperty。
+     */
+    public BooleanProperty sendButtonDisabledProperty() { return sendButtonDisabled; }
+
+    /**
+     * 获取聊天历史记录列表。
+     *
+     * @return 聊天历史摘要的 ObservableList。
+     */
+    public ObservableList<ChatSessionSummary> getChatHistory() { return chatHistory; }
+
+    /**
+     * 获取当前会话的只读属性。
+     *
+     * @return 当前会话的 ReadOnlyObjectProperty。
+     */
+    public ReadOnlyObjectProperty<ChatSession> currentSessionProperty() { return currentSessionProperty; }
+
+    /**
+     * 创建一个新的聊天会话。
+     */
     public void createNewSession() {
         if (currentSessionProperty.get() != null && currentSessionProperty.get().getMessageHistory().size() > 1) {
             saveCurrentSession();
         }
-
         ChatSession newSession = new ChatSession(UUID.randomUUID());
         // 【注意】确保此方法在 SYSTEM_PROMPT 初始化之后被调用
         if (SYSTEM_PROMPT == null) {
@@ -191,12 +228,16 @@ public class GptViewModel {
         }
         newSession.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", SYSTEM_PROMPT)));
         currentSessionProperty.set(newSession);
-
         rebuildChatDisplay();
         addMessage(new Message(UUID.randomUUID(), "system", WELCOME_MESSAGE, false));
         loadChatHistorySummaries();
     }
 
+    /**
+     * 加载指定的聊天会话。
+     *
+     * @param sessionId 要加载的会话ID。
+     */
     public void loadSession(UUID sessionId) {
         if (currentSessionProperty.get() != null && currentSessionProperty.get().getId().equals(sessionId)) {
             return;
@@ -204,9 +245,7 @@ public class GptViewModel {
         if (currentSessionProperty.get() != null && currentSessionProperty.get().getMessageHistory().size() > 1) {
             saveCurrentSession();
         }
-
         try {
-            // 加载新会话
             ChatSession loadedSession = gptClient.loadChatSession(sessionId);
             if (loadedSession != null) {
                 currentSessionProperty.set(loadedSession);
@@ -221,15 +260,18 @@ public class GptViewModel {
         }
     }
 
+    /**
+     * 保存当前聊天会话。
+     */
     public void saveCurrentSession() {
         ChatSession session = currentSessionProperty.get();
         if (session == null || session.getMessageHistory().size() <= 1) {
-            return; // Don't save empty sessions
+            return;
         }
         session.updateTitle();
         session.setLastModified(System.currentTimeMillis());
         gptClient.saveChatSession(session);
-        loadChatHistorySummaries(); // Refresh the list with updated title/order
+        loadChatHistorySummaries();
     }
 
     private void loadChatHistorySummaries() {
@@ -258,6 +300,9 @@ public class GptViewModel {
     // #endregion
 
     // #region Message Handling
+    /**
+     * 异步发送消息并获取 AI 回复。
+     */
     public void sendMessage() {
         String userMessageContent = userInput.get().trim();
         if (userMessageContent.isEmpty()) return;
@@ -288,20 +333,60 @@ public class GptViewModel {
         }).start();
     }
 
+    /**
+     * 删除指定ID的消息。
+     *
+     * @param messageIdToDelete 要删除的消息ID。
+     */
     public void deleteMessage(UUID messageIdToDelete) {
         if (messageIdToDelete == null) return;
         currentSessionProperty.get().removeMessage(messageIdToDelete);
         chatMessages.removeIf(message -> message.getId().equals(messageIdToDelete));
     }
 
+    /**
+     * 向聊天界面添加一条消息。
+     *
+     * @param message 要添加的消息对象。
+     */
     public void addMessage(Message message) { Platform.runLater(() -> chatMessages.add(message)); }
 
+    /**
+     * 更新正在流式传输的消息内容。
+     *
+     * @param messageId    消息ID。
+     * @param newContent 新增的内容片段。
+     */
     public void updateStreamingMessage(UUID messageId, String newContent) {
         Platform.runLater(() -> {
             chatMessages.stream()
                     .filter(m -> m.getId().equals(messageId))
                     .findFirst()
                     .ifPresent(message -> message.appendStreamingContent(newContent));
+        });
+    }
+
+    private void loadChatHistorySummaries() {
+        Platform.runLater(() -> {
+            List<ChatSessionSummary> summaries = gptClient.getChatHistorySummaries();
+            summaries.sort(Comparator.comparing(ChatSession.ChatSessionSummary::getLastModified).reversed());
+            chatHistory.setAll(summaries);
+        });
+    }
+
+    private void rebuildChatDisplay() {
+        Platform.runLater(() -> {
+            chatMessages.clear();
+            List<MessageEntry> history = currentSessionProperty.get().getMessageHistory();
+            for (MessageEntry entry : history) {
+                JSONObject msgJson = entry.getMessage();
+                String role = msgJson.getString("role");
+                String content = msgJson.getString("content");
+
+                if (!"system".equals(role)) {
+                    chatMessages.add(new Message(entry.getId(), role, content, true));
+                }
+            }
         });
     }
 
@@ -348,9 +433,11 @@ public class GptViewModel {
             saveCurrentSession();
         }
     }
-    // #endregion
 
-    // This class remains here as it's part of the ViewModel layer due to JavaFX properties.
+    /**
+     * 用于在UI上展示的消息的内部类。
+     * 包含JavaFX属性以支持数据绑定和流式更新。
+     */
     public static class Message {
         private final UUID id;
         private final String sender;
@@ -358,16 +445,48 @@ public class GptViewModel {
         private final boolean deletable;
         private final StringProperty streamingContent;
 
+        /**
+         * 构造函数。
+         *
+         * @param id        消息ID。
+         * @param sender    发送者角色 ("user" or "model")。
+         * @param content   消息初始内容。
+         * @param deletable 是否可删除。
+         */
         public Message(UUID id, String sender, String content, boolean deletable) {
             this.id = id; this.sender = sender; this.content = content; this.deletable = deletable;
             this.streamingContent = new SimpleStringProperty(content);
         }
 
+        /**
+         * 获取消息ID。
+         * @return UUID
+         */
         public UUID getId() { return id; }
+        /**
+         * 获取发送者。
+         * @return 发送者字符串
+         */
         public String getSender() { return sender; }
+        /**
+         * 获取完整内容。
+         * @return 完整内容字符串
+         */
         public String getContent() { return content; }
+        /**
+         * 是否可删除。
+         * @return 布尔值
+         */
         public boolean isDeletable() { return deletable; }
+        /**
+         * 获取用于UI绑定的流式内容属性。
+         * @return StringProperty
+         */
         public StringProperty streamingContentProperty() { return streamingContent; }
+        /**
+         * 追加流式内容。
+         * @param newContent 新的内容片段。
+         */
         public void appendStreamingContent(String newContent) {
             if ("思考中...".equals(streamingContent.get())) {
                 streamingContent.set(newContent);

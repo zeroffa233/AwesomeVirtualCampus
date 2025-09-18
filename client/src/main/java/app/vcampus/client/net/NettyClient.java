@@ -19,16 +19,41 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Callable;
 
+/**
+ * Netty客户端，用于连接服务器并处理网络通信。
+ * 实现Callable接口，以便在单独的线程中执行网络连接操作。
+ */
 public class NettyClient implements Callable<NettyHandler> {
+    /**
+     * 用于处理客户端I/O操作的事件循环组。
+     */
     private static final EventLoopGroup workerGroup = new NioEventLoopGroup();
+    /**
+     * 服务器主机名或IP地址。
+     */
     private final String host;
+    /**
+     * 服务器端口号。
+     */
     private final int port;
 
+    /**
+     * 构造一个新的NettyClient实例。
+     *
+     * @param host 服务器主机名或IP地址。
+     * @param port 服务器端口号。
+     */
     public NettyClient(String host, int port) {
         this.host = host;
         this.port = port;
     }
 
+    /**
+     * 建立与服务器的连接并返回一个NettyHandler实例。
+     *
+     * @return 处理网络通信的NettyHandler实例。
+     * @throws Exception 如果连接过程中发生错误。
+     */
     @Override
     public NettyHandler call() throws Exception { // 声明抛出Exception
         // 1. 配置客户端SSL

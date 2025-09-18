@@ -25,14 +25,19 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * 图书馆图书控制器。
+ * 处理与图书馆图书相关的操作，如图书增删改查、借阅、归还、续借等。
+ */
 @Slf4j
 public class LibraryBookController {
 
     /**
-     * deal with client request for book adding in library
-     * @param request from client with uri and role
-     * @param database database
-     * @return response, ok or bad request
+     * 添加一本新书。
+     *
+     * @param request  包含图书信息的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
      */
     @RouteMapping(uri = "library/addBook")
     public Response addBook(Request request, org.hibernate.Session database) {
@@ -57,10 +62,11 @@ public class LibraryBookController {
     }
 
     /**
-     * deal with client request of book delete in library, however not used
-     * @param request client request with uri and role
-     * @param database database
-     * @return response, ok or error
+     * 删除一本书（此功能当前未使用）。
+     *
+     * @param request  包含图书UUID的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
      */
     @RouteMapping(uri = "library/deleteBook", role = "library_staff")
     public Response deleteBook(Request request, org.hibernate.Session database) {
@@ -80,10 +86,11 @@ public class LibraryBookController {
     }
 
     /**
-     * deal with client request of book borrow in library
-     * @param request client request with uri and role
-     * @param database database
-     * @return response, ok or error
+     * 借阅一本书。
+     *
+     * @param request  包含图书UUID和用户卡号的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
      */
     @RouteMapping(uri = "library/borrowBook")
     public Response borrowBook(Request request, org.hibernate.Session database) {
@@ -121,10 +128,11 @@ public class LibraryBookController {
     }
 
     /**
-     * deal with client request of book information update in library, the role is staff
-     * @param request client request with uri and role
-     * @param database database
-     * @return response, ok or bad request
+     * 更新图书信息。
+     *
+     * @param request  包含更新后图书信息的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
      */
     @RouteMapping(uri = "library/updateBook")
     public Response updateBook(Request request, org.hibernate.Session database) {
@@ -150,11 +158,11 @@ public class LibraryBookController {
     }
 
     /**
-     * deal with client request of book search in library
-     *      use keyword params to do like query
-     * @param request from client with uri and role
-     * @param database database
-     * @return response, error or ok
+     * 根据关键词搜索图书。
+     *
+     * @param request  包含搜索关键词的请求。
+     * @param database 数据库会话。
+     * @return 按ISBN分组的图书列表的响应。
      */
     @RouteMapping(uri = "library/searchBook")
     public Response searchBook(Request request, org.hibernate.Session database) {
@@ -169,6 +177,13 @@ public class LibraryBookController {
         }
     }
 
+    /**
+     * 获取所有图书信息。
+     *
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含所有图书列表的响应。
+     */
     @RouteMapping(uri = "library/all")
     public Response all(Request request, org.hibernate.Session database) {
         try {
@@ -180,6 +195,13 @@ public class LibraryBookController {
         }
     }
 
+    /**
+     * 为删除操作搜索图书。
+     *
+     * @param request  包含书名的请求。
+     * @param database 数据库会话。
+     * @return 包含匹配书名图书列表的响应。
+     */
     @RouteMapping(uri = "library/searchForDeletion")
     public Response searchForDeletion(Request request, org.hibernate.Session database) {
         try {
@@ -192,6 +214,13 @@ public class LibraryBookController {
         }
     }
 
+    /**
+     * 根据ISBN获取图书信息，如果本地不存在则从外部API获取。
+     *
+     * @param request  包含ISBN的请求。
+     * @param database 数据库会话。
+     * @return 包含图书信息的响应。
+     */
     @RouteMapping(uri = "library/isbn", role = "library_staff")
     public Response isbn(Request request, org.hibernate.Session database) {
         String isbn = request.getParams().get("isbn");
@@ -221,6 +250,13 @@ public class LibraryBookController {
         }
     }
 
+    /**
+     * 获取用户的借阅记录。
+     *
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含用户借阅记录列表的响应。
+     */
     @RouteMapping(uri = "library/user/records", role = "library_user")
     public Response userRecords(Request request, org.hibernate.Session database) {
         try {
@@ -235,6 +271,13 @@ public class LibraryBookController {
         }
     }
 
+    /**
+     * 用户续借图书。
+     *
+     * @param request  包含借阅记录UUID的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
     @RouteMapping(uri = "library/user/renew", role = "library_user")
     public Response renew(Request request, org.hibernate.Session database) {
         try {
@@ -265,6 +308,13 @@ public class LibraryBookController {
         }
     }
 
+    /**
+     * 图书馆工作人员获取指定用户的借阅记录。
+     *
+     * @param request  包含用户卡号的请求。
+     * @param database 数据库会话。
+     * @return 包含用户借阅记录列表的响应。
+     */
     @RouteMapping(uri = "library/staff/records")
     public Response staffRecords(Request request, org.hibernate.Session database) {
         try {
@@ -279,6 +329,13 @@ public class LibraryBookController {
         }
     }
 
+    /**
+     * 图书馆工作人员为用户续借图书。
+     *
+     * @param request  包含借阅记录UUID的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
     @RouteMapping(uri = "library/staff/renew")
     public Response staffRenew(Request request, org.hibernate.Session database) {
         try {
@@ -305,6 +362,13 @@ public class LibraryBookController {
         }
     }
 
+    /**
+     * 归还图书。
+     *
+     * @param request  包含借阅记录UUID的请求。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
     @RouteMapping(uri = "library/staff/return")
     public Response returnBook(Request request, org.hibernate.Session database) {
         try {

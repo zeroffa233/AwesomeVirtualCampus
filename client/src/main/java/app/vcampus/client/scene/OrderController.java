@@ -24,16 +24,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 订单场景控制器。
+ * 负责展示用户的订单历史记录，按天分组显示。
+ */
 public class OrderController {
 
     @FXML
     private VBox ordersListContainer;
 
+    /**
+     * 日期格式化器。
+     */
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     @FXML
     public void initialize() {
-        // 1. 从 ShopController 获取全局的交易历史记录
         List<ShopTransactionRecord> allTransactions = ShopController.transactionHistory;
 
         if (allTransactions.isEmpty()) {
@@ -41,34 +50,28 @@ public class OrderController {
             return;
         }
 
-        // 2. 将所有交易按“天”进行分组
         Map<LocalDate, List<ShopTransactionRecord>> groupedByDay = allTransactions.stream()
                 .collect(Collectors.groupingBy(record ->
                         Instant.ofEpochMilli(record.getTimestamp()).atZone(ZoneId.systemDefault()).toLocalDate()
                 ));
 
-        // 3. 按日期倒序排序
         List<LocalDate> sortedDates = new ArrayList<>(groupedByDay.keySet());
         sortedDates.sort(Comparator.reverseOrder());
 
-        // 4. 遍历排序后的日期，为每一天动态创建UI
         for (LocalDate date : sortedDates) {
             Node dayGroupNode = createDayGroup(date, groupedByDay.get(date));
             ordersListContainer.getChildren().add(dayGroupNode);
         }
     }
 
-    // 辅助方法：为一整天的数据创建UI
     private Node createDayGroup(LocalDate date, List<ShopTransactionRecord> transactions) {
-        VBox dayVBox = new VBox(20); // 天分组的垂直容器
+        VBox dayVBox = new VBox(20);
 
-        // 创建日期标签
         Label dateLabel = new Label(date.format(dateFormatter));
         dateLabel.setFont(Font.font("System", FontWeight.BOLD, 22));
 
         dayVBox.getChildren().add(dateLabel);
 
-        // 遍历这一天的每一笔交易
         for (ShopTransactionRecord transaction : transactions) {
             Node transactionNode = createTransactionCard(transaction);
             dayVBox.getChildren().add(transactionNode);
@@ -77,21 +80,23 @@ public class OrderController {
         return dayVBox;
     }
 
-    // 辅助方法：为单笔交易创建卡片
+    /**
+     * 创建交易卡片。
+     *
+     * @param transaction 交易记录。
+     * @return 交易卡片节点。
+     */
     private Node createTransactionCard(ShopTransactionRecord transaction) {
         VBox cardVBox = new VBox(10);
         cardVBox.setStyle("-fx-border-color: #E0E0E0; -fx-border-width: 1; -fx-background-color: white; -fx-background-radius: 8;");
         cardVBox.setPadding(new Insets(20));
 
-        // --- 交易总额标题 ---
         Label totalLabel = new Label("共 " + String.format("%.2f", transaction.getTotalPrice()) + " 元");
         totalLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
         HBox totalHBox = new HBox(totalLabel);
         totalHBox.setAlignment(Pos.CENTER_RIGHT);
         cardVBox.getChildren().add(totalHBox);
 
-        // --- 商品列表 ---
-        // 为了正确显示数量，我们需要对商品列表进行分组计数
         Map<StoreItem, Long> itemCounts = transaction.getItems().stream()
                 .collect(Collectors.groupingBy(item -> item, Collectors.counting()));
 
@@ -103,34 +108,35 @@ public class OrderController {
         return cardVBox;
     }
 
-    // 辅助方法：为单个商品行创建UI（带数量）
+    /**
+     * 创建订单商品行。
+     *
+     * @param item 商品。
+     * @param quantity 数量。
+     * @return 订单商品行节点。
+     */
     private Node createOrderItemRow(StoreItem item, int quantity) {
         HBox itemHBox = new HBox(15);
         itemHBox.setAlignment(Pos.CENTER_LEFT);
         itemHBox.setPadding(new Insets(10, 0, 10, 0));
-        itemHBox.setStyle("-fx-border-color: #F0F0F0; -fx-border-width: 1 0 0 0;"); // 分割线
+        itemHBox.setStyle("-fx-border-color: #F0F0F0; -fx-border-width: 1 0 0 0;");
 
-        // 图片
         ImageView imageView = new ImageView();
         try {
-            // 尝试从缓存获取图片
             Image image = ImageCache.getInstance().getImage(item.getPictureLink());
             if (image.isError()) throw new Exception("Corrupted image data");
             imageView.setImage(image);
         } catch (Exception e) {
-            // 如果失败，优雅地降级到默认占位图
             System.err.println("无法加载订单图片 '" + item.getPictureLink() + "', 使用默认图。");
             try {
                 imageView.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png"))));
             } catch (Exception fallbackEx) {
-                // 如果默认图也失败，imageView 将保持空白
             }
         }
         imageView.setFitHeight(80);
         imageView.setFitWidth(80);
         imageView.setPreserveRatio(true);
 
-        // 名称和价格
         VBox nameAndPriceVBox = new VBox(5);
         Text nameText = new Text(item.getItemName());
         nameText.setFont(Font.font(16));
@@ -138,11 +144,9 @@ public class OrderController {
         priceLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
         nameAndPriceVBox.getChildren().addAll(nameText, priceLabel);
 
-        // 伸缩弹簧
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // 数量
         Label quantityLabel = new Label(String.valueOf(quantity));
         quantityLabel.setFont(Font.font(14));
         quantityLabel.setTextFill(Color.web("#616161"));

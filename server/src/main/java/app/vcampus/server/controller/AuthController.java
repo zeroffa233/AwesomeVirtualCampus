@@ -10,14 +10,19 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+/**
+ * 认证控制器。
+ * 处理用户的登录和登出请求。
+ */
 @Slf4j
 public class AuthController {
     /**
-     * for user to log in by cardNumber and password
+     * 用户登录。
+     * 通过卡号和密码进行验证。
      *
-     * @param request  from client with role and uri
-     * @param database database
-     * @return return response which contains the cardNumber and roles
+     * @param request  包含卡号和密码的请求。
+     * @param database 数据库会话。
+     * @return 包含会话信息和用户数据的响应，或错误信息。
      */
     @RouteMapping(uri = "auth/login")
     public Response login(Request request, org.hibernate.Session database) {
@@ -51,11 +56,12 @@ public class AuthController {
     }
 
     /**
-     * for user to logout
+     * 用户登出。
+     * 清除当前会话。
      *
-     * @param request  from client with role and uri
-     * @param database database
-     * @return response with OK or error
+     * @param request  请求对象。
+     * @param database 数据库会话。
+     * @return 包含空会话的成功响应。
      */
     @RouteMapping(uri = "auth/logout")
     public Response logout(Request request, org.hibernate.Session database) {
@@ -65,4 +71,3 @@ public class AuthController {
         return response;
     }
 }
-

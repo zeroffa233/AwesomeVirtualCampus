@@ -5,26 +5,49 @@ import app.vcampus.server.utility.CardInfo;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 
+/**
+ * 财务管理视图模型。
+ * 负责处理财务管理界面的逻辑，如搜索一卡通、充值、冻结/解冻卡片等。
+ */
 public class ManageFinanceViewModel {
-    // Input properties
+    /**
+     * 搜索输入框的卡号属性。
+     */
     public final StringProperty searchCardNumber = new SimpleStringProperty("");
+    /**
+     * 充值输入框的金额属性。
+     */
     public final StringProperty rechargeAmount = new SimpleStringProperty("");
 
-    // Output/State properties
     private final ObjectProperty<CardInfo> foundCard = new SimpleObjectProperty<>();
+    /**
+     * 显示卡片信息的文本属性。
+     */
     public final StringProperty cardInfoText = new SimpleStringProperty("");
+    /**
+     * 控制搜索结果是否可见的布尔属性。
+     */
     public final BooleanProperty searchResultVisible = new SimpleBooleanProperty(false);
 
-    // Properties for the status message (replaces alerts)
+    /**
+     * 显示状态消息的文本属性。
+     */
     public final StringProperty statusMessage = new SimpleStringProperty("");
+    /**
+     * 状态消息文本的样式属性。
+     */
     public final StringProperty statusMessageStyle = new SimpleStringProperty("");
 
-    // Properties for the toggle button
+    /**
+     * 冻结/解冻按钮的文本属性。
+     */
     public final StringProperty freezeButtonText = new SimpleStringProperty("冻结");
 
-
+    /**
+     * 构造函数。
+     * 初始化监听器，当找到新的卡片时更新UI。
+     */
     public ManageFinanceViewModel() {
-        // Listener to update UI when a new card is found
         foundCard.addListener((obs, oldCard, newCard) -> {
             Platform.runLater(() -> {
                 if (newCard != null) {
@@ -37,22 +60,36 @@ public class ManageFinanceViewModel {
         });
     }
 
+    /**
+     * 更新显示的卡片信息文本。
+     *
+     * @param card 卡片信息对象。
+     */
     private void updateCardInfoText(CardInfo card) {
         cardInfoText.set(String.format("卡号: %s    卡片状态: %s    余额: %.2f 元",
                 card.getCardNumber(), card.getStatus(), card.getBalance()));
     }
 
+    /**
+     * 根据卡片状态更新冻结/解冻按钮的文本。
+     *
+     * @param status 卡片状态字符串。
+     */
     private void updateFreezeButtonState(String status) {
         if ("正常".equals(status)) {
             freezeButtonText.set("冻结");
         } else if ("冻结".equals(status)) {
             freezeButtonText.set("解冻");
         } else {
-            // Disable button for other statuses like "已挂失"
             freezeButtonText.set("冻结");
         }
     }
 
+    /**
+     * 在后台线程中执行任务。
+     *
+     * @param task 要执行的任务。
+     */
     private void runAsyncTask(Runnable task) {
         new Thread(() -> {
             try {
@@ -64,15 +101,24 @@ public class ManageFinanceViewModel {
         }).start();
     }
 
+    /**
+     * 显示状态消息。
+     *
+     * @param message 消息内容。
+     * @param isError 是否为错误消息。
+     */
     private void showStatusMessage(String message, boolean isError) {
         statusMessage.set(message);
         if (isError) {
-            statusMessageStyle.set("-fx-text-fill: #D32F2F;"); // Red color for errors
+            statusMessageStyle.set("-fx-text-fill: #D32F2F;");
         } else {
-            statusMessageStyle.set("-fx-text-fill: #388E3C;"); // Green color for success
+            statusMessageStyle.set("-fx-text-fill: #388E3C;");
         }
     }
 
+    /**
+     * 搜索一卡通。
+     */
     public void search() {
         String cardNumber = searchCardNumber.get().trim();
         if (cardNumber.isEmpty()) {
@@ -80,7 +126,7 @@ public class ManageFinanceViewModel {
             return;
         }
 
-        statusMessage.set(""); // Clear previous message
+        statusMessage.set("");
         runAsyncTask(() -> {
             var cardOpt = FinanceClient.findCardInfo(cardNumber);
             Platform.runLater(() -> {
@@ -96,6 +142,9 @@ public class ManageFinanceViewModel {
         });
     }
 
+    /**
+     * 为一卡通充值。
+     */
     public void recharge() {
         try {
             double amount = Double.parseDouble(rechargeAmount.get().trim());
@@ -109,15 +158,9 @@ public class ManageFinanceViewModel {
                 Platform.runLater(() -> {
                     if (success) {
                         showStatusMessage("充值 " + String.format("%.2f", amount) + " 元成功！", false);
-                        // Manually update the balance in the ViewModel to refresh UI
                         CardInfo currentCard = foundCard.get();
-
-                        // 1. 【修复】先更新 ViewModel 中卡对象的余额
                         double newBalance = currentCard.getBalance() + amount;
                         currentCard.setBalance(newBalance);
-
-                        // 2. 再用更新后的对象去刷新UI
-                        updateCardInfoText(currentCard);
                         updateCardInfoText(currentCard);
                         rechargeAmount.set("");
                     } else {
@@ -130,6 +173,9 @@ public class ManageFinanceViewModel {
         }
     }
 
+    /**
+     * 切换一卡通的冻结/解冻状态。
+     */
     public void toggleFreezeState() {
         CardInfo currentCard = foundCard.get();
         if (currentCard == null) return;
@@ -137,7 +183,6 @@ public class ManageFinanceViewModel {
         String currentStatus = currentCard.getStatus();
         String newStatus;
         String actionName;
-        System.out.println(currentStatus);
         if ("正常".equals(currentStatus)) {
             newStatus = "冻结";
             actionName = "冻结";
@@ -145,7 +190,6 @@ public class ManageFinanceViewModel {
             newStatus = "正常";
             actionName = "解冻";
         } else {
-            // Should not happen if button is disabled, but as a safeguard
             return;
         }
 

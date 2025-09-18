@@ -23,18 +23,31 @@ import java.util.stream.Collectors;
  * ChatClient 提供了一个网关，用于访问后端的聊天室服务。
  * 它封装了所有与服务器的HTTP API交互的细节。
  */
-public class    ChatClient extends BaseClient {
-    // 使用 Gson 进行 Map 和对象之间的转换
+public class ChatClient extends BaseClient {
+    /**
+     * Gson实例，用于JSON序列化和反序列化。
+     */
     private final Gson gson = new GsonBuilder().create();
+    /**
+     * Netty处理器，用于发送请求。
+     */
     private final NettyHandler handler;
 
     // 单例模式
     private static final ChatClient instance = new ChatClient(FakeRepository.handler);
 
+    /**
+     * 构造函数。
+     * @param handler Netty处理器。
+     */
     private ChatClient(NettyHandler handler) {
         this.handler = handler;
     }
 
+    /**
+     * 获取ChatClient的单例实例。
+     * @return ChatClient的单例实例。
+     */
     public static ChatClient getInstance() {
         return instance;
     }
@@ -52,7 +65,7 @@ public class    ChatClient extends BaseClient {
         try {
             Response response = BaseClient.sendRequest(handler, request);
             if (!response.getStatus().equals("success")) {
-                throw new IOException("Failed to get chat room state: " + response.getMessage());
+                throw new IOException("获取聊天室状态失败: " + response.getMessage());
             }
 
             // MODIFIED: 采用更稳健的转换方式来避免数字类型问题
@@ -65,7 +78,7 @@ public class    ChatClient extends BaseClient {
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("Request was interrupted", e);
+            throw new IOException("请求被中断", e);
         }
     }
 
@@ -80,7 +93,7 @@ public class    ChatClient extends BaseClient {
         request.setUri("chat/post");
         request.setParams(Map.of("topicId", topicId, "content", content));
 
-        sendActionRequest(request, "Failed to post message");
+        sendActionRequest(request, "发布消息失败");
     }
 
     /**
@@ -94,7 +107,7 @@ public class    ChatClient extends BaseClient {
         request.setUri("chat/message/comment");
         request.setParams(Map.of("messageId", messageId.toString(), "content", content));
 
-        sendActionRequest(request, "Failed to post comment");
+        sendActionRequest(request, "发布评论失败");
     }
 
     /**
@@ -107,7 +120,7 @@ public class    ChatClient extends BaseClient {
         request.setUri("chat/message/like");
         request.setParams(Map.of("messageId", messageId.toString()));
 
-        sendActionRequest(request, "Failed to toggle message like");
+        sendActionRequest(request, "切换帖子点赞状态失败");
     }
 
     /**
@@ -120,7 +133,7 @@ public class    ChatClient extends BaseClient {
         request.setUri("chat/comment/like");
         request.setParams(Map.of("commentId", commentId.toString()));
 
-        sendActionRequest(request, "Failed to toggle comment like");
+        sendActionRequest(request, "切换评论点赞状态失败");
     }
 
     /**
@@ -133,7 +146,7 @@ public class    ChatClient extends BaseClient {
         request.setUri("identity/update");
         request.setParams(Map.of("newUserName", newName));
 
-        sendActionRequest(request, "Failed to update username");
+        sendActionRequest(request, "更新用户名失败");
     }
 
     /**
@@ -150,7 +163,7 @@ public class    ChatClient extends BaseClient {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("Request was interrupted", e);
+            throw new IOException("请求被中断", e);
         }
     }
 
@@ -172,7 +185,7 @@ public class    ChatClient extends BaseClient {
         try {
             Response response = BaseClient.sendRequest(handler, request);
             if (!response.getStatus().equals("success")) {
-                throw new IOException("Search failed: " + response.getMessage());
+                throw new IOException("搜索失败: " + response.getMessage());
             }
 
             // *************** 解析逻辑从 ViewModel 移到此处 ***************
@@ -202,7 +215,7 @@ public class    ChatClient extends BaseClient {
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("Request was interrupted", e);
+            throw new IOException("请求被中断", e);
         }
     }
 
@@ -219,6 +232,6 @@ public class    ChatClient extends BaseClient {
                 "type", type,
                 "id", id.toString()
         ));
-        sendActionRequest(request, "Failed to delete");
+        sendActionRequest(request, "删除失败");
     }
 }

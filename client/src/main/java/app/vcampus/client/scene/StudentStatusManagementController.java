@@ -1,4 +1,3 @@
-// File: StudentStatusManagementController.java (small adjustments)
 package app.vcampus.client.scene;
 
 import app.vcampus.client.scene.components.SearchStudentCell;
@@ -16,14 +15,33 @@ import javafx.scene.layout.VBox;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * 学籍管理场景控制器。
+ * 负责处理教职工管理学生学籍信息的界面逻辑，主要是搜索和展示学生信息。
+ */
 public class StudentStatusManagementController implements Initializable {
 
-    @FXML private JFXTextField searchField;
+        @FXML private JFXTextField searchField;
+    /**
+     * 搜索按钮。
+     */
     @FXML private JFXButton searchBtn;
+    /**
+     * 搜索结果容器。
+     */
     @FXML private VBox searchResultsContainer;
 
+    /**
+     * 学生学籍视图模型。
+     */
     private final StudentStatusViewModel viewModel = new StudentStatusViewModel();
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     *
+     * @param location  URL定位资源。
+     * @param resources 资源包。
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         searchBtn.disableProperty().bind(searchField.textProperty().isEmpty());
@@ -56,7 +74,6 @@ public class StudentStatusManagementController implements Initializable {
                     SearchStudentCell cell = new SearchStudentCell(viewModel, true);
                     cell.updateItem(student, false);
 
-                    // 让卡片宽度自适应容器宽度
                     cell.getRoot().prefWidthProperty().bind(searchResultsContainer.widthProperty().subtract(8));
                     VBox.setVgrow(cell.getRoot(), Priority.NEVER);
 
@@ -72,7 +89,11 @@ public class StudentStatusManagementController implements Initializable {
         });
     }
 
+    /**
+     * 打开编辑对话框。
+     *
+     * @param student 要编辑的学生对象。
+     */
     private void openEditDialog(Student student) {
-        // 保持原实现
     }
 }

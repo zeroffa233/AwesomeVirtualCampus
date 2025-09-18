@@ -9,10 +9,22 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * JavaFX应用程序的主入口点。
+ * 负责初始化舞台、加载场景以及处理应用程序的启动和调试模式。
+ */
 public class Main extends Application {
 
+    /**
+     * 应用程序的主舞台。
+     */
     private static Stage primaryStage;
 
+    /**
+     * JavaFX应用程序的入口方法。
+     * @param stage 主舞台。
+     * @throws IOException 如果加载FXML文件失败。
+     */
     @Override
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
@@ -32,6 +44,9 @@ public class Main extends Application {
         //startForDebug();
     }
 
+    /**
+     * 启动调试模式，连接到服务器并显示主面板。
+     */
     public static void startForDebug() {
         // This task will handle the network connection in the background
         javafx.concurrent.Task<Void> initTask = new javafx.concurrent.Task<>() {
@@ -51,7 +66,7 @@ public class Main extends Application {
 
 
                 } catch (Exception e) {
-                    System.err.println("Debug connection failed: " + e.getMessage());
+                    System.err.println("调试连接失败: " + e.getMessage());
                     // We can still proceed to show the UI for layout debugging
                 }
                 return null;
@@ -76,14 +91,22 @@ public class Main extends Application {
     }
 
 
+    /**
+     * 显示登录场景。
+     * @throws IOException 如果加载FXML文件失败。
+     */
     public static void showLogin() throws IOException {
         Parent root = FXMLLoader.load(Objects.requireNonNull(Main.class.getResource("/app/vcampus/client/scene/LoginScene.fxml")));
-        primaryStage.setTitle("VCampus Login");
+        primaryStage.setTitle("VCampus 登录");
         primaryStage.setScene(new Scene(root, 400, 600));
         primaryStage.show();
         primaryStage.requestFocus();
     }
 
+    /**
+     * 显示主面板场景。
+     * @throws IOException 如果加载FXML文件失败。
+     */
     public static void showMainPanel() throws IOException {
         // 1. 加载 FXML 布局
         Parent root = FXMLLoader.load(Objects.requireNonNull(Main.class.getResource("/app/vcampus/client/scene/MainScene.fxml")));
@@ -102,6 +125,10 @@ public class Main extends Application {
         primaryStage.requestFocus();
     }
 
+    /**
+     * 应用程序的主方法。
+     * @param args 命令行参数。
+     */
     public static void main(String[] args) {
         launch(args);
     }

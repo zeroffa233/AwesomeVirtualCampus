@@ -38,19 +38,19 @@ import javafx.scene.text.Text;
 import app.vcampus.server.utility.ShopTransactionRecord;
 
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.SVGPath; // 确保导入
-import javafx.animation.Timeline; // 确保导入
+import javafx.scene.shape.SVGPath;
+import javafx.animation.Timeline;
 
-import app.vcampus.client.gateway.StoreClient; // 【重要】导入 StoreClient
-import app.vcampus.client.repository.FakeRepository; // 【重要】导入 FakeRepository
-import app.vcampus.server.entity.StoreItem; // 【重要】导入服务端的实体
+import app.vcampus.client.gateway.StoreClient;
+import app.vcampus.client.repository.FakeRepository;
+import app.vcampus.server.entity.StoreItem;
 
-//TODO : 模糊搜索优化
-//TODO : 去掉 Cart 的自动换行
-
+/**
+ * 商店场景控制器。
+ * 负责处理商店主界面的所有逻辑，包括商品展示、搜索、购物车管理和支付流程。
+ */
 public class ShopController {
 
-    // FXML Injected Fields
     @FXML private AnchorPane rootPane;
     @FXML private GridPane itemsGrid;
     @FXML private JFXTextField searchField;
@@ -69,9 +69,8 @@ public class ShopController {
     @FXML private SVGPath swipeHintIcon;
 
     private Timeline swipeHintAnimation;
-    private double lastKnownPrice = 0.0; // <<--- 在这里新增这一行
+    private double lastKnownPrice = 0.0;
 
-    // ViewModel / State Properties
     private final ObservableList<StoreItem> allItems = FXCollections.observableArrayList();
     private final ObservableList<StoreItem> displayedItems = FXCollections.observableArrayList();
     private final ObservableList<StoreItem> chosenItems = FXCollections.observableArrayList();
@@ -79,17 +78,21 @@ public class ShopController {
     private final IntegerProperty chosenItemsCount = new SimpleIntegerProperty(0);
     private final DoubleProperty chosenItemsPrice = new SimpleDoubleProperty(0.0);
 
-    // --- Animation Properties ---
     private boolean isCartVisible = false;
     private static final Duration ANIMATION_SPEED = Duration.millis(400);
     private static final Interpolator CUSTOM_EASING = Interpolator.SPLINE(0.23, 1.0, 0.32, 1.0);
     private ParallelTransition cartAnimation;
 
+    /**
+     * 交易历史记录。
+     */
     public static final List<ShopTransactionRecord> transactionHistory = new ArrayList<>();
 
     private static ShopController instance;
 
-    // 【已重构】
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     @FXML
     public void initialize() {
         instance = this;
@@ -103,7 +106,6 @@ public class ShopController {
 
         initialize_overlayPane_and_bottomBar();
 
-        // Ensure that the initial position of cartContainer is outside the screen and can respond to changes in window size.
         rootPane.heightProperty().addListener((obs, oldVal, newVal) -> {
             if (!isCartVisible) {
                 cartContainer.setTranslateY(newVal.doubleValue());
@@ -118,6 +120,36 @@ public class ShopController {
         cartContainer.setMouseTransparent(true);
         cartContainer.setCache(true);
         cartContainer.setCacheHint(javafx.scene.CacheHint.SPEED);
+    }
+
+    /**
+     * 刷新商品数据。
+     */
+    public void refreshData() {
+        System.out.println("ShopController: 正在启动数据刷新...");
+        new Thread(() -> {
+            List<StoreItem> itemsFromServer = StoreClient.getAll(FakeRepository.handler);
+            Platform.runLater(() -> {
+                if (itemsFromServer != null) {
+                    allItems.setAll(itemsFromServer);
+                    System.out.println("ShopController: 数据刷新成功，共加载 " + allItems.size() + " 件商品。");
+                } else {
+                    System.err.println("ShopController: 数据刷新失败。");
+                    allItems.clear();
+                }
+                displayedItems.setAll(allItems);
+                populateItemsGrid();
+            });
+        }).start();
+    }
+
+    /**
+     * 获取 ShopController 的单例实例。
+     *
+     * @return ShopController 实例。
+     */
+    public static ShopController getInstance() {
+        return instance;
     }
 
     private void initialize_overlayPane_and_bottomBar() {
@@ -138,7 +170,7 @@ public class ShopController {
         cartTransition.setInterpolator(CUSTOM_EASING);
         overlayFade.setInterpolator(CUSTOM_EASING);
 
-        if (isCartVisible) { // 【打开购物车】
+        if (isCartVisible) {
             swipeHintAnimation.pause();
             swipeHintIcon.setVisible(false);
 
@@ -147,13 +179,13 @@ public class ShopController {
 
             overlayPane.setVisible(true);
 
-            overlayPane.setMouseTransparent(false); // 让遮罩层可以拦截点击
+            overlayPane.setMouseTransparent(false);
 
             double targetY = Math.max(60, rootPane.getHeight() - cartContainer.getHeight());
             cartTransition.setToY(targetY);
             overlayFade.setToValue(0.6);
 
-        } else { // 【关闭购物车】
+        } else {
             swipeHintAnimation.play();
             swipeHintIcon.setVisible(true);
 
@@ -168,16 +200,15 @@ public class ShopController {
             lastKnownPrice = finalPrice;
         }
 
-        // 将动画的创建和播放逻辑统一到方法末尾
         cartAnimation = new ParallelTransition(cartTransition, overlayFade);
 
-        if (!isCartVisible) { // 如果是关闭购物车，则在动画结束后执行清理
+        if (!isCartVisible) {
             cartAnimation.setOnFinished(event -> {
                 overlayPane.setVisible(false);
-                overlayPane.setMouseTransparent(true); // 允许鼠标穿透
+                overlayPane.setMouseTransparent(true);
                 cartContainer.setMouseTransparent(true);
             });
-        } else { // 如果是打开购物车，则不需要结束回调
+        } else {
             cartAnimation.setOnFinished(null);
         }
 
@@ -253,12 +284,10 @@ public class ShopController {
 
     private void load_image_from_cache(String pictureLink, double VIEWPORT_SIZE, StackPane imageContainer) {
         try {
-            // Try to retrieve the ideal image from the cache.
             Image image = ImageCache.getInstance().getImage(pictureLink);
 
             if (image.isError()) throw new Exception("Image data is corrupted for path: " + pictureLink);
 
-            // 如果一切顺利，创建并显示这张理想的图片
             ImageView imageView = new ImageView(image);
             imageView.setPreserveRatio(true);
             if (image.getWidth() < image.getHeight()) imageView.setFitWidth(VIEWPORT_SIZE);
@@ -297,7 +326,6 @@ public class ShopController {
     }
 
     private Node createCartListItem(StoreItem item) {
-        // --- 1. 创建 GridPane 根布局 (保持不变) ---
         GridPane listItem = new GridPane();
         listItem.setPadding(new Insets(16, 10, 16, 10));
         listItem.setStyle("-fx-border-color: #E0E0E0; -fx-border-width: 0 0 1 0;");
@@ -308,13 +336,10 @@ public class ShopController {
         buttonColumn.setHgrow(Priority.NEVER);
         listItem.getColumnConstraints().addAll(infoColumn, buttonColumn);
 
-        // --- 【核心修改】用我们统一的 ImageCache 逻辑替换旧的加载方式 ---
         ImageView imageView = new ImageView();
 
         load_image_then_config_ImageView(item, imageView);
 
-
-        // --- B. 创建图片右侧的商品信息 VBox (保持不变) ---
         VBox nameAndPriceContainer = new VBox(4);
         nameAndPriceContainer.setAlignment(Pos.CENTER_LEFT);
 
@@ -329,21 +354,15 @@ public class ShopController {
 
         nameAndPriceContainer.getChildren().addAll(nameText, priceLabel);
 
-
-        // --- C. 【新增】创建一个 HBox 来包裹图片和商品信息 (保持不变) ---
-        HBox imageAndInfoContainer = new HBox(15); // 15px 的水平间距
+        HBox imageAndInfoContainer = new HBox(15);
         imageAndInfoContainer.setAlignment(Pos.CENTER_LEFT);
         imageAndInfoContainer.getChildren().addAll(imageView, nameAndPriceContainer);
 
-
-        // --- D. 创建右侧的移除按钮 (保持不变) ---
         JFXButton removeButton = new JFXButton("移除");
         removeButton.setTextFill(Color.RED);
         removeButton.setOnAction(e -> chosenItems.remove(item));
 
-
-        // --- E. 【修改】将新的 HBox 和 Button 添加到 GridPane 中 (保持不变) ---
-        listItem.add(imageAndInfoContainer, 0, 0); // 将 HBox 作为一个整体放入第一列
+        listItem.add(imageAndInfoContainer, 0, 0);
         listItem.add(removeButton, 1, 0);
         GridPane.setHalignment(removeButton, javafx.geometry.HPos.RIGHT);
 
@@ -352,48 +371,37 @@ public class ShopController {
 
     private void load_image_then_config_ImageView(StoreItem item, ImageView imageView) {
         try {
-            // 步骤 1: 尝试从缓存获取理想的图片
             Image image = ImageCache.getInstance().getImage(item.getPictureLink());
             if (image.isError()) throw new Exception("Image data is corrupted for path: " + item.getPictureLink());
             imageView.setImage(image);
 
         } catch (Exception e) {
-            // 步骤 2: 如果失败，执行“备用方案”
             System.err.println("无法加载购物车图片 '" + item.getPictureLink() + "', 正在使用默认占位图。原因: " + e.getMessage());
             try {
-                // a. 尝试从本地资源加载我们的备用图片
                 Image fallbackImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png")));
                 imageView.setImage(fallbackImage);
 
             } catch (Exception fallbackEx) {
-                // b. 如果连备用图片都加载失败了，imageView 将保持空白，
-                //    在小尺寸的购物车视图里，这比显示一个 "X" 可能更不突兀。
                 System.err.println("致命错误：购物车的默认占位图 /images/500.png 也无法加载！");
             }
         }
-        // --- 修改结束 ---
-
-        // --- 【微调参数】在这里调整图片大小 (保持不变) ---
-        imageView.setFitHeight(60); // 设置图片高度为 60px
-        imageView.setFitWidth(60);  // 设置图片宽度为 60px
-        imageView.setPreserveRatio(true); // 保持宽高比
+        imageView.setFitHeight(60);
+        imageView.setFitWidth(60);
+        imageView.setPreserveRatio(true);
     }
 
     private void setupBindings() {
-        // Bind bottom bar labels to properties
         itemCountLabel.textProperty().bind(
                 Bindings.createStringBinding(() -> "已选择 " + chosenItemsCount.get() + " 项商品", chosenItemsCount)
         );
 
-
-        // Bind cart view labels to properties
         cartItemCountLabel.textProperty().bind(
                 Bindings.createStringBinding(() -> "已选择 " + chosenItemsCount.get() + " 件商品", chosenItemsCount)
         );
         cartTotalPriceLabel.textProperty().bind(
                 Bindings.createStringBinding(() -> {
                     double totalPriceInFen = chosenItems.stream()
-                            .mapToDouble(item -> item.price.doubleValue()) // 使用 item.price
+                            .mapToDouble(item -> item.price.doubleValue())
                             .sum();
                     return "共 " + String.format("%.2f", totalPriceInFen / 100.0) + " 元";
                 }, chosenItems)
@@ -402,15 +410,14 @@ public class ShopController {
 
     private void setupListeners() {
         chosenItems.addListener((ListChangeListener<StoreItem>) c -> {
-            // 【核心修正】
             double newPriceInFen = chosenItems.stream()
-                    .mapToDouble(item -> item.price.doubleValue()) // 使用 item.price
+                    .mapToDouble(item -> item.price.doubleValue())
                     .sum();
 
             chosenItemsCount.set(chosenItems.size());
-            chosenItemsPrice.set(newPriceInFen); // chosenItemsPrice 存储的是分
+            chosenItemsPrice.set(newPriceInFen);
 
-            playPriceScrollAnimation(newPriceInFen / 100.0); // 传递“元”
+            playPriceScrollAnimation(newPriceInFen / 100.0);
 
             if (isCartVisible) {
                 updateCartItemsList();
@@ -551,9 +558,9 @@ public class ShopController {
             Map<String, Object> detail = new HashMap<>();
 
             detail.put("itemName", itemNameValue);
-            detail.put("price", itemInfo.getPrice()); // 直接存储以“分”为单位的整数价格
+            detail.put("price", itemInfo.getPrice());
             detail.put("description", itemInfo.getDescription());
-            detail.put("stock", quantityValue); // 我们可以复用 stock 字段来存储购买数量
+            detail.put("stock", quantityValue);
             detail.put("pictureLink", itemInfo.getPictureLink());
             detail.put("uuid", itemInfo.getUuid());
 
@@ -564,69 +571,58 @@ public class ShopController {
     }
 
     private void play_payment_animation() {
-        // --- 2. 准备动画 (已修改) ---
-        // cartView 淡出
         FadeTransition cartFadeOut = new FadeTransition(Duration.millis(300), cartView);
         cartFadeOut.setToValue(0);
 
-        // successOverlay 淡入
         FadeTransition successFadeIn = new FadeTransition(Duration.millis(300), successOverlay);
         successFadeIn.setFromValue(0);
         successFadeIn.setToValue(1);
 
-        // --- 3. 执行动画 (已修改) ---
-        // 当 successOverlay 淡入完成后，再清空数据并收回弹窗
         successFadeIn.setOnFinished(event -> {
-            chosenItems.clear(); // 在用户看到“已下单”后才清空数据
+            chosenItems.clear();
 
             PauseTransition delay = new PauseTransition(Duration.millis(500));
             delay.setOnFinished(e -> {
-                toggleCart(); // 调用统一的收回方法
+                toggleCart();
             });
             delay.play();
         });
 
-        // 启动动画：先显示 successOverlay，然后同时播放两个淡入淡出动画
         successOverlay.setVisible(true);
         cartFadeOut.play();
         successFadeIn.play();
     }
 
     private void createAndPlaySwipeHintAnimation() {
-        // 创建一个从起点到终点的时间轴动画
         swipeHintAnimation = new Timeline(
                 new KeyFrame(Duration.ZERO,
                         new KeyValue(swipeHintIcon.translateYProperty(), 0, Interpolator.EASE_BOTH),
                         new KeyValue(swipeHintIcon.opacityProperty(), 0.5, Interpolator.EASE_BOTH)
                 ),
-                new KeyFrame(Duration.seconds(1.2), // 动画单程时间
+                new KeyFrame(Duration.seconds(1.2),
                         new KeyValue(swipeHintIcon.translateYProperty(), -8, Interpolator.EASE_BOTH),
                         new KeyValue(swipeHintIcon.opacityProperty(), 1.0, Interpolator.EASE_BOTH)
                 )
         );
 
-        swipeHintAnimation.setAutoReverse(true); // 【魔法在这里】让动画自动往返播放
-        swipeHintAnimation.setCycleCount(Timeline.INDEFINITE); // 无限循环
+        swipeHintAnimation.setAutoReverse(true);
+        swipeHintAnimation.setCycleCount(Timeline.INDEFINITE);
         swipeHintAnimation.play();
     }
     private void playPriceScrollAnimation(double newPrice) {
-        // 使用 DoubleProperty 来驱动动画
         DoubleProperty animatedPrice = new SimpleDoubleProperty(lastKnownPrice);
 
-        // 创建一个从旧价格到新价格的 Timeline 动画
         Timeline timeline = new Timeline(
                 new KeyFrame(
-                        Duration.millis(300), // 动画持续时间，600毫秒感觉很平滑
-                        new KeyValue(animatedPrice, newPrice, Interpolator.EASE_OUT) // 使用缓出插值器
+                        Duration.millis(300),
+                        new KeyValue(animatedPrice, newPrice, Interpolator.EASE_OUT)
                 )
         );
 
-        // 添加监听器：当 animatedPrice 的值在动画过程中变化时，实时更新UI
         animatedPrice.addListener((obs, oldVal, newVal) -> {
             totalPriceLabel.setText(String.format("共 %.2f 元", newVal.doubleValue()));
         });
 
-        // 动画结束后，更新“上一次的价格”记录
         timeline.setOnFinished(event -> lastKnownPrice = newPrice);
 
         timeline.play();

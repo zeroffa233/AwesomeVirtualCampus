@@ -5,22 +5,42 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
-import lombok.Setter;
 
-// ... existing code ...
+/**
+ * 添加课程控制器。
+ * 负责处理管理员添加新课程的界面逻辑。
+ */
 public class AddCourseController {
     @FXML private TextField courseIdField;
+    /**
+     * 课程名称输入框。
+     */
     @FXML private TextField courseNameField;
+    /**
+     * 开课学院输入框。
+     */
     @FXML private TextField schoolField;
+    /**
+     * 学分输入框。
+     */
     @FXML private TextField creditField;
 
-    // 添加setViewModel方法，允许MainSceneController注入共享的ViewModel
+    /**
+     * 教务视图模型。
+     */
     private TeachingAffairsViewModel viewModel;
 
-    // 不要在initialize中创建新的ViewModel，而是使用注入的
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     public void initialize() {
-        // 移除：viewModel = new TeachingAffairsViewModel();
     }
+
+    /**
+     * 设置视图模型。
+     *
+     * @param viewModel 教务视图模型。
+     */
     public void setViewModel(TeachingAffairsViewModel viewModel) {
         this.viewModel = viewModel;
     }
@@ -28,7 +48,6 @@ public class AddCourseController {
     @FXML
     private void handleAddCourse() {
         try {
-            // 确保viewModel不为null
             if (viewModel == null) {
                 showAlert(AlertType.ERROR, "错误", "ViewModel未初始化");
                 return;
@@ -60,8 +79,13 @@ public class AddCourseController {
         }
     }
 
-
-    
+    /**
+     * 显示警告框。
+     *
+     * @param type 警告类型。
+     * @param title 标题。
+     * @param message 消息。
+     */
     private void showAlert(AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
@@ -70,6 +94,9 @@ public class AddCourseController {
         alert.showAndWait();
     }
     
+    /**
+     * 清空所有输入字段。
+     */
     private void clearFields() {
         courseIdField.clear();
         courseNameField.clear();

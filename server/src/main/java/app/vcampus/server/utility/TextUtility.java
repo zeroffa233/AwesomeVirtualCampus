@@ -1,9 +1,15 @@
 package app.vcampus.server.utility;
 
 /**
- * Text utility class.
+ * 文本工具类。
  */
 public class TextUtility {
+    /**
+     * 将数字转换为中文星期。
+     *
+     * @param num 要转换的数字 (1-7)。
+     * @return 中文星期字符串 ("一"-"日")。
+     */
     public static String intToChineseWeek(Integer num) {
         return switch (num) {
             case 1 -> "一";

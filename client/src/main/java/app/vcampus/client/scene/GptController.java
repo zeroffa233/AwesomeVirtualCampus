@@ -8,8 +8,6 @@ import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextArea;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -26,62 +24,128 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-
 import java.net.URL;
 import java.util.*;
 
-//TODO autosave on quit
-
 /**
- * Controller for the GPT Chat interface.
- * Manages the display of chat messages, chat history, and user interactions.
- * Connects the view (FXML) with the GptViewModel.
+ * GPT 聊天界面控制器。
+ * 管理聊天消息、聊天历史和用户交互的显示，并将视图（FXML）与GptViewModel连接起来。
  */
 public class GptController implements Initializable {
 
     @FXML private AnchorPane rootPane;
-
-
-    // --- FXML UI Elements ---
+    /**
+     * 聊天消息滚动面板。
+     */
     @FXML private ScrollPane chatScrollPane;
+    /**
+     * 聊天消息显示区域。
+     */
     @FXML private VBox chatDisplayArea;
+    /**
+     * 用户输入文本区域。
+     */
     @FXML private JFXTextArea userInputField;
+    /**
+     * 发送消息按钮。
+     */
     @FXML private JFXButton sendButton;
+    /**
+     * 聊天历史列表视图。
+     */
     @FXML private JFXListView<ChatSessionSummary> chatHistoryListView;
+    /**
+     * 新建聊天按钮。
+     */
     @FXML private JFXButton newChatButton;
 
-    // --- ViewModel and State ---
+    /**
+     * GPT视图模型。
+     */
     private GptViewModel viewModel;
+    /**
+     * 已显示消息的节点映射。
+     */
     private final Map<UUID, HBox> displayedMessageNodes = new HashMap<>();
+    /**
+     * 助手头像图片。
+     */
     private Image assistantAvatar;
 
-    // --- Constants for Styling and Layout ---
+    /**
+     * 消息气泡最大宽度百分比。
+     */
     private static final double MESSAGE_MAX_WIDTH_PERCENT = 0.7;
+    /**
+     * 消息气泡最小宽度。
+     */
     private static final double MESSAGE_MIN_WIDTH = 50.0;
+    /**
+     * 消息内边距。
+     */
     private static final Insets MESSAGE_PADDING = new Insets(5);
+    /**
+     * 气泡内边距。
+     */
     private static final Insets BUBBLE_PADDING = new Insets(8, 12, 8, 12);
+    /**
+     * 头像大小。
+     */
     private static final double AVATAR_SIZE = 30.0;
+    /**
+     * 助手名称。
+     */
     private static final String ASSISTANT_NAME = "Assistant-DeepSeek";
 
-
-    // --- CSS Style Constants ---
+    /**
+     * 用户消息颜色（绿色）。
+     */
     private static final String GREEN = "#607830DE";
+    /**
+     * 助手消息颜色（灰色）。
+     */
     private static final String ASSISTANT_COLOR_GRAY = "#F5F5F5DE";
 
+    /**
+     * 消息气泡样式。
+     */
     private static final String STYLE_MESSAGE_BUBBLE = "-fx-border-radius: 6px; -fx-background-radius: 6px;";
+    /**
+     * 用户消息气泡样式。
+     */
     private static final String STYLE_USER_BUBBLE = STYLE_MESSAGE_BUBBLE + "-fx-background-color: " + GREEN + ";";
+    /**
+     * 助手消息气泡样式。
+     */
     private static final String STYLE_ASSISTANT_BUBBLE = STYLE_MESSAGE_BUBBLE + "-fx-background-color: " + ASSISTANT_COLOR_GRAY + ";";
+    /**
+     * 系统消息气泡样式。
+     */
     private static final String STYLE_SYSTEM_BUBBLE = "-fx-background-color: transparent;";
 
+    /**
+     * 用户消息文本样式。
+     */
     private static final String STYLE_USER_TEXT = "-fx-fill: #FFFFFFDE;";
+    /**
+     * 助手消息文本样式。
+     */
     private static final String STYLE_ASSISTANT_TEXT = "-fx-fill: black;";
+    /**
+     * 系统消息文本样式。
+     */
     private static final String STYLE_SYSTEM_TEXT = "-fx-fill: gray; -fx-font-style: italic;";
+    /**
+     * 助手名称文本样式。
+     */
     private static final String STYLE_ASSISTANT_NAME = "-fx-font-size: 15px; -fx-text-fill: #888888;";
 
-    
-
-    // --- Initialization ---
-
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     *
+     * @param location  URL定位资源。
+     * @param resources 资源包。
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         viewModel = new GptViewModel();
@@ -94,29 +158,35 @@ public class GptController implements Initializable {
         viewModel.initializeSession();
     }
 
-    // --- FXML Event Handlers ---
-
+    /**
+     * 发送消息。
+     */
     @FXML
-    private void sendMessage(ActionEvent event) {
+    private void sendMessage() {
         viewModel.sendMessage();
     }
 
+    /**
+     * 创建新聊天。
+     */
     @FXML
-    private void createNewChat(ActionEvent event) {
+    private void createNewChat() {
         viewModel.createNewSession();
     }
 
-
-    // --- Private Setup Methods ---
-
+    /**
+     * 设置数据绑定。
+     */
     private void setupBindings() {
         userInputField.textProperty().bindBidirectional(viewModel.userInputProperty());
         sendButton.disableProperty().bind(viewModel.sendButtonDisabledProperty());
         chatScrollPane.vvalueProperty().bind(chatDisplayArea.heightProperty());
     }
 
+    /**
+     * 设置事件监听器。
+     */
     private void setupListeners() {
-        // Listener to sync the UI selection with the ViewModel's current session
         viewModel.currentSessionProperty().addListener((obs, oldSession, newSession) -> {
             Platform.runLater(() -> {
                 if (newSession == null) {
@@ -128,7 +198,7 @@ public class GptController implements Initializable {
                             .ifPresent(summaryToSelect -> {
                                 if (!summaryToSelect.equals(chatHistoryListView.getSelectionModel().getSelectedItem())) {
                                     chatHistoryListView.getSelectionModel().select(summaryToSelect);
-                                    chatHistoryListView.scrollTo(summaryToSelect); // Scroll to the selected item
+                                    chatHistoryListView.scrollTo(summaryToSelect);
                                 }
                             });
                 }
@@ -155,12 +225,14 @@ public class GptController implements Initializable {
         rootPane.sceneProperty().addListener((sceneObs, oldScene, newScene) -> {
             if (newScene==null){
                 System.out.println("Quiting Gpt, Saving Context");
-                //TODO fix net io
                 viewModel.gptClient.saveData();
             }
         });
     }
 
+    /**
+     * 设置聊天历史列表。
+     */
     private void setupChatHistoryList() {
         chatHistoryListView.setItems(viewModel.getChatHistory());
         chatHistoryListView.setCellFactory(listView -> new ChatHistoryCell(viewModel));
@@ -172,9 +244,11 @@ public class GptController implements Initializable {
         });
     }
 
-
-    // --- Core UI Update Logic ---
-
+    /**
+     * 添加消息到显示区域。
+     *
+     * @param message 要添加的消息。
+     */
     private void addMessageToDisplay(GptViewModel.Message message) {
         Platform.runLater(() -> {
             String sender = message.getSender();
@@ -190,7 +264,7 @@ public class GptController implements Initializable {
                 case "assistant":
                     buildAssistantMessage(messageContainer, messageBubble, message);
                     break;
-                default: // system
+                default:
                     buildSystemMessage(messageContainer, messageBubble);
                     break;
             }
@@ -200,12 +274,18 @@ public class GptController implements Initializable {
         });
     }
 
+    /**
+     * 构建用户消息气泡。
+     *
+     * @param container 消息容器。
+     * @param bubble 消息气泡。
+     * @param message 消息内容。
+     */
     private void buildUserMessage(HBox container, TextFlow bubble, GptViewModel.Message message) {
         container.setAlignment(Pos.CENTER_RIGHT);
         if (message.isDeletable()) {
             JFXButton deleteButton = createDeleteButton(message.getId());
             HBox buttonWrapper = new HBox(deleteButton);
-            // **【修改】将按钮垂直对齐方式改为底部**
             buttonWrapper.setAlignment(Pos.BOTTOM_LEFT);
             buttonWrapper.setPadding(new Insets(0, 5, 0, 0));
             container.getChildren().addAll(buttonWrapper, bubble);
@@ -214,6 +294,13 @@ public class GptController implements Initializable {
         }
     }
 
+    /**
+     * 构建助手消息气泡。
+     *
+     * @param container 消息容器。
+     * @param bubble 消息气泡。
+     * @param message 消息内容。
+     */
     private void buildAssistantMessage(HBox container, TextFlow bubble, GptViewModel.Message message) {
         container.setAlignment(Pos.TOP_LEFT);
         container.setSpacing(10);
@@ -232,19 +319,29 @@ public class GptController implements Initializable {
         if (message.isDeletable()) {
             JFXButton deleteButton = createDeleteButton(message.getId());
             HBox buttonWrapper = new HBox(deleteButton);
-            // **【修改】将按钮垂直对齐方式改为底部**
             buttonWrapper.setAlignment(Pos.BOTTOM_LEFT);
             buttonWrapper.setPadding(new Insets(0, 0, 0, 5));
             container.getChildren().add(buttonWrapper);
         }
     }
 
+    /**
+     * 构建系统消息气泡。
+     *
+     * @param container 消息容器。
+     * @param bubble 消息气泡。
+     */
     private void buildSystemMessage(HBox container, TextFlow bubble) {
         container.setAlignment(Pos.CENTER);
         container.getChildren().add(bubble);
     }
 
-
+    /**
+     * 创建消息气泡。
+     *
+     * @param message 消息内容。
+     * @return 消息气泡的TextFlow。
+     */
     private TextFlow createMessageBubble(GptViewModel.Message message) {
         Text textNode = new Text();
         textNode.textProperty().bind(message.streamingContentProperty());
@@ -260,7 +357,6 @@ public class GptController implements Initializable {
         dropShadow.setOffsetY(2.0);
         dropShadow.setColor(Color.color(0, 0, 0, 0.2));
 
-
         switch (message.getSender()) {
             case "user":
                 textNode.setStyle(STYLE_USER_TEXT);
@@ -273,7 +369,7 @@ public class GptController implements Initializable {
                 textFlow.setStyle(STYLE_ASSISTANT_BUBBLE);
                 textFlow.setEffect(dropShadow);
                 break;
-            default: // "system" messages
+            default:
                 textNode.setStyle(STYLE_SYSTEM_TEXT);
                 textFlow.setStyle(STYLE_SYSTEM_BUBBLE);
                 textFlow.setPadding(new Insets(0));
@@ -282,11 +378,16 @@ public class GptController implements Initializable {
         return textFlow;
     }
 
+    /**
+     * 创建删除按钮。
+     *
+     * @param messageId 消息ID。
+     * @return 删除按钮。
+     */
     private JFXButton createDeleteButton(UUID messageId) {
         JFXButton deleteButton = new JFXButton("×");
         deleteButton.getStyleClass().add("delete-button");
 
-        // Create a circular clip for the button
         Circle clip = new Circle(11, 11, 11);
         deleteButton.setClip(clip);
 
@@ -294,7 +395,11 @@ public class GptController implements Initializable {
         return deleteButton;
     }
 
-
+    /**
+     * 从显示区域移除消息。
+     *
+     * @param messageIdToDelete 要删除的消息ID。
+     */
     private void removeMessageFromDisplay(UUID messageIdToDelete) {
         Platform.runLater(() -> {
             HBox messageHBox = displayedMessageNodes.remove(messageIdToDelete);
@@ -306,8 +411,9 @@ public class GptController implements Initializable {
         });
     }
 
-    // --- 辅助方法 ---
-
+    /**
+     * 加载助手头像图片。
+     */
     private void loadAvatarImage() {
         try {
             assistantAvatar = new Image(getClass().getResourceAsStream("/images/AssistantAvatar.png"));
@@ -317,6 +423,11 @@ public class GptController implements Initializable {
         }
     }
 
+    /**
+     * 创建助手头像视图。
+     *
+     * @return 助手头像的ImageView。
+     */
     private ImageView createAvatarView() {
         ImageView imageView = new ImageView(assistantAvatar);
         imageView.setFitWidth(AVATAR_SIZE);
@@ -331,9 +442,9 @@ public class GptController implements Initializable {
         return imageView;
     }
 
-
-    // --- Inner Class for Chat History Cell ---
-
+    /**
+     * 聊天历史列表单元格。
+     */
     private static class ChatHistoryCell extends JFXListCell<ChatSession.ChatSessionSummary> {
         private final HBox hbox = new HBox();
         private final Label label = new Label();
@@ -341,6 +452,11 @@ public class GptController implements Initializable {
         private final Region spacer = new Region();
         private final GptViewModel viewModel;
 
+        /**
+         * 构造函数。
+         *
+         * @param viewModel GPT视图模型。
+         */
         public ChatHistoryCell(GptViewModel viewModel) {
             super();
             this.viewModel = viewModel;
@@ -352,11 +468,16 @@ public class GptController implements Initializable {
 
             deleteButton.getStyleClass().add("delete-button");
 
-            // Create a circular clip for the button
             Circle clip = new Circle(11, 11, 11);
             deleteButton.setClip(clip);
         }
 
+        /**
+         * 更新列表项。
+         *
+         * @param item 聊天会话摘要。
+         * @param empty 是否为空。
+         */
         @Override
         protected void updateItem(ChatSession.ChatSessionSummary item, boolean empty) {
             super.updateItem(item, empty);

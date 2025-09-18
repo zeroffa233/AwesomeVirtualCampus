@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 用户借书视图控制器。
+ * 负责处理用户搜索可借阅图书并执行借阅操作的界面逻辑。
+ */
 public class UserBorrowBookViewController {
 
     @FXML
@@ -33,6 +37,9 @@ public class UserBorrowBookViewController {
     @FXML
     private VBox resultsVBox;
 
+    /**
+     * 初始化方法，在FXML文件加载完成后自动调用。
+     */
     @FXML
     public void initialize() {
         searchButton.setOnAction(event -> searchAvailableBooks());
@@ -86,7 +93,6 @@ public class UserBorrowBookViewController {
         contentCol.setHgrow(Priority.ALWAYS);
         grid.getColumnConstraints().addAll(labelCol, contentCol, labelCol, contentCol);
 
-        // Create labels with increased font size
         Label bookNameTitle = new Label("书名:");
         bookNameTitle.setStyle("-fx-font-size: 14px;");
         Label bookNameContent = new Label(book.getName());
@@ -107,21 +113,18 @@ public class UserBorrowBookViewController {
         Label placeContent = new Label(book.getPlace());
         placeContent.setStyle("-fx-font-size: 14px;");
 
-        // Row 1: Book Name, Call Number
         grid.add(bookNameTitle, 0, 0);
         grid.add(bookNameContent, 1, 0);
         grid.add(callNumberTitle, 2, 0);
         grid.add(callNumberContent, 3, 0);
 
-        // Row 2: Author, Place
         grid.add(authorTitle, 0, 1);
         grid.add(authorContent, 1, 1);
         grid.add(placeTitle, 2, 1);
         grid.add(placeContent, 3, 1);
 
-        // Borrow button
         JFXButton borrowButton = new JFXButton("确定借阅该副本");
-        borrowButton.setStyle("-fx-background-color: #607830DE; -fx-text-fill: white;"); // Apply new color
+        borrowButton.setStyle("-fx-background-color: #607830DE; -fx-text-fill: white;");
         borrowButton.setButtonType(JFXButton.ButtonType.RAISED);
         Label feedbackLabel = new Label();
         HBox buttonBox = new HBox(10, borrowButton, feedbackLabel);

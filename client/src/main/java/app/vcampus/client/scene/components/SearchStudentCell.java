@@ -1,4 +1,3 @@
-// File: SearchStudentCell.java (modified to use ExpandCollapseUtil)
 package app.vcampus.client.scene.components;
 
 import app.vcampus.client.viewmodel.StudentStatusViewModel;
@@ -13,26 +12,30 @@ import javafx.scene.layout.*;
 import javafx.util.Duration;
 import lombok.Getter;
 
-import java.util.Objects;
-
 /**
- * 编辑型 ListCell：展开显示与 StudentStatusView 相同的字段。
- * editable 控制是否允许编辑/保存操作。
+ * 可编辑的学生信息列表单元格。
+ * <p>
+ * 用于在 ListView 中显示学生信息，并提供展开、编辑和保存功能。
+ * </p>
  */
 public class SearchStudentCell extends ListCell<Student> {
     private final StudentStatusViewModel viewModel;
     private final boolean editable;
 
-    // UI组件
     @Getter
     private final VBox root = new VBox(12);
     private final HBox header = new HBox(12);
     private final VBox detailsBox = new VBox(12);
 
-    // 状态字段
     private boolean expanded = false;
     private boolean isEditing = false;
 
+    /**
+     * 构造函数。
+     *
+     * @param viewModel 学生学籍视图模型。
+     * @param editable  是否允许编辑。
+     */
     public SearchStudentCell(StudentStatusViewModel viewModel, boolean editable) {
         this.viewModel = viewModel;
         this.editable = editable;
@@ -52,7 +55,6 @@ public class SearchStudentCell extends ListCell<Student> {
 
         header.setPadding(new Insets(0));
 
-        // 详情区域：初始为不可管理并隐藏（避免占位）
         detailsBox.setPadding(new Insets(8, 0, 0, 0));
         detailsBox.setVisible(false);
         detailsBox.setManaged(false);
@@ -83,6 +85,12 @@ public class SearchStudentCell extends ListCell<Student> {
         });
     }
 
+    /**
+     * 更新单元格内容。
+     *
+     * @param item  要显示的学生对象。
+     * @param empty 是否为空单元格。
+     */
     @Override
     public void updateItem(Student item, boolean empty) {
         super.updateItem(item, empty);
@@ -124,7 +132,6 @@ public class SearchStudentCell extends ListCell<Student> {
         expandBtn.setOnAction(e -> {
             expanded = !expanded;
             expandBtn.setText(expanded ? "收起" : "展开");
-            // 使用工具类进行动画，动画结束时请求父容器布局
             ExpandCollapseUtil.animate(detailsBox, expanded, Duration.millis(300), () -> {
                 if (getListView() != null) getListView().requestLayout();
             });
@@ -132,7 +139,6 @@ public class SearchStudentCell extends ListCell<Student> {
 
         header.getChildren().addAll(title, spacer, name, idCard, expandBtn);
 
-        // 详情字段（与原实现相同）
         JFXTextField familyField = createTextField(nullSafe(item.getFamilyName()), "姓");
         JFXTextField givenField = createTextField(nullSafe(item.getGivenName()), "名");
         JFXTextField studentNumberField = createTextField(nullSafe(item.getStudentNumber()), "学号");
@@ -282,7 +288,6 @@ public class SearchStudentCell extends ListCell<Student> {
 
         detailsBox.getChildren().addAll(row1, row2, buttonRow);
 
-        // 让卡片宽度自适应容器宽度
         root.setMaxWidth(Double.MAX_VALUE);
 
         setGraphic(root);
@@ -368,5 +373,3 @@ public class SearchStudentCell extends ListCell<Student> {
     private boolean isEmpty(String s) { return s == null || s.trim().isEmpty(); }
     private String nullSafe(String s) { return s == null ? "" : s; }
 }
-
-
