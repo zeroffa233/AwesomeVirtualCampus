@@ -8,6 +8,7 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import javafx.animation.*;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -246,11 +247,8 @@ public class ShopController {
         imageContainer.setStyle("-fx-background-color: #F0F0F0;");
 
         Rectangle clip = new Rectangle(VIEWPORT_SIZE, VIEWPORT_SIZE);
-
-        double cornerRadius = 30.0;
-        clip.setArcWidth(cornerRadius);
-        clip.setArcHeight(cornerRadius);
-
+        clip.setArcWidth(30.0);
+        clip.setArcHeight(30.0);
         imageContainer.setClip(clip);
 
         load_image_from_cache(item.getPictureLink(), VIEWPORT_SIZE, imageContainer);
@@ -263,18 +261,66 @@ public class ShopController {
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
         nameLabel.setTextFill(Color.web("#212121"));
 
+        // --- 价格行相关组件 ---
         Label priceLabel = new Label("¥ " + String.format("%.2f", item.getPrice().doubleValue() / 100.0));
         priceLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
         priceLabel.setTextFill(Color.valueOf("#212121"));
 
-        JFXButton addButton = new JFXButton("+");
-        addButton.setStyle("-fx-background-color: #B2C926B2; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
-        addButton.setButtonType(JFXButton.ButtonType.RAISED);
-        addButton.setOnAction(event -> chosenItems.add(item));
+        Label stockWarningLabel = new Label();
+        stockWarningLabel.setTextFill(Color.RED);
+        stockWarningLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+        stockWarningLabel.setOpacity(0);
 
-        HBox priceAndAddBox = new HBox(priceLabel, new Region(), addButton);
-        HBox.setHgrow(priceAndAddBox.getChildren().get(1), Priority.ALWAYS);
+        JFXButton addButton = new JFXButton("+");
+        addButton.setButtonType(JFXButton.ButtonType.RAISED);
+
+        // --- 按钮的事件和状态绑定逻辑 ---
+        addButton.setOnAction(event -> {
+            long countInCart = chosenItems.stream().filter(i -> i.getUuid().equals(item.getUuid())).count();
+            if (countInCart < item.getStock()) {
+                chosenItems.add(item);
+            } else {
+                if (item.getStock() <= 0) {
+                    stockWarningLabel.setText("该商品已售罄");
+                } else {
+                    stockWarningLabel.setText("库存不足");
+                }
+                FadeTransition ft = new FadeTransition(Duration.millis(300), stockWarningLabel);
+                ft.setFromValue(0);
+                ft.setToValue(1.0);
+                ft.setCycleCount(2);
+                ft.setAutoReverse(true);
+                ft.setOnFinished(e -> stockWarningLabel.setOpacity(0));
+                ft.play();
+            }
+        });
+
+        // 使用 Bindings + Runnable 更新按钮“外观”
+        IntegerBinding countInCartBinding = Bindings.createIntegerBinding(() ->
+                (int) chosenItems.stream().filter(i -> i.getUuid().equals(item.getUuid())).count(), chosenItems);
+
+        Runnable updateButtonAppearance = () -> {
+            int countInCart = countInCartBinding.get();
+            if (item.getStock() <= 0) {
+                addButton.setText("售罄");
+                addButton.setStyle("-fx-background-color: #BDBDBD; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
+            } else if (countInCart >= item.getStock()) {
+                addButton.setText("+");
+                addButton.setStyle("-fx-background-color: #BDBDBD; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
+            } else {
+                addButton.setText("+");
+                addButton.setStyle("-fx-background-color: #B2C926B2; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
+            }
+        };
+
+        countInCartBinding.addListener((obs, oldVal, newVal) -> updateButtonAppearance.run());
+        updateButtonAppearance.run(); // 初始化外观
+
+        // --- 布局 ---
+        HBox priceAndAddBox = new HBox(priceLabel, new Region(), stockWarningLabel, addButton);
         priceAndAddBox.setAlignment(Pos.CENTER_LEFT);
+        priceAndAddBox.setSpacing(8);
+        HBox.setHgrow(priceAndAddBox.getChildren().get(1), Priority.ALWAYS);
 
         textContent.getChildren().addAll(nameLabel, priceAndAddBox);
 
@@ -398,13 +444,13 @@ public class ShopController {
         cartItemCountLabel.textProperty().bind(
                 Bindings.createStringBinding(() -> "已选择 " + chosenItemsCount.get() + " 件商品", chosenItemsCount)
         );
+
+        // 使用我们更高效的 chosenItemsPrice 属性来绑定
         cartTotalPriceLabel.textProperty().bind(
                 Bindings.createStringBinding(() -> {
-                    double totalPriceInFen = chosenItems.stream()
-                            .mapToDouble(item -> item.price.doubleValue())
-                            .sum();
+                    double totalPriceInFen = chosenItemsPrice.get();
                     return "共 " + String.format("%.2f", totalPriceInFen / 100.0) + " 元";
-                }, chosenItems)
+                }, chosenItemsPrice)
         );
     }
 
@@ -446,23 +492,37 @@ public class ShopController {
     @FXML
     private void handlePayment() {
         if (chosenItems.isEmpty() || successOverlay.isVisible()) return;
-        ShopTransactionRecord record = new ShopTransactionRecord(chosenItems, chosenItemsPrice.get()/100.0);
+
+        // 1. 聚合购买数据，为后台任务和前端刷新做准备
+        Map<UUID, Long> purchaseMap = chosenItems.stream()
+                .collect(Collectors.groupingBy(StoreItem::getUuid, Collectors.counting()));
+
+        // 2. 创建交易记录
+        ShopTransactionRecord record = new ShopTransactionRecord(new ArrayList<>(chosenItems), chosenItemsPrice.get() / 100.0);
         transactionHistory.add(record);
         System.out.println("新交易已记录: " + record);
 
-        // 【核心】在支付流程中，启动一个后台线程来更新服务器上的历史记录
+        // 3. 将所有网络操作放在一个后台线程中顺序执行，避免UI卡顿
         new Thread(() -> {
-            boolean success = HistoryClient.updateHistory(FakeRepository.handler, transactionHistory);
-            if (success) {
-                System.out.println("交易历史已成功同步到服务器。");
-            } else {
-                System.err.println("警告：交易历史同步到服务器失败！");
+            // a. 更新库存和销量 (关键操作)
+            boolean stockUpdateSuccess = StoreClient.batchUpdateStock(FakeRepository.handler, purchaseMap);
+            if (!stockUpdateSuccess) {
+                System.err.println("【严重】商品库存更新失败！支付流程中止。");
+                // 可以在此通过 Platform.runLater() 显示一个UI错误提示
+                return; // 中止后续操作
             }
-        }).start();
+            System.out.println("商品库存和销量已成功同步到服务器。");
 
-        finance_process_credit(record);   // 财务模块处理扣款
-        finance_process_debit(record);
-        play_payment_animation();
+            // b. 更新交易历史 (非关键操作)
+            HistoryClient.updateHistory(FakeRepository.handler, transactionHistory);
+
+            // c. 执行财务扣款 (只有在库存更新成功后才执行)
+            finance_process_credit(record);
+            finance_process_debit(record);
+
+            // d. 所有后台任务完成后，在UI线程播放动画
+            Platform.runLater(() -> play_payment_animation(purchaseMap));
+        }).start();
     }
 
     private void finance_process_credit(ShopTransactionRecord record) {
@@ -570,7 +630,7 @@ public class ShopController {
         return new Gson().toJson(transactionDetails);
     }
 
-    private void play_payment_animation() {
+    private void play_payment_animation(Map<UUID, Long> purchaseMap) {
         FadeTransition cartFadeOut = new FadeTransition(Duration.millis(300), cartView);
         cartFadeOut.setToValue(0);
 
@@ -579,11 +639,34 @@ public class ShopController {
         successFadeIn.setToValue(1);
 
         successFadeIn.setOnFinished(event -> {
-            chosenItems.clear();
+            // 在动画结束时，更新本地库存数据
+            for (Map.Entry<UUID, Long> entry : purchaseMap.entrySet()) {
+                UUID purchasedItemUuid = entry.getKey();
+                long purchasedAmount = entry.getValue();
+
+                Optional<StoreItem> itemToUpdateOpt = allItems.stream()
+                        .filter(item -> item.getUuid().equals(purchasedItemUuid))
+                        .findFirst();
+
+                if (itemToUpdateOpt.isPresent()) {
+                    StoreItem itemToUpdate = itemToUpdateOpt.get();
+                    int newStock = (int) (itemToUpdate.getStock() - purchasedAmount);
+                    itemToUpdate.setStock(Math.max(0, newStock));
+                }
+            }
+
+            chosenItems.clear(); // 清空购物车
 
             PauseTransition delay = new PauseTransition(Duration.millis(500));
             delay.setOnFinished(e -> {
-                toggleCart();
+                toggleCart(); // 收回弹窗
+
+                // 重新填充商品网格，以立即反映“售罄”状态
+                populateItemsGrid();
+
+                // 为下次支付做准备
+                successOverlay.setVisible(false);
+                cartView.setOpacity(1.0);
             });
             delay.play();
         });
@@ -592,7 +675,6 @@ public class ShopController {
         cartFadeOut.play();
         successFadeIn.play();
     }
-
     private void createAndPlaySwipeHintAnimation() {
         swipeHintAnimation = new Timeline(
                 new KeyFrame(Duration.ZERO,

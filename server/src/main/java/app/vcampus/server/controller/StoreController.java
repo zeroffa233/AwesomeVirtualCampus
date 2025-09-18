@@ -301,4 +301,74 @@ public class StoreController {
 
         return Response.Common.ok();
     }
+
+    /**
+     * 【新增】批量更新商品的库存和销量。
+     * 在一次成功的支付后由客户端调用，以反映本次交易的结果。
+     *
+     * @param request  需要包含一个 "updates" 的参数，其值为一个JSON字符串，
+     *                 格式为: Map<String, Integer>，其中 key 是商品UUID的字符串形式，value 是本次购买的数量。
+     * @param database Hibernate Session
+     * @return 操作成功或失败的 Response
+     */
+    @RouteMapping(uri = "store/batchUpdateStock")
+    public Response batchUpdateStock(Request request, org.hibernate.Session database) {
+        // 安全检查：确保是已登录用户在操作
+        if (request.getSession() == null || request.getSession().getCardNum() == 0) {
+            return Response.Common.permissionDenied();
+        }
+
+        String updatesJson = request.getParams().get("updates");
+        if (updatesJson == null) {
+            return Response.Common.badRequest();
+        }
+
+        Transaction tx = null;
+        try {
+            // 使用 Gson 将客户端传来的JSON字符串反序列化成 Map<String, Long>
+            // 注意：客户端使用的是 Map<UUID, Long>，Gson会把UUID转成String，所以这里用String作为Key
+            Type type = new TypeToken<Map<String, Long>>(){}.getType();
+            Map<String, Long> purchaseMap = new Gson().fromJson(updatesJson, type);
+
+            // 开始数据库事务
+            tx = database.beginTransaction();
+
+            for (Map.Entry<String, Long> entry : purchaseMap.entrySet()) {
+                UUID itemUuid = UUID.fromString(entry.getKey());
+//                Integer purchasedAmount = entry.getValue(); // GSON 默认将数字解析为 Double，然后转为 Long，这里直接用 Long
+                long purchasedAmount = entry.getValue();
+
+                // 从数据库中获取最新的商品信息
+                StoreItem item = database.get(StoreItem.class, itemUuid);
+                if (item != null) {
+                    // 计算新的库存和销量
+                    int newStock = (int) (item.getStock() - purchasedAmount);
+                    int newSalesVolume = (int) (item.getSalesVolume() + purchasedAmount);
+
+                    // 更新对象属性 (后端再次校验，确保库存不为负)
+                    item.setStock(Math.max(0, newStock));
+                    item.setSalesVolume(newSalesVolume);
+
+                    // 更新数据库中的记录
+                    // 注意：因为 item 是从数据库加载的持久化对象，理论上 tx.commit() 时会自动更新。
+                    // 但为保险起见，明确调用 update() 或 merge() 是更稳妥的做法。
+                    database.merge(item);
+                } else {
+                    log.warn("在批量更新库存时，找不到UUID为 {} 的商品，跳过此条目。", itemUuid);
+                }
+            }
+
+            // 提交整个事务
+            tx.commit();
+            log.info("成功为用户 {} 的交易批量更新了 {} 个商品的库存和销量。", request.getSession().getCardNum(), purchaseMap.size());
+            return Response.Common.ok();
+
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
+            log.error("批量更新库存时发生严重错误", e);
+            return Response.Common.internalError();
+        }
+    }
 }
