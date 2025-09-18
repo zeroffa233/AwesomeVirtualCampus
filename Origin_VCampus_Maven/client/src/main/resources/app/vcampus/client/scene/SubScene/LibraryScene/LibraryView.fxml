@@ -95,13 +95,17 @@
                                                 <ColumnConstraints hgrow="ALWAYS" />
                                             </columnConstraints>
                                             <children>
-                                                <!-- Row 1: Press -->
-                                                <Label text="出版社" style="-fx-font-size: 14px; -fx-text-fill: #888888;" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                                                <Label fx:id="pressLabel" text="-" style="-fx-font-size: 14px; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                                                <!-- Row 1: Author -->
+                                                <Label text="作者" style="-fx-font-size: 14px; -fx-text-fill: #888888;" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                                <Label fx:id="authorLabel" text="-" style="-fx-font-size: 14px; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
-                                                <!-- Row 2: ISBN -->
-                                                <Label text="ISBN" style="-fx-font-size: 14px; -fx-text-fill: #888888;" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                                <Label fx:id="isbnLabel" text="-" style="-fx-font-size: 14px; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                                                <!-- Row 2: Press -->
+                                                <Label text="出版社" style="-fx-font-size: 14px; -fx-text-fill: #888888;" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                                                <Label fx:id="pressLabel" text="-" style="-fx-font-size: 14px; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+                                                <!-- Row 3: ISBN -->
+                                                <Label text="ISBN" style="-fx-font-size: 14px; -fx-text-fill: #888888;" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                                                <Label fx:id="isbnLabel" text="-" style="-fx-font-size: 14px; -fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="1" />
                                             </children>
                                         </GridPane>
 

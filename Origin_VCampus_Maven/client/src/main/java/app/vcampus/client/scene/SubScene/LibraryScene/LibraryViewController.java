@@ -42,6 +42,8 @@ public class LibraryViewController {
     @FXML
     private Label bookNameLabel;
     @FXML
+    private Label authorLabel;
+    @FXML
     private Label pressLabel;
     @FXML
     private Label isbnLabel;
@@ -138,6 +140,7 @@ public class LibraryViewController {
 
             LibraryBook firstBook = allCopies.get(0);
             bookNameLabel.setText(firstBook.getName());
+            authorLabel.setText(firstBook.getAuthor());
             pressLabel.setText(firstBook.getPress());
             isbnLabel.setText(firstBook.getIsbn());
             descriptionArea.setText(firstBook.getDescription());
