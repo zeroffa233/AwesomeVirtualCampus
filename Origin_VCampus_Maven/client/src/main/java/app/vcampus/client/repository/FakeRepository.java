@@ -15,7 +15,7 @@ import java.awt.Window;
 import java.util.*;
 
 /**
- * Java 版 FakeRepository（基于你提供的 Kotlin 实现翻译）
+ * Java 版 FakeRepository
  * 提供静态方法以兼容现有前端调用。
  */
 public final class FakeRepository
@@ -38,7 +38,6 @@ public final class FakeRepository
         // 不可实例化
     }
 
-    /** 等价于 Kotlin 的 StoreItem.copy */
     public static StoreItem copyStoreItem(StoreItem src) {
         return copyStoreItem(src, src == null ? 0 : src.getStock());
     }
@@ -200,10 +199,8 @@ public final class FakeRepository
             return false;
         }
     }
-    // ... existing code ...
-
     /**
-     * 模拟添加课程
+     * 添加课程
      */
     public static boolean addCourse(String courseId, String courseName, String school, float credit) {
         try {
@@ -215,7 +212,7 @@ public final class FakeRepository
     }
 
     /**
-     * 模拟添加教学班
+     * 添加教学班
      */
     public static boolean addTeachingClass(UUID courseUuid, int teacherId, String place, int capacity, List<Pair<Pair<Integer, Integer>, Pair<Integer, Pair<Integer, Integer>>>> schedule) {
         try {
