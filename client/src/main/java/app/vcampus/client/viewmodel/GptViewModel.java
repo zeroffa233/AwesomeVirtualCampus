@@ -13,21 +13,21 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.json.JSONObject;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.CompletableFuture; // 【修改】导入 CompletableFuture
 import java.util.stream.Collectors;
-
-import static app.vcampus.client.gateway.TeachingAffairsClient.getSelectedClasses;
 
 public class GptViewModel {
 
@@ -37,44 +37,61 @@ public class GptViewModel {
     private final BooleanProperty sendButtonDisabled = new SimpleBooleanProperty(false);
     private final ObservableList<ChatSessionSummary> chatHistory = FXCollections.observableArrayList();
     private final ObjectProperty<ChatSession> currentSessionProperty = new SimpleObjectProperty<>();
-    /**
-     * 初始化课程表摘要的私有辅助方法。
-     * @return 代表课程安排的字符串，或者在没有课程时返回 "无"。
-     */
-    private String initializeScheduleSummary() {
-        TeachingAffairsClient client = new TeachingAffairsClient();
 
-        // 1. 首先尝试获取 getSelectedClasses
-        List<TeachingClass> teachingClasses = TeachingAffairsClient.getSelectedClasses(FakeRepository.handler);
+    // 【修改】将 HttpClient 声明为成员变量以便复用
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
-        // 2. 如果结果为 null 或者列表为空，则尝试 getMyTeachingClass
-        if (teachingClasses == null || teachingClasses.isEmpty()) {
-            teachingClasses = TeachingAffairsClient.getMyTeachingClasses(FakeRepository.handler);
-        }
+    // 【修改】将天气获取方法改为异步，并返回 CompletableFuture
+    private CompletableFuture<String> fetchWeatherAsync() {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.open-meteo.com/v1/forecast?latitude=31.89&longitude=118.82&current=weather_code"))
+                .build();
 
-        // 3. 如果第二次尝试后依然为 null 或空，则返回 "无"
-        if (teachingClasses == null || teachingClasses.isEmpty()) {
-            return "无";
-        }
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    // 当HTTP请求成功后，此代码块执行
+                    JSONObject jsonResponse = new JSONObject(response.body());
+                    int weatherCode = jsonResponse.getJSONObject("current").getInt("weather_code");
+                    return WMO_CODE_MAP.getOrDefault(weatherCode, "未知天气");
+                })
+                .exceptionally(e -> {
+                    // 当发生异常时（如网络错误），此代码块执行
+                    e.printStackTrace();
+                    return "获取失败";
+                });
+    }
 
-        // 4. 如果获取到了课程列表，则进行处理并返回结果
-        return teachingClasses.stream()
-                .map(TeachingClass::humanReadableSchedule)
-                .collect(Collectors.joining(","));
+    // 【修改】将课程表摘要的获取方法也改为异步
+    private CompletableFuture<String> fetchScheduleSummaryAsync() {
+        // 使用 supplyAsync 在后台线程池中执行耗时操作
+        return CompletableFuture.supplyAsync(() -> {
+            // 1. 首先尝试获取 getSelectedClasses
+            List<TeachingClass> teachingClasses = TeachingAffairsClient.getSelectedClasses(FakeRepository.handler);
+
+            // 2. 如果结果为 null 或者列表为空，则尝试 getMyTeachingClass
+            if (teachingClasses == null || teachingClasses.isEmpty()) {
+                teachingClasses = TeachingAffairsClient.getMyTeachingClasses(FakeRepository.handler);
+            }
+
+            // 3. 如果第二次尝试后依然为 null 或空，则返回 "无"
+            if (teachingClasses == null || teachingClasses.isEmpty()) {
+                return "无";
+            }
+
+            // 4. 如果获取到了课程列表，则进行处理并返回结果
+            return teachingClasses.stream()
+                    .map(TeachingClass::humanReadableSchedule)
+                    .collect(Collectors.joining(","));
+        });
     }
 
 
     // API related constants
     private final String WELCOME_MESSAGE = "你好！我是AI助手，有什么可以帮你的吗？";
-    private final String SYSTEM_PROMPT = "你是一个基于Deepseek的人工智能助手，运行在VCampus虚拟校园管理应用上，该应用负责管理东南大学本科生校园生活的大大小小的事务，功能涵盖课表查询与管理、学籍信息查询、校园通知推送、教务事务办理、校园服务预约、学习资源获取、社交互动、个人中心设置等。\n" +
-            " \n" +
-            "当前用户学籍信息包含：姓名"+ FakeRepository.user.name +"、性别"+FakeRepository.user.gender+"、一卡通号"+FakeRepository.user.cardNum+"、联系电话"+FakeRepository.user.phone+"、电子邮箱"+FakeRepository.user.email+"\n" +
-            " \n" +
-            "本学期于2025年8月25日星期一开学（第一周）当前用户课表： "+ initializeScheduleSummary() +"\n"+
-            " \n" +
-            "现在是"+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd E HH:mm:ss", Locale.CHINA))+"，天气晴，目前校区内人流量基本正常，图书馆人流较高。"+
-            " \n" +
-            "你需基于上述信息，为用户提供精准、便捷的校园服务支持，例如解答课表疑问、协助查询学籍相关证明办理流程、推送用户所在学院的最新通知、指导预约图书馆自习座位或实验室使用权限等，同时严格保护用户个人信息安全，不泄露非公开的学籍与课表细节。";
+
+    // 【修改】SYSTEM_PROMPT 变为非 final 成员变量，将在异步加载数据后进行初始化
+    private String SYSTEM_PROMPT;
+
     private final String MODEL = "deepseek-v3.1";
     private final String API_KEY = "sk-588905851d1b4421ae51c9ad64fb120b";
     private final String API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
@@ -84,14 +101,51 @@ public class GptViewModel {
     private UUID currentStreamingMessageId;
 
 
+    // 【修改】重写初始化方法，以支持异步加载
     public void initializeSession() {
-        loadChatHistorySummaries();
-        List<ChatSessionSummary> history = gptClient.getChatHistorySummaries();
-        if (!history.isEmpty()) {
-            loadSession(history.get(0).getId());
-        } else {
-            createNewSession();
-        }
+        // UI立即响应，显示加载信息
+        Platform.runLater(() -> {
+            chatMessages.clear();
+            addMessage(new Message(UUID.randomUUID(), "system", "正在初始化AI助手，请稍候...", false));
+        });
+
+        // 异步获取天气和课程表信息
+        CompletableFuture<String> weatherFuture = fetchWeatherAsync();
+        CompletableFuture<String> scheduleFuture = fetchScheduleSummaryAsync();
+
+        // 等待所有异步任务完成后再继续
+        CompletableFuture.allOf(weatherFuture, scheduleFuture).thenRun(() -> {
+            // .join() 在这里是安全的，因为我们已经处于 thenRun 的回调中，表示 Future 已完成
+            String weather = weatherFuture.join();
+            String schedule = scheduleFuture.join();
+
+            // 构建 SYSTEM_PROMPT
+            this.SYSTEM_PROMPT = "你是一个基于Deepseek的人工智能助手，运行在VCampus虚拟校园管理应用上，该应用负责管理东南大学本科生校园生活的大大小小的事务，功能涵盖课表查询与管理、学籍信息查询、校园通知推送、教务事务办理、校园服务预约、学习资源获取、社交互动、个人中心设置等。\n" +
+                    " \n" +
+                    "当前用户学籍信息包含：姓名"+ FakeRepository.user.name +"、性别"+FakeRepository.user.gender+"、一卡通号"+FakeRepository.user.cardNum+"、联系电话"+FakeRepository.user.phone+"、电子邮箱"+FakeRepository.user.email+"\n" +
+                    " \n" +
+                    "本学期于2025年8月25日星期一开学（第一周）当前用户课表： "+ schedule +"\n"+
+                    " \n" +
+                    "现在是"+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd E HH:mm:ss", Locale.CHINA))+"，天气"+ weather +"，目前校区内人流量基本正常，图书馆人流较高。"+
+                    " \n" +
+                    "你需基于上述信息，为用户提供精准、便捷的校园服务支持，例如解答课表疑问、协助查询学籍相关证明办理流程、推送用户所在学院的最新通知、指导预约图书馆自习座位或实验室使用权限等，同时严格保护用户个人信息安全，不泄露非公开的学籍与课表细节。\n"+
+                    "";
+
+            // 所有准备工作完成，回到 UI 线程进行后续的会话加载
+            Platform.runLater(() -> {
+                // 移除加载信息
+                chatMessages.removeIf(m -> "正在初始化AI助手，请稍候...".equals(m.getContent()));
+
+                loadChatHistorySummaries();
+                List<ChatSessionSummary> history = gptClient.getChatHistorySummaries();
+                if (!history.isEmpty()) {
+                    loadSession(history.get(0).getId());
+                } else {
+                    createNewSession();
+                }
+            });
+
+        });
     }
 
     public void deleteSession(UUID sessionIdToDelete) {
@@ -124,6 +178,13 @@ public class GptViewModel {
         }
 
         ChatSession newSession = new ChatSession(UUID.randomUUID());
+        // 【注意】确保此方法在 SYSTEM_PROMPT 初始化之后被调用
+        if (SYSTEM_PROMPT == null) {
+            System.err.println("错误：SYSTEM_PROMPT 尚未初始化！");
+            // 可以添加一个临时的或者错误的提示
+            addMessage(new Message(UUID.randomUUID(), "system", "AI助手初始化失败，请稍后重试。", false));
+            return;
+        }
         newSession.addMessage(new MessageEntry(UUID.randomUUID(), new JSONObject().put("role", "system").put("content", SYSTEM_PROMPT)));
         currentSessionProperty.set(newSession);
 
@@ -170,7 +231,6 @@ public class GptViewModel {
     private void loadChatHistorySummaries() {
         Platform.runLater(() -> {
             List<ChatSessionSummary> summaries = gptClient.getChatHistorySummaries();
-            // 【修改】按 lastModified 时间戳进行降序（最新优先）排序
             summaries.sort(Comparator.comparing(ChatSession.ChatSessionSummary::getLastModified).reversed());
             chatHistory.setAll(summaries);
         });
@@ -312,4 +372,107 @@ public class GptViewModel {
             }
         }
     }
+
+    private static final Map<Integer, String> WMO_CODE_MAP = Map.ofEntries(
+            Map.entry(0, "晴天"),
+            Map.entry(1, "大体晴朗"),
+            Map.entry(2, "局部多云"),
+            Map.entry(3, "多云"),
+            Map.entry(4, "烟"),
+            Map.entry(5, "霾"),
+            Map.entry(6, "悬浮尘"),
+            Map.entry(7, "风沙"),
+            Map.entry(8, "尘卷风"),
+            Map.entry(9, "沙尘暴"),
+            Map.entry(10, "薄雾"),
+            Map.entry(11, "浅雾"),
+            Map.entry(12, "持续浅雾"),
+            Map.entry(13, "闪电"),
+            Map.entry(14, "降水，未及地面"),
+            Map.entry(15, "远处有降水"),
+            Map.entry(16, "附近有降水"),
+            Map.entry(17, "雷暴，无降水"),
+            Map.entry(18, "飑"),
+            Map.entry(19, "漏斗云"),
+            Map.entry(20, "毛毛雨"),
+            Map.entry(21, "雨"),
+            Map.entry(22, "雪"),
+            Map.entry(23, "雨夹雪或冰粒"),
+            Map.entry(24, "冻毛毛雨或冻雨"),
+            Map.entry(25, "阵雨"),
+            Map.entry(26, "阵雪或雨夹雪"),
+            Map.entry(27, "阵性冰雹或雨夹雹"),
+            Map.entry(28, "雾或冰雾"),
+            Map.entry(29, "雷暴（伴有或无降水）"),
+            Map.entry(30, "轻度或中度沙尘暴，过去一小时减弱"),
+            Map.entry(31, "轻度或中度沙尘暴，过去一小时无明显变化"),
+            Map.entry(32, "轻度或中度沙塵暴，过去一小时开始或增强"),
+            Map.entry(33, "强度沙尘暴，过去一小时减弱"),
+            Map.entry(34, "强度沙尘暴，过去一小时无明显变化"),
+            Map.entry(35, "强度沙尘暴，过去一小时开始或增强"),
+            Map.entry(36, "轻度或中度吹雪（低于视线）"),
+            Map.entry(37, "强度吹雪（低于视线）"),
+            Map.entry(38, "轻度或中度吹雪（高于视线）"),
+            Map.entry(39, "强度吹雪（高于视线）"),
+            Map.entry(40, "远方有雾或冰雾"),
+            Map.entry(41, "片状雾或冰雾"),
+            Map.entry(42, "雾或冰雾，天空可见，过去一小时变薄"),
+            Map.entry(43, "雾或冰雾，天空不可见"),
+            Map.entry(44, "雾或冰雾，天空可见，过去一小时无明显变化"),
+            Map.entry(45, "雾或冰雾，天空不可见"),
+            Map.entry(46, "雾或冰雾，天空可见，过去一小时开始或变浓"),
+            Map.entry(47, "雾或冰雾，天空不可见"),
+            Map.entry(48, "雾，沉积白霜，天空可见"),
+            Map.entry(49, "雾，沉积白霜，天空不可见"),
+            Map.entry(50, "间歇性小毛毛雨"),
+            Map.entry(51, "持续性小毛毛雨"),
+            Map.entry(52, "间歇性中等毛毛雨"),
+            Map.entry(53, "持续性中等毛毛雨"),
+            Map.entry(54, "间歇性大毛毛雨"),
+            Map.entry(55, "持续性大毛毛雨"),
+            Map.entry(56, "轻微冻毛毛雨"),
+            Map.entry(57, "中等或大冻毛毛雨"),
+            Map.entry(58, "小雨和毛毛雨"),
+            Map.entry(59, "中等或大雨和毛毛雨"),
+            Map.entry(60, "间歇性小雨"),
+            Map.entry(61, "持续性小雨"),
+            Map.entry(62, "间歇性中雨"),
+            Map.entry(63, "持续性中雨"),
+            Map.entry(64, "间歇性大雨"),
+            Map.entry(65, "持续性大雨"),
+            Map.entry(66, "轻微冻雨"),
+            Map.entry(67, "中等或大冻雨"),
+            Map.entry(68, "小雨或毛毛雨夹雪"),
+            Map.entry(69, "中等或大雨或毛毛雨夹雪"),
+            Map.entry(70, "间歇性小雪"),
+            Map.entry(71, "持续性小雪"),
+            Map.entry(72, "间歇性中雪"),
+            Map.entry(73, "持续性中雪"),
+            Map.entry(74, "间歇性大雪"),
+            Map.entry(75, "持续性大雪"),
+            Map.entry(76, "冰晶（有或无雾）"),
+            Map.entry(77, "雪粒（有或无雾）"),
+            Map.entry(78, "孤立的星状雪晶（有或无雾）"),
+            Map.entry(79, "冰粒"),
+            Map.entry(80, "小阵雨"),
+            Map.entry(81, "中等或大阵雨"),
+            Map.entry(82, "猛烈阵雨"),
+            Map.entry(83, "轻微雨夹雪阵雨"),
+            Map.entry(84, "中等或大雨夹雪阵雨"),
+            Map.entry(85, "小阵雪"),
+            Map.entry(86, "中等或大阵雪"),
+            Map.entry(87, "小雪珠或小冰雹阵雨，有或无雨或雨夹雪"),
+            Map.entry(88, "中等或大雪珠或小冰雹阵雨，有或无雨或雨夹雪"),
+            Map.entry(89, "无雷阵性冰雹，有或无雨或雨夹雪 - 轻微"),
+            Map.entry(90, "无雷阵性冰雹，有或无雨或雨夹雪 - 中等或大"),
+            Map.entry(91, "观测时有小雨，前一小时有雷暴"),
+            Map.entry(92, "观测时有中等或大雨，前一小时有雷暴"),
+            Map.entry(93, "观测时有小雪、雨夹雪或冰雹，前一小时有雷暴"),
+            Map.entry(94, "观测时有中等或大雪、雨夹雪或冰雹，前一小时有雷暴"),
+            Map.entry(95, "轻度或中度雷暴，无冰雹，但有雨和/或雪"),
+            Map.entry(96, "轻度或中度雷暴，有冰雹"),
+            Map.entry(97, "强度雷暴，无冰雹，但有雨和/或雪"),
+            Map.entry(98, "伴有沙尘暴的雷暴"),
+            Map.entry(99, "伴有冰雹的强雷暴")
+    );
 }

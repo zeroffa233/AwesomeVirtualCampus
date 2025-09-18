@@ -21,7 +21,7 @@ public class DisplayableTransaction {
     private final String rawType; // 从服务器接收的原始类型, e.g., "deposit" or "payment"
     private final String description;
     private final double amount;
-    private final List<StoreItem> items; // 解析后的商品列表，仅用于商店消费
+    private final List<StoreItem> items; // 解析后的商品列表，仅用于商店消费或售出
 
     // 使用静态实例以提高性能
     private static final Gson gson = new Gson();
@@ -47,41 +47,51 @@ public class DisplayableTransaction {
     /**
      * 内部私有方法，负责从 description 字段中解析商品列表。
      * 这是此类的核心逻辑。
-     * @return 解析出的商品列表，如果不是商店消费或解析失败，则返回空列表。
+     * @return 解析出的商品列表，如果不是商店消费/售出或解析失败，则返回空列表。
      */
     private List<StoreItem> parseItemsFromDescription() {
-        // 检查是否为可能包含商品列表的商店消费记录
-        if ("payment".equals(rawType) && description != null && description.startsWith("消费:")) {
+        String jsonPart = null;
+
+        // 【新增逻辑】检查是否为商家收款记录
+        if ("deposit".equals(rawType) && description != null && description.startsWith("卖出货款：")) {
+            jsonPart = description.substring("卖出货款：".length());
+        }
+        // 检查是否为用户消费记录
+        else if ("payment".equals(rawType) && description != null && description.startsWith("消费:")) {
+            jsonPart = description.substring("消费:".length());
+        }
+
+        // 如果成功提取了JSON部分，则进行解析
+        if (jsonPart != null) {
             try {
-                // 提取 "消费:" 后面的JSON字符串部分
-                String jsonPart = description.substring("消费:".length());
-
-                // 定义需要转换的类型 (List<StoreItem>)
                 Type listType = new TypeToken<List<StoreItem>>() {}.getType();
-
-                // 使用Gson进行解析
                 List<StoreItem> parsedItems = gson.fromJson(jsonPart, listType);
-
-                // 如果解析结果不为null，则返回结果，否则返回空列表以防万一
                 return parsedItems != null ? parsedItems : Collections.emptyList();
             } catch (JsonSyntaxException e) {
-                // 如果JSON格式错误，打印错误信息并返回空列表，保证程序健壮性
                 System.err.println("解析交易记录中的商品JSON失败: " + e.getMessage());
                 return Collections.emptyList();
             }
         }
-        // 如果不是商店消费，或者描述不符合格式，直接返回空列表
+        // 如果不符合任何已知格式，返回空列表
         return Collections.emptyList();
     }
 
+
     /**
      * 获取用于UI展示的、翻译后的交易类型。
-     * @return "商店消费", "充值", 或 "未知类型".
+     * @return "商店消费", "商品售出", "充值", 或 "未知类型".
      */
     public String getType() {
         return switch (rawType) {
             case "payment" -> "商店消费";
-            case "deposit" -> "充值";
+            case "deposit" -> {
+                // 【新增逻辑】根据描述区分是“商品售出”还是普通“充值”
+                if (description != null && description.startsWith("卖出货款：")) {
+                    yield "商品售出";
+                } else {
+                    yield "充值";
+                }
+            }
             default -> "未知类型";
         };
     }

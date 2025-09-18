@@ -156,57 +156,62 @@ public class PersonalFinanceController implements Initializable {
             super.updateItem(item, empty);
             if (empty || item == null) {
                 setGraphic(null);
-            } else {
-                // Instantly collapse the cell if it's being recycled by the list view
-                if (itemsContainer.isManaged()) {
-                    toggleDetails(false);
-                }
-                itemsContainer.getChildren().clear();
-
-                typeLabel.setText(item.getType()); // Use translated type for display
-                dateLabel.setText(item.getDate());
-
-                // **CORE LOGIC CHANGE**: Check the rawType from the server
-                if ("payment".equals(item.getRawType())) {
-                    amountLabel.setText(String.format("-%.2f", item.getAmount()));
-                    amountLabel.setStyle("-fx-text-fill: red;");
-
-                    // The item list is now pre-parsed in DisplayableTransaction
-                    List<StoreItem> items = item.getItems();
-                    if (items != null && !items.isEmpty()) {
-                        expandButton.setVisible(true);
-                        expandButton.setManaged(true);
-                        populateItemsContainer(items);
-                    } else {
-                        expandButton.setVisible(false);
-                        expandButton.setManaged(false);
-                    }
-                } else { // For "deposit" and other types
-                    expandButton.setVisible(false);
-                    expandButton.setManaged(false);
-                    amountLabel.setText(String.format("+%.2f", item.getAmount()));
-                    amountLabel.setStyle("-fx-text-fill: #4CAF50;"); // Green for recharge
-                }
-
-                setGraphic(layout);
-                setText(null);
+                return;
             }
+
+            // Instantly collapse the cell if it's being recycled by the list view
+            if (itemsContainer.isManaged()) {
+                toggleDetails(false);
+            }
+            itemsContainer.getChildren().clear();
+
+            // === 【核心修改逻辑】 ===
+            // 1. 使用 DisplayableTransaction 解析好的数据
+            typeLabel.setText(item.getType()); // 直接获取类型，如 "商品售出"
+            dateLabel.setText(item.getDate());
+
+            // 2. 检查是否存在可供展示的商品列表
+            List<StoreItem> items = item.getItems();
+            boolean hasExpandableItems = items != null && !items.isEmpty();
+
+            // 3. 根据是否存在商品列表，决定是否显示展开按钮并填充内容
+            expandButton.setVisible(hasExpandableItems);
+            expandButton.setManaged(hasExpandableItems);
+            if (hasExpandableItems) {
+                populateItemsContainer(items);
+            }
+
+            // 4. 根据原始交易类型（payment/deposit）设置金额颜色和符号
+            if ("payment".equals(item.getRawType())) {
+                amountLabel.setText(String.format("-%.2f", item.getAmount()));
+                amountLabel.setStyle("-fx-text-fill: red;");
+            } else { // 涵盖 "deposit" (包括普通充值和商品售出)
+                amountLabel.setText(String.format("+%.2f", item.getAmount()));
+                amountLabel.setStyle("-fx-text-fill: #4CAF50;"); // 绿色代表收入
+            }
+
+            setGraphic(layout);
+            setText(null);
         }
 
-        private void populateItemsContainer(List<StoreItem> items) {
-            Map<String, GroupedItem> groupedItems = new LinkedHashMap<>();
-            // Group items by name to count quantity
-            for (StoreItem shopItem : items) {
-                groupedItems.compute(shopItem.getItemName(), (name, grouped) -> {
-                    if (grouped == null) {
-                        return new GroupedItem(name, 1, shopItem.getPrice().doubleValue() / 100.0);
-                    } else {
-                        return new GroupedItem(name, grouped.quantity + 1, grouped.unitPrice);
-                    }
-                });
-            }
 
-            for (GroupedItem groupedItem : groupedItems.values()) {
+        private void populateItemsContainer(List<StoreItem> items) {
+            // 【修复】不再需要客户端进行分组，因为从服务器获取的数据已经包含了正确的商品种类和对应的数量 (存在stock字段)
+            // 直接遍历items列表，为每个StoreItem（代表一类商品）创建对应的UI行
+            for (StoreItem item : items) {
+                // 从StoreItem中直接获取信息：
+                // 1. 商品名称
+                String name = item.getItemName();
+                // 2. 商品数量 (存储在复用的stock字段中)
+                // 注意：需要确认StoreItem中的stock字段类型，JSON中是整数，假设getter返回long或int
+                int quantity = item.getStock().intValue();
+                // 3. 商品单价 (服务器存储的是分，需要转换为元)
+                double unitPrice = item.getPrice().doubleValue() / 100.0;
+
+                // 使用获取到的正确信息创建GroupedItem记录
+                GroupedItem groupedItem = new GroupedItem(name, quantity, unitPrice);
+
+                // 调用现有的方法创建UI并添加到容器中
                 itemsContainer.getChildren().add(createItemRow(groupedItem));
             }
         }
