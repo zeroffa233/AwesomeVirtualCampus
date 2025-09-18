@@ -50,3 +50,7 @@ bin/
 *.fls
 *.xdv
 **.jar
+
+*~
+*.swp
+.zshrc
