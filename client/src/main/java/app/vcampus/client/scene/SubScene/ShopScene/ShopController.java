@@ -628,27 +628,6 @@ public class ShopController {
         timeline.play();
     }
 
-    public void refreshData() {
-        System.out.println("ShopController: 正在启动数据刷新...");
-        new Thread(() -> {
-            List<StoreItem> itemsFromServer = StoreClient.getAll(FakeRepository.handler);
-            Platform.runLater(() -> {
-                if (itemsFromServer != null) {
-                    allItems.setAll(itemsFromServer);
-                    System.out.println("ShopController: 数据刷新成功，共加载 " + allItems.size() + " 件商品。");
-                } else {
-                    System.err.println("ShopController: 数据刷新失败。");
-                    allItems.clear();
-                }
-                displayedItems.setAll(allItems);
-                populateItemsGrid();
-            });
-        }).start();
-    }
-    public static ShopController getInstance() {
-        return instance;
-    }
-
     private void loadTransactionHistory() {
         new Thread(() -> {
             List<ShopTransactionRecord> historyFromServer = HistoryClient.getHistory(FakeRepository.handler);

@@ -8,12 +8,11 @@ import lombok.NoArgsConstructor; // <-- 导入
 
 
 @Data // <-- 【核心】添加@Data，它会自动生成 getter, setter, toString, equals, hashCode
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 /**
  * 商店交易记录类。
  * 用于封装一次商店交易的详细信息。
  */
-public class ShopTransactionRecord {
 public class ShopTransactionRecord {
     /**
      * 交易发生时的时间戳。

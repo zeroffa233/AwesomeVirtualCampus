@@ -54,3 +54,4 @@ bin/
 *~
 *.swp
 .zshrc
+*/node_modules/
