@@ -39,7 +39,7 @@
                 </HBox>
 
                 <!-- 2. 中间区域: 标题 -->
-                <StackPane fx:id="titleContainer" prefWidth="140.0" alignment="CENTER_LEFT">
+                <StackPane fx:id="titleContainer" prefWidth="250.0" alignment="CENTER_LEFT">
                     <padding>
                         <Insets left="20.0" />
                     </padding>
