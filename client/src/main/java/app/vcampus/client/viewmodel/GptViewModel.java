@@ -80,8 +80,12 @@ public class GptViewModel {
 
             // 4. 如果获取到了课程列表，则进行处理并返回结果
             return teachingClasses.stream()
-                    .map(TeachingClass::humanReadableSchedule)
-                    .collect(Collectors.joining(","));
+                    .map(teachingClass -> teachingClass.getCourse().getCourseName() +
+                            "由" +
+                            teachingClass.getTeacherName() +
+                            "教授，日程为" +
+                            teachingClass.humanReadableSchedule())
+                    .collect(Collectors.joining(" ； "));
         });
     }
 
@@ -124,7 +128,7 @@ public class GptViewModel {
                     " \n" +
                     "当前用户学籍信息包含：姓名"+ FakeRepository.user.name +"、性别"+FakeRepository.user.gender+"、一卡通号"+FakeRepository.user.cardNum+"、联系电话"+FakeRepository.user.phone+"、电子邮箱"+FakeRepository.user.email+"\n" +
                     " \n" +
-                    "本学期于2025年8月25日星期一开学（第一周）当前用户课表： "+ schedule +"\n"+
+                    "本学期于2025年8月25日星期一开学（第一周）当前用户课表（1-5节上午；6+节下午）： "+ schedule +"\n"+
                     " \n" +
                     "现在是"+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd E HH:mm:ss", Locale.CHINA))+"，天气"+ weather +"，目前校区内人流量基本正常，图书馆人流较高。"+
                     " \n" +
