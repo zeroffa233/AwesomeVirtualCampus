@@ -211,67 +211,18 @@ public class ShopController {
         imageContainer.setMinSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
         imageContainer.setPrefSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
         imageContainer.setMaxSize(VIEWPORT_SIZE, VIEWPORT_SIZE);
-        // 【优化】我们不再需要背景圆角了，因为剪裁会处理它
         imageContainer.setStyle("-fx-background-color: #F0F0F0;");
 
-        // --- 【关键修正】将剪裁应用到“相框”而不是“照片” ---
-        // 1. 创建一个和图片视口一样大的矩形，作为我们的“剪刀”
         Rectangle clip = new Rectangle(VIEWPORT_SIZE, VIEWPORT_SIZE);
 
-        // 2. 设置矩形的圆角半径，这个值可以随你调整
         double cornerRadius = 30.0;
         clip.setArcWidth(cornerRadius);
         clip.setArcHeight(cornerRadius);
 
-        // 3. 将这个圆角矩形“剪刀”应用到我们的 imageContainer (相框) 上
         imageContainer.setClip(clip);
-        // --- 修正结束 ---
 
-        try {
-            // 步骤 1: 尝试从缓存获取理想的图片
-            Image image = ImageCache.getInstance().getImage(item.getPictureLink());
+        load_image_from_cache(item.getPictureLink(), VIEWPORT_SIZE, imageContainer);
 
-            // 检查图片数据本身是否损坏
-            if (image.isError()) {
-                throw new Exception("Image data is corrupted for path: " + item.getPictureLink());
-            }
-
-            // 如果一切顺利，创建并显示这张理想的图片
-            ImageView imageView = new ImageView(image);
-            imageView.setPreserveRatio(true);
-            if (image.getWidth() < image.getHeight()) imageView.setFitWidth(VIEWPORT_SIZE);
-            else imageView.setFitHeight(VIEWPORT_SIZE);
-            imageContainer.getChildren().add(imageView);
-
-        } catch (Exception e) {
-            // 步骤 2: 【核心修改】如果 try 块失败，就在这里执行我们的“备用方案”
-            System.err.println("无法从缓存加载图片 '" + item.getPictureLink() + "', 正在使用默认占位图。原因: " + e.getMessage());
-
-            try {
-                // a. 尝试从本地资源加载我们的备用图片
-                Image fallbackImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png")));
-
-                // b. 显示这张备用图片
-                ImageView fallbackImageView = new ImageView(fallbackImage);
-                fallbackImageView.setPreserveRatio(true);
-                if (fallbackImage.getWidth() < fallbackImage.getHeight()) fallbackImageView.setFitWidth(VIEWPORT_SIZE);
-                else fallbackImageView.setFitHeight(VIEWPORT_SIZE);
-                imageContainer.getChildren().add(fallbackImageView);
-
-            } catch (Exception fallbackEx) {
-                // c. 【终极备用方案】如果连备用图片都加载失败了...
-                System.err.println("致命错误：默认占位图 /images/500.png 也无法加载！");
-                fallbackEx.printStackTrace();
-
-                // ...我们还是显示一个红色的 "X" 作为最后的提示
-                Label errorLabel = new Label("X");
-                errorLabel.setFont(Font.font("System", FontWeight.BOLD, 48));
-                errorLabel.setTextFill(Color.RED);
-                imageContainer.getChildren().add(errorLabel);
-            }
-        }
-
-        // --- 后面的代码保持完全不变 ---
         VBox textContent = new VBox(10);
         textContent.setAlignment(Pos.CENTER_LEFT);
 
@@ -299,6 +250,44 @@ public class ShopController {
         return card;
     }
 
+    private void load_image_from_cache(String pictureLink, double VIEWPORT_SIZE, StackPane imageContainer) {
+        try {
+            // Try to retrieve the ideal image from the cache.
+            Image image = ImageCache.getInstance().getImage(pictureLink);
+
+            if (image.isError()) throw new Exception("Image data is corrupted for path: " + pictureLink);
+
+            // 如果一切顺利，创建并显示这张理想的图片
+            ImageView imageView = new ImageView(image);
+            imageView.setPreserveRatio(true);
+            if (image.getWidth() < image.getHeight()) imageView.setFitWidth(VIEWPORT_SIZE);
+            else imageView.setFitHeight(VIEWPORT_SIZE);
+            imageContainer.getChildren().add(imageView);
+
+        } catch (Exception e) {
+            System.err.println("无法从缓存加载图片 '" + pictureLink + "', 正在使用默认占位图。原因: " + e.getMessage());
+
+            try {
+                Image fallbackImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png")));
+
+                ImageView fallbackImageView = new ImageView(fallbackImage);
+                fallbackImageView.setPreserveRatio(true);
+                if (fallbackImage.getWidth() < fallbackImage.getHeight()) fallbackImageView.setFitWidth(VIEWPORT_SIZE);
+                else fallbackImageView.setFitHeight(VIEWPORT_SIZE);
+                imageContainer.getChildren().add(fallbackImageView);
+
+            } catch (Exception fallbackEx) {
+                System.err.println("致命错误：默认占位图 /images/500.png 也无法加载！");
+                fallbackEx.printStackTrace();
+
+                Label errorLabel = new Label("X");
+                errorLabel.setFont(Font.font("System", FontWeight.BOLD, 48));
+                errorLabel.setTextFill(Color.RED);
+                imageContainer.getChildren().add(errorLabel);
+            }
+        }
+    }
+
     private void updateCartItemsList() {
         cartItemsContainer.getChildren().clear();
         for (StoreItem item : chosenItems) {
@@ -320,34 +309,8 @@ public class ShopController {
 
         // --- 【核心修改】用我们统一的 ImageCache 逻辑替换旧的加载方式 ---
         ImageView imageView = new ImageView();
-        try {
-            // 步骤 1: 尝试从缓存获取理想的图片
-            Image image = ImageCache.getInstance().getImage(item.getPictureLink());
-            if (image.isError()) {
-                throw new Exception("Image data is corrupted for path: " + item.getPictureLink());
-            }
-            imageView.setImage(image);
 
-        } catch (Exception e) {
-            // 步骤 2: 如果失败，执行“备用方案”
-            System.err.println("无法加载购物车图片 '" + item.getPictureLink() + "', 正在使用默认占位图。原因: " + e.getMessage());
-            try {
-                // a. 尝试从本地资源加载我们的备用图片
-                Image fallbackImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png")));
-                imageView.setImage(fallbackImage);
-
-            } catch (Exception fallbackEx) {
-                // b. 如果连备用图片都加载失败了，imageView 将保持空白，
-                //    在小尺寸的购物车视图里，这比显示一个 "X" 可能更不突兀。
-                System.err.println("致命错误：购物车的默认占位图 /images/500.png 也无法加载！");
-            }
-        }
-        // --- 修改结束 ---
-
-        // --- 【微调参数】在这里调整图片大小 (保持不变) ---
-        imageView.setFitHeight(60); // 设置图片高度为 60px
-        imageView.setFitWidth(60);  // 设置图片宽度为 60px
-        imageView.setPreserveRatio(true); // 保持宽高比
+        load_image_then_config_ImageView(item, imageView);
 
 
         // --- B. 创建图片右侧的商品信息 VBox (保持不变) ---
@@ -384,6 +347,35 @@ public class ShopController {
         GridPane.setHalignment(removeButton, javafx.geometry.HPos.RIGHT);
 
         return listItem;
+    }
+
+    private void load_image_then_config_ImageView(StoreItem item, ImageView imageView) {
+        try {
+            // 步骤 1: 尝试从缓存获取理想的图片
+            Image image = ImageCache.getInstance().getImage(item.getPictureLink());
+            if (image.isError()) throw new Exception("Image data is corrupted for path: " + item.getPictureLink());
+            imageView.setImage(image);
+
+        } catch (Exception e) {
+            // 步骤 2: 如果失败，执行“备用方案”
+            System.err.println("无法加载购物车图片 '" + item.getPictureLink() + "', 正在使用默认占位图。原因: " + e.getMessage());
+            try {
+                // a. 尝试从本地资源加载我们的备用图片
+                Image fallbackImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/500.png")));
+                imageView.setImage(fallbackImage);
+
+            } catch (Exception fallbackEx) {
+                // b. 如果连备用图片都加载失败了，imageView 将保持空白，
+                //    在小尺寸的购物车视图里，这比显示一个 "X" 可能更不突兀。
+                System.err.println("致命错误：购物车的默认占位图 /images/500.png 也无法加载！");
+            }
+        }
+        // --- 修改结束 ---
+
+        // --- 【微调参数】在这里调整图片大小 (保持不变) ---
+        imageView.setFitHeight(60); // 设置图片高度为 60px
+        imageView.setFitWidth(60);  // 设置图片宽度为 60px
+        imageView.setPreserveRatio(true); // 保持宽高比
     }
 
     private void setupBindings() {
