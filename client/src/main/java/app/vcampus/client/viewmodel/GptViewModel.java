@@ -366,30 +366,6 @@ public class GptViewModel {
         });
     }
 
-    private void loadChatHistorySummaries() {
-        Platform.runLater(() -> {
-            List<ChatSessionSummary> summaries = gptClient.getChatHistorySummaries();
-            summaries.sort(Comparator.comparing(ChatSession.ChatSessionSummary::getLastModified).reversed());
-            chatHistory.setAll(summaries);
-        });
-    }
-
-    private void rebuildChatDisplay() {
-        Platform.runLater(() -> {
-            chatMessages.clear();
-            List<MessageEntry> history = currentSessionProperty.get().getMessageHistory();
-            for (MessageEntry entry : history) {
-                JSONObject msgJson = entry.getMessage();
-                String role = msgJson.getString("role");
-                String content = msgJson.getString("content");
-
-                if (!"system".equals(role)) {
-                    chatMessages.add(new Message(entry.getId(), role, content, true));
-                }
-            }
-        });
-    }
-
     private void callApi(List<JSONObject> currentMessages) throws Exception {
         URL url = new URL(API_BASE_URL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
