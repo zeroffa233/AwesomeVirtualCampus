@@ -1,6 +1,7 @@
 package app.vcampus.client.scene.SubScene.ShopScene;
 
 import app.vcampus.client.gateway.FinanceClient;
+import app.vcampus.client.gateway.HistoryClient;
 import app.vcampus.client.util.ImageCache;
 import com.google.gson.Gson;
 import com.jfoenix.controls.JFXButton;
@@ -93,7 +94,7 @@ public class ShopController {
     public void initialize() {
         instance = this;
         refreshData();
-
+        loadTransactionHistory();
         setupBindings();
         setupListeners();
         createAndPlaySwipeHintAnimation();
@@ -441,6 +442,17 @@ public class ShopController {
         ShopTransactionRecord record = new ShopTransactionRecord(chosenItems, chosenItemsPrice.get()/100.0);
         transactionHistory.add(record);
         System.out.println("新交易已记录: " + record);
+
+        // 【核心】在支付流程中，启动一个后台线程来更新服务器上的历史记录
+        new Thread(() -> {
+            boolean success = HistoryClient.updateHistory(FakeRepository.handler, transactionHistory);
+            if (success) {
+                System.out.println("交易历史已成功同步到服务器。");
+            } else {
+                System.err.println("警告：交易历史同步到服务器失败！");
+            }
+        }).start();
+
         finance_process_credit(record);   // 财务模块处理扣款
         finance_process_debit(record);
         play_payment_animation();
@@ -639,5 +651,20 @@ public class ShopController {
     }
     public static ShopController getInstance() {
         return instance;
+    }
+
+    private void loadTransactionHistory() {
+        new Thread(() -> {
+            List<ShopTransactionRecord> historyFromServer = HistoryClient.getHistory(FakeRepository.handler);
+            Platform.runLater(() -> {
+                if (historyFromServer != null) {
+                    transactionHistory.clear();
+                    transactionHistory.addAll(historyFromServer);
+                    System.out.println("ShopController: 交易历史加载成功，共 " + transactionHistory.size() + " 条记录。");
+                } else {
+                    System.err.println("ShopController: 交易历史加载失败。");
+                }
+            });
+        }).start();
     }
 }

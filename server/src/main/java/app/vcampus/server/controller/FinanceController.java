@@ -68,7 +68,7 @@ public class FinanceController {
      * @param database the database session
      * @return a success or error response
      */
-    @RouteMapping(uri = "finance/debit", role = "finance_staff")
+    @RouteMapping(uri = "finance/debit")
     public Response debitCard(Request request, org.hibernate.Session database) {
         String cardNumberStr = request.getParams().get("cardNumber");
         String amountStr = request.getParams().get("amount");
@@ -128,7 +128,7 @@ public class FinanceController {
      * @param database the database session
      * @return a success or error response
      */
-    @RouteMapping(uri = "finance/credit", role = "finance_staff")
+    @RouteMapping(uri = "finance/credit")
     public Response creditCard(Request request, org.hibernate.Session database) {
         String cardNumberStr = request.getParams().get("cardNumber");
         String amountStr = request.getParams().get("amount");

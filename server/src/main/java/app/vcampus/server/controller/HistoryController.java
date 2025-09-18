@@ -17,32 +17,28 @@ public class HistoryController {
      */
     @RouteMapping(uri = "history/get")
     public Response getHistory(Request request, org.hibernate.Session database) {
-        // 1. 【核心修正】更健壮的权限和身份验证
+        // 1. 获取 Session
         Session session = request.getSession();
-        if (session == null || session.getCardNum() == null || session.getCardNum().isEmpty()) {
+
+        // 2. 【核心修正】最关键的权限检查
+        //    如果 session 不存在，或者 cardNum 是默认值 0（通常表示未初始化的 session），则拒绝访问。
+        if (session == null || session.getCardNum() == 0) {
             return Response.Common.permissionDenied();
         }
 
-        try {
-            // 2. 安全地将 String 类型的 cardNum 转换为 Integer
-            Integer cardNum = Integer.parseInt(session.getCardNum());
+        // 3. 从 session 中获取 int 类型的 cardNum (Java 会自动装箱为 Integer)
+        Integer cardNum = session.getCardNum();
 
-            // 3. 从数据库获取历史记录
-            UserTransactionHistory history = database.get(UserTransactionHistory.class, cardNum);
+        // 4. 从数据库获取历史记录
+        UserTransactionHistory history = database.get(UserTransactionHistory.class, cardNum);
 
-            if (history == null) {
-                // 如果用户还没有历史记录，返回一个表示空列表的JSON字符串 "[]"
-                return Response.Common.ok("[]");
-            }
-
-            // 4. 返回存储在数据库中的JSON字符串
-            return Response.Common.ok(history.getHistoryJson());
-
-        } catch (NumberFormatException e) {
-            // 如果 cardNum 字符串无法被解析为整数，这是一个异常情况
-            log.warn("Invalid card number format in session: {}", session.getCardNum());
-            return Response.Common.badRequest();
+        if (history == null) {
+            // 如果用户还没有历史记录，返回一个表示空列表的JSON字符串 "[]"
+            return Response.Common.ok("[]");
         }
+
+        // 5. 返回存储在数据库中的JSON字符串
+        return Response.Common.ok(history.getHistoryJson());
     }
 
     /**
@@ -50,13 +46,15 @@ public class HistoryController {
      */
     @RouteMapping(uri = "history/update")
     public Response updateHistory(Request request, org.hibernate.Session database) {
-        // 1. 【核心修正】更健壮的权限和身份验证
+        // 1. 获取 Session
         Session session = request.getSession();
-        if (session == null || session.getCardNum() == null || session.getCardNum().isEmpty()) {
+
+        // 2. 【核心修正】最关键的权限检查
+        if (session == null || session.getCardNum() == 0) {
             return Response.Common.permissionDenied();
         }
 
-        // 2. 从请求参数中获取要更新的JSON数据
+        // 3. 从请求参数中获取要更新的JSON数据
         String historyJson = request.getParams().get("historyJson");
         if (historyJson == null) {
             return Response.Common.badRequest();
@@ -64,24 +62,21 @@ public class HistoryController {
 
         Transaction tx = null;
         try {
-            // 3. 安全地将 String 类型的 cardNum 转换为 Integer
-            Integer cardNum = Integer.parseInt(session.getCardNum());
+            // 4. 从 session 中获取 int 类型的 cardNum
+            Integer cardNum = session.getCardNum();
             UserTransactionHistory newHistory = new UserTransactionHistory(cardNum, historyJson);
 
             tx = database.beginTransaction();
-            database.merge(newHistory); // 使用 merge 来处理插入或更新
+            database.merge(newHistory);
             tx.commit();
 
             log.info("Successfully updated transaction history for user: {}", cardNum);
             return Response.Common.ok();
 
-        } catch (NumberFormatException e) {
-            // 如果 cardNum 字符串无法被解析为整数
-            log.warn("Invalid card number format in session: {}", session.getCardNum());
-            if (tx != null) tx.rollback();
-            return Response.Common.badRequest();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             log.error("Failed to update transaction history for user: {}", session.getCardNum(), e);
             return Response.Common.internalError();
         }

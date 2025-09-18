@@ -45,6 +45,7 @@ Main {
         router.addController(GptController.class);
         router.addController(ImageController.class);
         router.addController(ChatController.class);
+        router.addController(HistoryController.class);
 
         // 读取数据库用户名 & 密码
         Console console = System.console();

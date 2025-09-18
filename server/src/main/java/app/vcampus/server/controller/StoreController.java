@@ -24,7 +24,7 @@ public class StoreController {
      * @param database database
      * @return the response with ok or error
      */
-    @RouteMapping(uri = "store/buy", role = "shop_user")
+    @RouteMapping(uri = "store/buy")
     public Response buy(Request request, org.hibernate.Session database) {
         try {
             FinanceCard financeCard = database.get(FinanceCard.class, request.getSession().getCardNum());
@@ -92,7 +92,7 @@ public class StoreController {
      * @param database database
      * @return return list<StoreTransaction>
      */
-    @RouteMapping(uri = "store/user/getAllTransactions", role = "shop_user")
+    @RouteMapping(uri = "store/user/getAllTransactions")
     public Response getAllTransactions(Request request, org.hibernate.Session database) {
         try {
             List<StoreTransaction> allTransactions = Database.loadAllData(StoreTransaction.class, database);
@@ -109,7 +109,7 @@ public class StoreController {
      * @param database database
      * @returnit returns an “OK” response with a map containing a JSON string representing the salesVolume information
      */
-    @RouteMapping(uri = "store/staff/getTodaySales", role = "shop_staff")
+    @RouteMapping(uri = "store/staff/getTodaySales")
     public Response getTodaySales(Request request, org.hibernate.Session database) {
         try {
             List<StoreTransaction> allTransactions = Database.loadAllData(StoreTransaction.class, database);
@@ -181,7 +181,7 @@ public class StoreController {
      * @param database database
      * @return response with the all items
      */
-    @RouteMapping(uri = "store/filter", role = "shop_user")
+    @RouteMapping(uri = "store/filter")
     public Response filter(Request request, org.hibernate.Session database) {
         try {
             List<StoreItem> allItems;
@@ -250,7 +250,7 @@ public class StoreController {
      * @param database datebase
      * @return   it returns an “OK” response with a map containing a list of JSON strings representing the transaction records grouped by date
      */
-    @RouteMapping(uri = "storeTransaction/getRecords", role = "shop_user")
+    @RouteMapping(uri = "storeTransaction/getRecords")
     public Response getRecords(Request request, org.hibernate.Session database) {
         try {
 //            List<StoreTransaction> allRecords = Database.loadAllData(StoreTransaction.class, database);
@@ -297,7 +297,7 @@ public class StoreController {
      * @param database database
      * @return response with ok or error
      */
-    @RouteMapping(uri = "storeItem/updateItem", role = "shop_staff")
+    @RouteMapping(uri = "storeItem/updateItem")
     public Response updateItem(Request request, org.hibernate.Session database) {
         StoreItem newItem = IEntity.fromJson(request.getParams().get("storeItem"), StoreItem.class);
 
