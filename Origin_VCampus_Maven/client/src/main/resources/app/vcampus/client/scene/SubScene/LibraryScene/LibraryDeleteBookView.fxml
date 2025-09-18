@@ -53,6 +53,8 @@
             </children>
         </HBox>
 
+        <Label fx:id="countLabel" text="请输入搜索关键词。" style="-fx-font-size: 14px; -fx-text-fill: #888888;"/>
+
         <ScrollPane fx:id="scrollPane" fitToWidth="true" style="-fx-background-color: white; -fx-background-radius: 8;" VBox.vgrow="ALWAYS">
             <effect>
                 <DropShadow blurType="GAUSSIAN" height="20" offsetY="2" radius="9" width="20">

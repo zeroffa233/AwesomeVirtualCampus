@@ -1,6 +1,8 @@
 package app.vcampus.client.scene;
 
+import app.vcampus.client.gateway.FinanceClient;
 import app.vcampus.client.util.ImageCache;
+import com.google.gson.Gson;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import javafx.animation.*;
@@ -28,9 +30,9 @@ import javafx.util.Duration;
 import javafx.application.Platform;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import javafx.scene.text.Text;
 
 import app.vcampus.server.utility.ShopTransactionRecord;
@@ -54,7 +56,6 @@ public class ShopController {
     @FXML private JFXTextField searchField;
     @FXML private JFXButton searchButton;
     @FXML private HBox bottomBar;
-    // @FXML private JFXButton toggleCartButton; // 【修改点 1】此控件已在 FXML 中移除，此处需删除
     @FXML private Label itemCountLabel;
     @FXML private Label totalPriceLabel;
     @FXML private VBox cartView;
@@ -62,13 +63,12 @@ public class ShopController {
     @FXML private Label cartItemCountLabel;
     @FXML private VBox cartItemsContainer;
     @FXML private StackPane overlayPane;
-
     @FXML private JFXButton payButton;
     @FXML private StackPane successOverlay;
-    @FXML private StackPane cartContainer; // 【新增】
-    @FXML private SVGPath swipeHintIcon; // <-- 新增：注入我们的 V 形箭头图标
+    @FXML private StackPane cartContainer;
+    @FXML private SVGPath swipeHintIcon;
 
-    private Timeline swipeHintAnimation; // <-- 新增：用于存储我们创建的动画
+    private Timeline swipeHintAnimation;
     private double lastKnownPrice = 0.0; // <<--- 在这里新增这一行
 
     // ViewModel / State Properties
@@ -101,25 +101,9 @@ public class ShopController {
 
         payButton.disableProperty().bind(Bindings.isEmpty(chosenItems));
 
-        // 【核心修正 A】在初始化时，确保 overlayPane 是不可见的且鼠标穿透的
-        overlayPane.setVisible(false);
-        overlayPane.setMouseTransparent(true);
+        initialize_overlayPane_and_bottomBar();
 
-        // 为遮罩层添加点击事件监听器
-        overlayPane.setOnMouseClicked(event -> {
-            if (isCartVisible) {
-                toggleCart();
-            }
-        });
-
-        // 为底部结算条添加点击事件
-        bottomBar.setOnMouseClicked(event -> {
-            toggleCart();
-        });
-        // 【修复问题2】不再绑定 cartView 的 maxHeight，让其自由生长
-        // 我们改为直接控制 cartContainer 的动画
-
-        // 确保 cartContainer 初始位置在屏幕外，且能响应窗口大小变化
+        // Ensure that the initial position of cartContainer is outside the screen and can respond to changes in window size.
         rootPane.heightProperty().addListener((obs, oldVal, newVal) -> {
             if (!isCartVisible) {
                 cartContainer.setTranslateY(newVal.doubleValue());
@@ -131,20 +115,22 @@ public class ShopController {
             }
         });
 
-        // 默认让弹窗“鼠标透明”，不拦截事件
         cartContainer.setMouseTransparent(true);
         cartContainer.setCache(true);
         cartContainer.setCacheHint(javafx.scene.CacheHint.SPEED);
     }
 
+    private void initialize_overlayPane_and_bottomBar() {
+        overlayPane.setVisible(false);
+        overlayPane.setMouseTransparent(true);
+
+        overlayPane.setOnMouseClicked(event -> { if (isCartVisible) toggleCart(); });
+        bottomBar.setOnMouseClicked(event -> { toggleCart(); });
+    }
+
     @FXML
     private void toggleCart() {
-        // 【核心修正 B】正确的 Null-check 逻辑
-        // 只有当 cartAnimation 不是 null 时，才尝试停止它
-        if (cartAnimation != null) {
-            cartAnimation.stop();
-        }
-
+        if (cartAnimation != null) cartAnimation.stop();
         isCartVisible = !isCartVisible;
 
         TranslateTransition cartTransition = new TranslateTransition(ANIMATION_SPEED, cartContainer);
@@ -460,16 +446,64 @@ public class ShopController {
 
     @FXML
     private void handlePayment() {
-        // --- 0. 状态检查 (保持不变) ---
-        if (chosenItems.isEmpty() || successOverlay.isVisible()) {
-            return;
-        }
-
-        // --- 1. 记录交易 (保持不变) ---
-        ShopTransactionRecord record = new ShopTransactionRecord(chosenItems, chosenItemsPrice.get());
+        if (chosenItems.isEmpty() || successOverlay.isVisible()) return;
+        ShopTransactionRecord record = new ShopTransactionRecord(chosenItems, chosenItemsPrice.get()/100.0);
         transactionHistory.add(record);
         System.out.println("新交易已记录: " + record);
+        finance_process_credit(record);   // 财务模块处理扣款
 
+        play_payment_animation();
+    }
+
+    private void finance_process_credit(ShopTransactionRecord record) {
+        Integer userCardNum = FakeRepository.user.getCardNum();
+        String credit_json = credit_json_maker(record);
+        System.out.println(credit_json);
+        String description = "消费:" + credit_json;
+        FinanceClient.credit(userCardNum.toString(), record.getTotalPrice() , description);
+    }
+
+    /**
+     * @param record 商店交易记录
+     * @return 描述消费详情的JSON字符串
+     */
+    private String credit_json_maker(ShopTransactionRecord record) {
+        List<StoreItem> items = record.getItems();
+
+        Map<String, Long> itemCounts = items.stream()
+                .collect(Collectors.groupingBy(StoreItem::getItemName, Collectors.counting()));
+
+        // 3. 为了获取每种商品的单价，我们创建一个去重后的商品Map
+        Map<String, StoreItem> uniqueItems = new HashMap<>();
+        for (StoreItem item : items) {
+            uniqueItems.putIfAbsent(item.getItemName(), item);
+        }
+
+        // 4. 构建用于生成最终JSON的数据结构
+        List<Map<String, Object>> transactionDetails = new ArrayList<>();
+
+        // 遍历统计结果
+        for (Map.Entry<String, Long> entry : itemCounts.entrySet()) {
+            String itemName = entry.getKey();
+            Long quantity = entry.getValue();
+            StoreItem itemInfo = uniqueItems.get(itemName);
+
+            // 创建一个小Map，代表JSON数组中的一个对象
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("商品名称", itemName);
+            detail.put("数量", quantity);
+
+            double priceInYuan = itemInfo.getPrice().doubleValue() / 100.0;
+            detail.put("单价(元)", priceInYuan); // 键名也更新为“单价(元)”
+
+            transactionDetails.add(detail);
+        }
+
+        // 5. 使用 Gson 库将数据结构转换为JSON字符串并返回
+        return new Gson().toJson(transactionDetails);
+    }
+
+    private void play_payment_animation() {
         // --- 2. 准备动画 (已修改) ---
         // cartView 淡出
         FadeTransition cartFadeOut = new FadeTransition(Duration.millis(300), cartView);
@@ -497,6 +531,7 @@ public class ShopController {
         cartFadeOut.play();
         successFadeIn.play();
     }
+
     private void createAndPlaySwipeHintAnimation() {
         // 创建一个从起点到终点的时间轴动画
         swipeHintAnimation = new Timeline(
