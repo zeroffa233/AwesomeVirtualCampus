@@ -212,14 +212,31 @@ public class PersonalFinanceController implements Initializable {
         }
 
         private Node createItemRow(GroupedItem item) {
-            HBox itemRow = new HBox(10);
+            // 减小 HBox 元素间的默认间距，让数量和价格靠得更近
+            HBox itemRow = new HBox(4);
             itemRow.setAlignment(Pos.CENTER_LEFT);
-            Label itemName = new Label(item.name() + " x" + item.quantity());
+
+            // 1. 只显示商品名称的 Label
+            Label itemName = new Label(item.name());
+
+            // 2. 依然使用 Region 作为弹簧，将右侧内容推到最右边
             Region itemSpacer = new Region();
             HBox.setHgrow(itemSpacer, Priority.ALWAYS);
-            // Calculate total price for the group
-            Label itemPrice = new Label(String.format("%.2f", item.unitPrice() * item.quantity()));
-            itemRow.getChildren().addAll(itemName, itemSpacer, itemPrice);
+
+            // 3. 【新增】创建数量 Label，并设置期望的文本格式
+            Label quantityLabel = new Label(String.format("%d个，共", item.quantity()));
+            // 给数量文本一个次要的颜色，突出价格
+            quantityLabel.setStyle("-fx-text-fill: #616161;");
+
+            // 4. 创建价格 Label，并添加货币符号
+            Label itemPrice = new Label(String.format("¥%.2f", item.unitPrice() * item.quantity()));
+            // 可以稍微加粗或调整字体，让价格更显眼
+            itemPrice.setFont(Font.font("System", FontWeight.MEDIUM, 14));
+
+
+            // 5. 【核心】按新的顺序将所有控件添加到 HBox 中
+            itemRow.getChildren().addAll(itemName, itemSpacer, quantityLabel, itemPrice);
+
             return itemRow;
         }
     }
