@@ -80,7 +80,7 @@
                 </ImageView>
             </graphic>
         </JFXButton>
-        <JFXButton fx:id="gptButton" onAction="#handleGpt" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="GPT" graphicTextGap="40" VBox.vgrow="ALWAYS">
+        <JFXButton fx:id="gptButton" onAction="#handleGpt" maxWidth="Infinity" maxHeight="Infinity" styleClass="nav-button" text="校园助手" graphicTextGap="40" VBox.vgrow="ALWAYS">
             <graphic>
                 <ImageView fitHeight="28.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
                     <image>
