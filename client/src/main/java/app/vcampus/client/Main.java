@@ -17,6 +17,16 @@ public class Main extends Application {
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
         primaryStage.setResizable(false);
+
+        // 【核心修改】添加窗口关闭事件处理器
+        // 当用户点击关闭按钮时，此代码块将被执行
+        primaryStage.setOnCloseRequest(event -> {
+            // Platform.exit() 会触发JavaFX应用的正常关闭流程
+            javafx.application.Platform.exit();
+            // System.exit(0) 确保Java虚拟机完全终止
+            System.exit(0);
+        });
+
         // For UI debugging, call startForDebug(). For normal operation, call showLogin().
         showLogin();
         //startForDebug();
