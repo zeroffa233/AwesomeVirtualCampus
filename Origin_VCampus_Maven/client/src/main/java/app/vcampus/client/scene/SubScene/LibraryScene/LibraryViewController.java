@@ -12,6 +12,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
+import app.vcampus.client.util.ImageCache;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -147,8 +148,10 @@ public class LibraryViewController {
 
             if (firstBook.getCover() != null && !firstBook.getCover().isEmpty()) {
                 try {
-                    coverImageView.setImage(new Image(firstBook.getCover(), true));
+                    Image image = ImageCache.getInstance().getImage(firstBook.getCover());
+                    coverImageView.setImage(image);
                 } catch (Exception e) {
+                    System.err.println("Cannot load image from cache: " + firstBook.getCover());
                     coverImageView.setImage(null);
                 }
             } else {
