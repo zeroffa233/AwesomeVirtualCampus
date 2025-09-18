@@ -442,7 +442,7 @@ public class ShopController {
         transactionHistory.add(record);
         System.out.println("新交易已记录: " + record);
         finance_process_credit(record);   // 财务模块处理扣款
-
+        finance_process_debit(record);
         play_payment_animation();
     }
 
@@ -452,6 +452,66 @@ public class ShopController {
         System.out.println(credit_json);
         String description = "消费:" + credit_json;
         FinanceClient.credit(userCardNum.toString(), record.getTotalPrice() , description);
+    }
+
+    private void finance_process_debit(ShopTransactionRecord record) {
+        List<StoreItem> allItems = record.getItems();
+
+        Map<String, List<StoreItem>> itemsByBarcode = allItems.stream().collect(Collectors.groupingBy(StoreItem::getBarcode));
+
+        for (Map.Entry<String, List<StoreItem>> bossEntry : itemsByBarcode.entrySet()) {
+            String barcode = bossEntry.getKey();
+            List<StoreItem> itemsForThisBoss = bossEntry.getValue();
+
+            // --- 从这里开始，逻辑几乎与 credit_json_maker 完全相同，只是处理的数据范围是 itemsForThisBoss ---
+
+            // 4. 【第二次分组】：聚合当前卖家的商品，统计每种商品的数量
+            Map<String, Long> itemCounts = itemsForThisBoss.stream()
+                    .collect(Collectors.groupingBy(StoreItem::getItemName, Collectors.counting()));
+
+            // 5. 为获取商品元信息（如描述、图片链接等），创建去重后的Map
+            Map<String, StoreItem> uniqueItems = new HashMap<>();
+            for (StoreItem item : itemsForThisBoss) {
+                uniqueItems.putIfAbsent(item.getItemName(), item);
+            }
+
+            // 6. 构建用于生成JSON的数据结构
+            List<Map<String, Object>> transactionDetails = new ArrayList<>();
+            int totalAmountForBoss = 0; // 用于计算该卖家的总收款
+
+            for (Map.Entry<String, Long> entry : itemCounts.entrySet()) {
+                String itemNameValue = entry.getKey();
+                Long quantityValue = entry.getValue();
+                StoreItem itemInfo = uniqueItems.get(itemNameValue);
+
+                Map<String, Object> detail = new HashMap<>();
+                detail.put("itemName", itemNameValue);
+                detail.put("price", itemInfo.getPrice());
+                detail.put("description", itemInfo.getDescription());
+                detail.put("stock", quantityValue); // 复用 stock 字段存储购买数量
+                detail.put("pictureLink", itemInfo.getPictureLink());
+                detail.put("uuid", itemInfo.getUuid());
+                transactionDetails.add(detail);
+
+                // 累加总金额 (单价 * 数量)
+                totalAmountForBoss += itemInfo.getPrice() * quantityValue;
+            }
+
+            String debitJson = new Gson().toJson(transactionDetails);
+            String description = "卖出货款：" + debitJson;
+
+            try {
+                // 假设 debit 方法需要 (收款人卡号, 金额(分), 描述)
+                boolean success = FinanceClient.debit(barcode, totalAmountForBoss/100.0, description);
+                if (success) {
+                    System.out.println("成功为卖家 [" + barcode + "] 生成收款记录，金额: " + totalAmountForBoss/100.0 + "元");
+                } else {
+                    System.err.println("为卖家 [" + barcode + "] 生成收款记录失败！");
+                }
+            } catch (Exception e) {
+                System.err.println("为卖家 [" + barcode + "] 生成收款记录时发生异常: " + e.getMessage());
+            }
+        }
     }
 
     /**
@@ -478,15 +538,12 @@ public class ShopController {
 
             Map<String, Object> detail = new HashMap<>();
 
-            // --- 【核心修改】---
-            // 使用与 StoreItem 实体类字段名匹配的英文键
             detail.put("itemName", itemNameValue);
             detail.put("price", itemInfo.getPrice()); // 直接存储以“分”为单位的整数价格
             detail.put("description", itemInfo.getDescription());
             detail.put("stock", quantityValue); // 我们可以复用 stock 字段来存储购买数量
             detail.put("pictureLink", itemInfo.getPictureLink());
             detail.put("uuid", itemInfo.getUuid());
-            // --- 修改结束 ---
 
             transactionDetails.add(detail);
         }

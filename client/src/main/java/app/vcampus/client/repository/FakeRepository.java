@@ -77,9 +77,7 @@ public final class FakeRepository
         return false;
     }
     public static void disconnect() {
-        if (handler != null) {
-            handler.disconnect();
-        }
+        if (handler != null) handler.disconnect();
         isConnected = false;
         handler = null;
         user = null;
