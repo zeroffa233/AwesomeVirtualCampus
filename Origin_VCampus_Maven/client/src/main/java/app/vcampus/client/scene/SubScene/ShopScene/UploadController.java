@@ -12,10 +12,10 @@ import javafx.animation.KeyValue;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import java.io.File;
 import java.nio.file.Files;
+import java.util.Base64;
 import java.util.UUID;
 import com.jfoenix.validation.RegexValidator;
 import com.jfoenix.validation.RequiredFieldValidator;
@@ -23,6 +23,9 @@ import com.jfoenix.validation.base.ValidatorBase;
 import javafx.animation.Timeline;
 import javafx.scene.Node;
 import javafx.util.Duration;
+import app.vcampus.client.scene.ShopController;
+import app.vcampus.client.util.ImageCache;
+import javafx.scene.paint.Color; // 确保导入 Color
 
 public class UploadController {
 
@@ -43,14 +46,12 @@ public class UploadController {
 
     @FXML
     public void initialize() {
-        final String focusColor = "#728748";
-        final String unfocusColor = "#BDBDBD";
-        initializeColor(focusColor, unfocusColor);
+        initializeColor();
         setupValidators();
     }
 
-    private void initializeColor(String focusColor, String unfocusColor) {
-        String style = "-jfx-focus-color: " + focusColor + "; -jfx-unfocus-color: " + unfocusColor + ";";
+    private void initializeColor() {
+        String style = "-jfx-focus-color: " + "#728748" + "; -jfx-unfocus-color: " + "#BDBDBD" + ";";
         itemNameField.setStyle(style);
         priceField.setStyle(style);
         stockField.setStyle(style);
@@ -68,11 +69,7 @@ public class UploadController {
             protected void eval() {
                 // JFXTextField, JFXTextArea 都继承自 TextInputControl
                 javafx.scene.control.TextInputControl field = (javafx.scene.control.TextInputControl) srcControl.get();
-                if (field.getText() != null && field.getText().length() > 30) {
-                    hasErrors.set(true);
-                } else {
-                    hasErrors.set(false);
-                }
+                hasErrors.set(field.getText() != null && field.getText().length() > 30);
             }
         };
         itemNameField.getValidators().addAll(requiredValidator, nameLengthValidator);
@@ -92,11 +89,7 @@ public class UploadController {
             @Override
             protected void eval() {
                 // 检查文件是否被选择，并且扩展名是否是 "png"
-                if (selectedImageData == null || !"png".equalsIgnoreCase(selectedFileExtension)) {
-                    hasErrors.set(true);
-                } else {
-                    hasErrors.set(false);
-                }
+                hasErrors.set(selectedImageData == null || !"png".equalsIgnoreCase(selectedFileExtension));
             }
         };
         imagePathField.getValidators().add(imageValidator);
@@ -115,14 +108,84 @@ public class UploadController {
         });
     }
 
+    @FXML
+    private void handleSubmit() {
+        // ... (验证逻辑保持不变) ...
 
+        submitButton.setDisable(true);
+        submitButton.setText("正在上传...");
+        // 确保在后台线程启动前计算好所有需要的数据
+        // 注意：selectedImageData 和 imageKey 必须是成员变量或 effectively final
+        // 在你的代码里它们已经是成员变量了，所以没问题。
+        imageKey = ImageClient.calculateSHA256(selectedImageData);
+
+        new Thread(() -> {
+            try {
+                // --- Step 1: Handle Image Upload (Asynchronous) ---
+                String base64ImageData = Base64.getEncoder().encodeToString(selectedImageData);
+
+                // Call the async method and use .get() to wait for its future result.
+                boolean imageUploadSuccess = ImageClient.addOrUpdateImage(imageKey, base64ImageData).get();
+
+                if (!imageUploadSuccess) {
+                    throw new Exception("图片上传到图床失败！服务器返回了错误状态。");
+                }
+                System.out.println("步骤 1/3: 图片成功上传到图床。");
+
+                // --- Step 2: Handle Store Item Addition (Synchronous) ---
+                StoreItem newItem = new StoreItem();
+                newItem.uuid = UUID.randomUUID();
+                newItem.itemName = itemNameField.getText();
+                newItem.price = (int) (Double.parseDouble(priceField.getText()) * 100);
+                newItem.stock = Integer.parseInt(stockField.getText());
+                String description = descriptionArea.getText();
+                newItem.description = description.isEmpty() ? null : description;
+                newItem.pictureLink = imageKey;
+                //barcode
+                if (FakeRepository.user != null && FakeRepository.user.getCardNum() != null) {
+                    newItem.barcode = String.valueOf(FakeRepository.user.getCardNum());
+                } else {
+                    // 添加一个备用逻辑，以防万一用户信息获取失败
+                    newItem.barcode = "unknown_user";
+                    System.err.println("警告: 无法获取当前用户信息，barcode 已被设置为 'unknown_user'");
+                }
+
+                // 【核心修正】
+                // Call the synchronous method directly. No .get() is needed because it already returns a boolean.
+                // We also need to pass the handler as required by the method signature.
+                boolean itemAddSuccess = StoreClient.addItem(FakeRepository.handler, newItem);
+
+                if (!itemAddSuccess) {
+                    throw new Exception("添加商品信息失败！服务器返回了错误状态。");
+                }
+                System.out.println("步骤 2/3: 商品信息成功持久化到数据库。");
+
+                // --- Step 3: Update UI on Success ---
+                javafx.application.Platform.runLater(this::handleUploadSuccess);
+
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    System.err.println("添加商品时出错: " + e.getMessage());
+                    e.printStackTrace();
+                    errorMessageLabel.setText("上传失败，请查看日志！");
+                    showAndHideErrorMessage();
+                    shakeNode(submitButton);
+                });
+            } finally {
+                javafx.application.Platform.runLater(() -> {
+                    submitButton.setDisable(false);
+                    submitButton.setText("添加商品");
+                });
+            }
+        }).start();
+    }
     @FXML
     private void handleChooseImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("选择商品图片");
         // 设置文件类型过滤器
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("图片文件", "*.png", "*.jpg", "*.gif"),
+                new FileChooser.ExtensionFilter("图片文件", "*.png"),
                 new FileChooser.ExtensionFilter("所有文件", "*.*")
         );
 
@@ -158,83 +221,29 @@ public class UploadController {
         }
     }
 
+    private void handleUploadSuccess() {
+        // 1. 清空表单并显示成功信息
+        clearForm();
+        errorMessageLabel.setText("上传成功！");
+        errorMessageLabel.setTextFill(Color.GREEN); // 将提示信息变为绿色
+        showAndHideErrorMessage();
 
-
-    @FXML
-    private void handleSubmit() {
-        System.out.println("handleSubmit() called");
-        boolean isAllValid = itemNameField.validate() &
-                priceField.validate() &
-                stockField.validate() &
-                imagePathField.validate();
-
-        // 【第3步】【核心修改】如果验证失败，执行我们的新 feature
-        if (!isAllValid) {
-            System.out.println("Validation failed.");
-
-            // a. 抖动按钮
-            shakeNode(submitButton);
-
-            // b. 显示错误信息，并在3秒后自动隐藏
-            showAndHideErrorMessage();
-
-            return; // 立即终止方法，不执行后续上传逻辑
+        // 2. 【核心修改】通知 ImageCache 刷新
+        // 我们调用 ImageCache 自己的 initOnce(force=true) 或一个专门的 refresh() 方法
+        // (这里我们假设 ImageCache 有一个 refresh 方法来强制重新加载)
+        if (ImageCache.getInstance() != null) {
+            // 注意：这需要您在 ImageCache 中添加一个 public 的 refresh 方法
+            ImageCache.getInstance().refresh();
+            System.out.println("已通知 ImageCache 刷新。");
         }
 
-        // --- 只有在所有验证都通过后，才继续执行上传逻辑 ---
-        // ... (后续的后台上传逻辑，保持我们之前的版本不变)
-
-
-        submitButton.setDisable(true);
-        submitButton.setText("正在上传...");
-
-        new Thread(() -> {
-            try {
-                // a. 上传图片
-                boolean imageUploadSuccess = ImageClient.addOrUpdateImage(imageKey, selectedImageData);
-                if (!imageUploadSuccess) {
-                    throw new Exception("图片上传到图床失败！");
-                }
-
-                // b. 创建 StoreItem 实体
-                StoreItem newItem = new StoreItem();
-                newItem.uuid = UUID.randomUUID();
-                newItem.itemName = itemNameField.getText();
-                newItem.price = (int) (Double.parseDouble(priceField.getText()) * 100);
-                newItem.stock = Integer.parseInt(stockField.getText());
-                String description = descriptionArea.getText();
-                newItem.description = description.isEmpty() ? null : description;
-                newItem.pictureLink = imageKey;
-                // 注意：您的 StoreItem 实体还有一个 barcode 字段，这里我们先设为空字符串
-                newItem.barcode = "";
-
-                // c. 【核心修正】调用 StoreClient.addItem 而不是 addOrUpdateImage
-                // addItem 是专门用于添加新商品的，更符合这里的业务逻辑
-                boolean itemAddSuccess = StoreClient.addItem(FakeRepository.handler, newItem);
-                if (!itemAddSuccess) {
-                    throw new Exception("添加商品信息失败！");
-                }
-
-                javafx.application.Platform.runLater(this::clearFormAndShowSuccess);
-
-            } catch (Exception e) {
-                javafx.application.Platform.runLater(() -> {
-                    System.err.println("添加商品时出错: " + e.getMessage());
-                    // 在这里可以显示一个错误对话框
-                });
-            } finally {
-                javafx.application.Platform.runLater(() -> {
-                    submitButton.setDisable(false);
-                    submitButton.setText("添加商品");
-                });
-            }
-        }).start();
-    }
-
-    private void clearFormAndShowSuccess() {
-        clearForm();
-        System.out.println("商品添加成功！");
-        // 这里可以弹出一个成功的提示框
+        // 3. 【核心修改】通知 ShopController 刷新
+        if (ShopController.getInstance() != null) {
+            ShopController.getInstance().refreshData();
+            System.out.println("已通知 ShopController 刷新数据。");
+        } else {
+            System.err.println("无法获取 ShopController 实例，商品列表未刷新。");
+        }
     }
 
     private void clearForm() {

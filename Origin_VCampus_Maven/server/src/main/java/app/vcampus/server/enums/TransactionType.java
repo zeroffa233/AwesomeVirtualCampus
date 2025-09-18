@@ -4,14 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum TransactionType implements LabelledEnum {
-    deposit("充值", 0xff508e54),
-    payment("支出", 0xffce5442);
+    deposit("充值"),
+    credit("支出");
 
     private final String label;
-    private final Integer color;
 
-    TransactionType(String label, Integer color) {
+    TransactionType(String label) {
         this.label = label;
-        this.color = color;
     }
 }

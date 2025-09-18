@@ -5,10 +5,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+import lombok.ToString;
 
 @Entity
 @Table(name = "image_cache") // 数据库中的表名
-public class CachedImage {
+@ToString
+public class CachedImage implements IEntity{
 
     @Id
     @Column(name = "image_key", nullable = false, unique = true)
@@ -16,6 +18,7 @@ public class CachedImage {
 
     @Lob // 表示这是一个大对象 (Large Object)
     @Column(name = "image_data", nullable = false, columnDefinition="LONGBLOB") // 显式指定为 LONGBLOB
+    @ToString.Exclude
     private byte[] imageData; // 存储图片的二进制数据
 
     // Hibernate 要求必须有一个无参构造函数
