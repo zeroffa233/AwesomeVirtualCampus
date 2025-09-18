@@ -7,6 +7,7 @@ import app.vcampus.server.entity.StoreTransaction;
 import app.vcampus.server.utility.Pair;
 import app.vcampus.server.utility.Request;
 import app.vcampus.server.utility.Response;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -256,6 +257,29 @@ public class StoreClient extends BaseClient {
         } catch (InterruptedException e) {
             log.warn("获取书籍信息失败", e);
             return null;
+        }
+    }
+
+    /**
+     * 【新增】向服务器发送批量更新商品库存和销量的请求。
+     *
+     * @param handler Netty处理器
+     * @param purchaseMap 一个Map，key是商品UUID，value是购买数量
+     * @return 操作是否成功
+     */
+    public static boolean batchUpdateStock(NettyHandler handler, Map<UUID, Long> purchaseMap) {
+        try {
+            Request request = new Request();
+            request.setUri("store/batchUpdateStock");
+            // Gson可以很好地处理 Map<UUID, Long> 到 JSON String 的转换
+            String updatesJson = new Gson().toJson(purchaseMap);
+            request.setParams(Map.of("updates", updatesJson));
+
+            Response response = BaseClient.sendRequest(handler, request);
+            return response != null && response.getStatus().equals("success");
+        } catch (Exception e) {
+            log.error("批量更新库存在客户端发生异常", e);
+            return false;
         }
     }
 }
