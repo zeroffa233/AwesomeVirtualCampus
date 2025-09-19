@@ -74,6 +74,15 @@ public class TeachingAffairsViewModel {
         }
 
         /**
+         * 刷新数据，重新获取已选课程和可选课程。
+         * 无论是否已初始化，都会重新加载数据。
+         */
+        public void refresh() {
+            getSelectedClasses();
+            getSelectableCourses();
+        }
+
+        /**
          * 异步获取学生已选课程列表。
          */
         public void getSelectedClasses() {
@@ -172,6 +181,14 @@ public class TeachingAffairsViewModel {
         public void init() {
             if (inited) return;
             inited = true;
+            getMyTeachingClasses();
+        }
+
+        /**
+         * 刷新数据，重新获取教师的授课列表。
+         * 无论是否已初始化，都会重新加载数据。
+         */
+        public void refresh() {
             getMyTeachingClasses();
         }
 

@@ -38,6 +38,16 @@ public class MyClassSubsceneController {
     }
 
     /**
+     * 刷新课程列表数据。
+     * 调用viewModel的refresh方法重新加载数据。
+     */
+    public void refresh() {
+        if (viewModel != null) {
+            viewModel.myTeachingClasses.refresh();
+        }
+    }
+
+    /**
      * 重建课程列表。
      */
     private void rebuildList() {
