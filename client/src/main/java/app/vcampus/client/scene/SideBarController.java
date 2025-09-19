@@ -227,12 +227,15 @@ public class SideBarController implements Initializable {
             JFXButton studentButton = createSecondaryMenuButton("我的学籍", "/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml");
             menuItems.add(studentButton);
             studentButton.getStyleClass().add("active");
+            switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml", "我的学籍", menuItems);
             }
         if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
             JFXButton studentmButton = createSecondaryMenuButton("修改学籍", "/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusManagementView.fxml");
             menuItems.add(studentmButton);
+            studentmButton.getStyleClass().add("active");
+            switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusManagementView.fxml", "修改学籍", menuItems);
         }
-        switchView("/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml", "我的学籍", menuItems);
+
     }
 
     /**
