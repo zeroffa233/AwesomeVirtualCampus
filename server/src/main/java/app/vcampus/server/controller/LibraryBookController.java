@@ -169,7 +169,7 @@ public class LibraryBookController {
         try {
             String keyword = request.getParams().get("keyword");
             if (keyword == null) return Response.Common.error("Keyword cannot be empty");
-            List<LibraryBook> books = Database.likeQuery(LibraryBook.class, new String[]{"name", "isbn", "author", "description", "press"}, keyword, database);
+            List<LibraryBook> books = Database.likeQuery(LibraryBook.class, new String[]{"name", "isbn", "author", "description", "press", "callNumber"}, keyword, database);
 
             return Response.Common.ok(books.stream().collect(Collectors.groupingBy(w -> w.isbn)));
         } catch (Exception e) {
