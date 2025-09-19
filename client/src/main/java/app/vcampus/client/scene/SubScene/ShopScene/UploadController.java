@@ -119,9 +119,7 @@ public class UploadController {
                 String base64ImageData = Base64.getEncoder().encodeToString(selectedImageData);
                 boolean imageUploadSuccess = ImageClient.addOrUpdateImage(imageKey, base64ImageData).get();
 
-                if (!imageUploadSuccess) {
-                    throw new Exception("图片上传到图床失败！服务器返回了错误状态。");
-                }
+                if (!imageUploadSuccess) throw new Exception("图片上传到图床失败！服务器返回了错误状态。");
 
                 StoreItem newItem = new StoreItem();
                 newItem.uuid = UUID.randomUUID();
@@ -140,9 +138,7 @@ public class UploadController {
 
                 boolean itemAddSuccess = StoreClient.addItem(FakeRepository.handler, newItem);
 
-                if (!itemAddSuccess) {
-                    throw new Exception("添加商品信息失败！服务器返回了错误状态。");
-                }
+                if (!itemAddSuccess) throw new Exception("添加商品信息失败！服务器返回了错误状态。");
 
                 javafx.application.Platform.runLater(this::handleUploadSuccess);
 
