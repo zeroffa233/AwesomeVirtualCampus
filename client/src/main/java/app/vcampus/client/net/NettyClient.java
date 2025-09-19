@@ -57,9 +57,9 @@ public class NettyClient implements Callable<NettyHandler> {
     @Override
     public NettyHandler call() throws Exception { // 声明抛出Exception
         // 1. 配置客户端SSL
-        final SslContext sslCtx = SslContextBuilder.forClient()
-                // 使用 InsecureTrustManagerFactory 来信任任何证书，仅用于开发测试！
-                .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+//        final SslContext sslCtx = SslContextBuilder.forClient()
+//                // 使用 InsecureTrustManagerFactory 来信任任何证书，仅用于开发测试！
+//                .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
 
         try {
             NettyHandler handler = new NettyHandler();
@@ -72,7 +72,7 @@ public class NettyClient implements Callable<NettyHandler> {
                 @Override
                 public void initChannel(@NotNull SocketChannel ch) throws Exception {
                     // 2. 将SslHandler添加到pipeline的首位
-                    ch.pipeline().addLast(sslCtx.newHandler(ch.alloc(), host, port));
+                    //ch.pipeline().addLast(sslCtx.newHandler(ch.alloc(), host, port));
 
                     ch.pipeline().addLast(new JsonObjectDecoder(100 * 1024 * 1024))
                             .addLast(new StringEncoder(CharsetUtil.UTF_8))

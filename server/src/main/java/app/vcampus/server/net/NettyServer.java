@@ -50,15 +50,15 @@ public class NettyServer {
      */
     public void run(Router router, SessionFactory session) throws Exception {
         // 1. 在内存中配置SSL
-        final SslContext sslCtx;
-        try {
-            // 直接在内存中生成自签名证书
-            SelfSignedCertificate ssc = new SelfSignedCertificate();
-            // 使用生成的证书和私钥构建SslContext
-            sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize the SSL context from memory", e);
-        }
+//        final SslContext sslCtx;
+//        try {
+//            // 直接在内存中生成自签名证书
+//            SelfSignedCertificate ssc = new SelfSignedCertificate();
+//            // 使用生成的证书和私钥构建SslContext
+//            sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+//        } catch (Exception e) {
+//            throw new RuntimeException("Failed to initialize the SSL context from memory", e);
+//        }
 
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -70,7 +70,7 @@ public class NettyServer {
                         @Override
                         public void initChannel(@NonNull SocketChannel ch) {
                             // 2. 将SslHandler添加到pipeline的首位
-                            ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
+                            //ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
                             ch.pipeline()
                                     .addLast(new JsonObjectDecoder(100 * 1024 * 1024))
                                     .addLast(new NettyHandler(router, session));
@@ -80,7 +80,7 @@ public class NettyServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             ChannelFuture f = b.bind(port).sync();
-            System.out.println("Server started with in-memory SSL enabled on port " + port);
+            System.out.println("Server started on port " + port);
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
