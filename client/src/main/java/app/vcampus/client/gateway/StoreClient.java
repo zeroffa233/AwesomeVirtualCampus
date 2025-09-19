@@ -282,6 +282,29 @@ public class StoreClient extends BaseClient {
             return false;
         }
     }
+
+    // 在 StoreClient.java 中
+
+    /**
+     * 【新增】请求服务器下架（删除）一个商品。
+     *
+     * @param handler Netty处理器
+     * @param itemUuid 要下架的商品的UUID
+     * @return 操作是否成功
+     */
+    public static boolean deleteItem(NettyHandler handler, UUID itemUuid) {
+        try {
+            Request request = new Request();
+            request.setUri("storeItem/deleteItem");
+            request.setParams(Map.of("uuid", itemUuid.toString()));
+
+            Response response = BaseClient.sendRequest(handler, request);
+            return response != null && response.getStatus().equals("success");
+        } catch (Exception e) {
+            log.error("下架商品在客户端发生异常", e);
+            return false;
+        }
+    }
 }
 
 

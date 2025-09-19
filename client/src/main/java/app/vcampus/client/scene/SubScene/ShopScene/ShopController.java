@@ -270,59 +270,104 @@ public class ShopController {
         stockWarningLabel.setTextFill(Color.RED);
         stockWarningLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
         stockWarningLabel.setOpacity(0);
+        // 1. 获取当前登录用户的卡号
+        String currentUserCardNum = "";
+        if (FakeRepository.user != null) {
+            currentUserCardNum = String.valueOf(FakeRepository.user.getCardNum());
+        }
 
-        JFXButton addButton = new JFXButton("+");
-        addButton.setButtonType(JFXButton.ButtonType.RAISED);
+        // 2. 判断当前用户是否是该商品的卖家
+        boolean isSeller = item.getBarcode().equals(currentUserCardNum);
 
-        // --- 按钮的事件和状态绑定逻辑 ---
-        addButton.setOnAction(event -> {
-            long countInCart = chosenItems.stream().filter(i -> i.getUuid().equals(item.getUuid())).count();
-            if (countInCart < item.getStock()) {
-                chosenItems.add(item);
-            } else {
-                if (item.getStock() <= 0) {
-                    stockWarningLabel.setText("该商品已售罄");
+        if (isSeller) {
+            // --- 如果是卖家，创建“下架”按钮 ---
+            JFXButton deleteButton = new JFXButton("×");
+            deleteButton.setStyle("-fx-background-color: #E53935; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px; -fx-font-weight: bold;");
+            deleteButton.setButtonType(JFXButton.ButtonType.RAISED);
+
+            // 【核心修正】点击按钮后，直接执行下架逻辑，不再有任何确认
+            deleteButton.setOnAction(event -> {
+                // 为了防止用户快速连击，可以在点击后立即禁用按钮
+                deleteButton.setDisable(true);
+                deleteButton.setText("..."); // 给出处理中的反馈
+
+                // 在后台线程执行下架的网络请求
+                new Thread(() -> {
+                    boolean success = StoreClient.deleteItem(FakeRepository.handler, item.getUuid());
+
+                    // 回到UI线程处理结果
+                    Platform.runLater(() -> {
+                        if (success) {
+                            System.out.println("商品已成功下架。");
+                            // 刷新整个商店界面以移除已下架的商品
+                            refreshData();
+                        } else {
+                            System.err.println("下架商品失败！");
+                            // 如果失败，恢复按钮的可点击状态，以便用户重试
+                            deleteButton.setDisable(false);
+                            deleteButton.setText("×");
+                        }
+                    });
+                }).start();
+            });
+
+            // 卖家模式下的布局
+            HBox priceAndAddBox = new HBox(priceLabel, new Region(), deleteButton);
+            priceAndAddBox.setAlignment(Pos.CENTER_LEFT);
+            HBox.setHgrow(priceAndAddBox.getChildren().get(1), Priority.ALWAYS);
+            textContent.getChildren().addAll(nameLabel, priceAndAddBox);
+
+        } else {
+            // --- 如果是买家，执行我们之前已经完成的所有逻辑 ---
+            JFXButton addButton = new JFXButton("+");
+            addButton.setButtonType(JFXButton.ButtonType.RAISED);
+
+            addButton.setOnAction(event -> {
+                long countInCart = chosenItems.stream().filter(i -> i.getUuid().equals(item.getUuid())).count();
+                if (countInCart < item.getStock()) {
+                    chosenItems.add(item);
                 } else {
-                    stockWarningLabel.setText("库存不足");
+                    if (item.getStock() <= 0) {
+                        stockWarningLabel.setText("该商品已售罄");
+                    } else {
+                        stockWarningLabel.setText("库存不足");
+                    }
+                    FadeTransition ft = new FadeTransition(Duration.millis(300), stockWarningLabel);
+                    ft.setFromValue(0);
+                    ft.setToValue(1.0);
+                    ft.setCycleCount(2);
+                    ft.setAutoReverse(true);
+                    ft.setOnFinished(e -> stockWarningLabel.setOpacity(0));
+                    ft.play();
                 }
-                FadeTransition ft = new FadeTransition(Duration.millis(300), stockWarningLabel);
-                ft.setFromValue(0);
-                ft.setToValue(1.0);
-                ft.setCycleCount(2);
-                ft.setAutoReverse(true);
-                ft.setOnFinished(e -> stockWarningLabel.setOpacity(0));
-                ft.play();
-            }
-        });
+            });
 
-        // 使用 Bindings + Runnable 更新按钮“外观”
-        IntegerBinding countInCartBinding = Bindings.createIntegerBinding(() ->
-                (int) chosenItems.stream().filter(i -> i.getUuid().equals(item.getUuid())).count(), chosenItems);
+            IntegerBinding countInCartBinding = Bindings.createIntegerBinding(() ->
+                    (int) chosenItems.stream().filter(i -> i.getUuid().equals(item.getUuid())).count(), chosenItems);
 
-        Runnable updateButtonAppearance = () -> {
-            int countInCart = countInCartBinding.get();
-            if (item.getStock() <= 0) {
-                addButton.setText("售罄");
-                addButton.setStyle("-fx-background-color: #BDBDBD; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
-            } else if (countInCart >= item.getStock()) {
-                addButton.setText("+");
-                addButton.setStyle("-fx-background-color: #BDBDBD; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
-            } else {
-                addButton.setText("+");
-                addButton.setStyle("-fx-background-color: #B2C926B2; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
-            }
-        };
+            Runnable updateButtonAppearance = () -> {
+                int countInCart = countInCartBinding.get();
+                if (item.getStock() <= 0) {
+                    addButton.setText("售罄");
+                    addButton.setStyle("-fx-background-color: #BDBDBD; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
+                } else if (countInCart >= item.getStock()) {
+                    addButton.setText("+");
+                    addButton.setStyle("-fx-background-color: #BDBDBD; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
+                } else {
+                    addButton.setText("+");
+                    addButton.setStyle("-fx-background-color: #B2C926B2; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 18px;");
+                }
+            };
 
-        countInCartBinding.addListener((obs, oldVal, newVal) -> updateButtonAppearance.run());
-        updateButtonAppearance.run(); // 初始化外观
+            countInCartBinding.addListener((obs, oldVal, newVal) -> updateButtonAppearance.run());
+            updateButtonAppearance.run();
 
-        // --- 布局 ---
-        HBox priceAndAddBox = new HBox(priceLabel, new Region(), stockWarningLabel, addButton);
-        priceAndAddBox.setAlignment(Pos.CENTER_LEFT);
-        priceAndAddBox.setSpacing(8);
-        HBox.setHgrow(priceAndAddBox.getChildren().get(1), Priority.ALWAYS);
-
-        textContent.getChildren().addAll(nameLabel, priceAndAddBox);
+            HBox priceAndAddBox = new HBox(priceLabel, new Region(), stockWarningLabel, addButton);
+            priceAndAddBox.setAlignment(Pos.CENTER_LEFT);
+            priceAndAddBox.setSpacing(8);
+            HBox.setHgrow(priceAndAddBox.getChildren().get(1), Priority.ALWAYS);
+            textContent.getChildren().addAll(nameLabel, priceAndAddBox);
+        }
 
         card.getChildren().addAll(imageContainer, textContent);
         return card;
