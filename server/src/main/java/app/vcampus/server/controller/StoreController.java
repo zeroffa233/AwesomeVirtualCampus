@@ -370,5 +370,60 @@ public class StoreController {
             log.error("批量更新库存时发生严重错误", e);
             return Response.Common.internalError();
         }
+
+    }
+
+    /**
+     * 【新增】删除（下架）一个商品。
+     *
+     * @param request  需要包含 "uuid" 参数，即要删除的商品的UUID字符串。
+     * @param database 数据库会话。
+     * @return 操作结果的响应。
+     */
+    @RouteMapping(uri = "storeItem/deleteItem")
+    public Response deleteItem(Request request, org.hibernate.Session database) {
+        // 安全检查：确保是已登录用户在操作
+        Session session = request.getSession();
+        if (session == null || session.getCardNum() == 0) {
+            return Response.Common.permissionDenied();
+        }
+
+        String uuidString = request.getParams().get("uuid");
+        if (uuidString == null) {
+            return Response.Common.badRequest();
+        }
+
+        Transaction tx = null;
+        try {
+            UUID itemUuid = UUID.fromString(uuidString);
+
+            tx = database.beginTransaction();
+            StoreItem itemToDelete = database.get(StoreItem.class, itemUuid);
+
+            if (itemToDelete == null) {
+                tx.commit(); // 即使商品不存在，也认为操作完成
+                return Response.Common.ok("Item not found, but considered as deleted.");
+            }
+
+            // 【核心安全检查】确保只有商品的拥有者（barcode匹配）才能删除它
+            if (!itemToDelete.getBarcode().equals(String.valueOf(session.getCardNum()))) {
+                tx.rollback(); // 回滚事务
+                return Response.Common.permissionDenied();
+            }
+
+            // 执行删除
+            database.remove(itemToDelete);
+            tx.commit();
+
+            log.info("用户 {} 成功下架了商品: {}", session.getCardNum(), itemToDelete.getItemName());
+            return Response.Common.ok();
+
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
+            log.error("下架商品时发生错误", e);
+            return Response.Common.internalError();
+        }
     }
 }
