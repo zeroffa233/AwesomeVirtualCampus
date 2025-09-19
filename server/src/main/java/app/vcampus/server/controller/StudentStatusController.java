@@ -27,7 +27,7 @@ public class StudentStatusController {
      * @param database 数据库会话。
      * @return 包含更新后学生信息的响应。
      */
-    @RouteMapping(uri = "student/updateInfo", role = "affairs_staff")
+    @RouteMapping(uri = "student/updateInfo", role = "admin")
     public Response updateInfo(Request request, org.hibernate.Session database) {
         Student newStudent = IEntity.fromJson(request.getParams().get("student"), Student.class);
 
@@ -78,7 +78,7 @@ public class StudentStatusController {
      * @param database 数据库会话。
      * @return 包含匹配学生列表的响应。
      */
-    @RouteMapping(uri = "student/filter", role = "affairs_staff")
+    @RouteMapping(uri = "student/filter", role = "admin")
     public Response filter(Request request, org.hibernate.Session database) {
         try {
             String keyword = request.getParams().get("keyword");
