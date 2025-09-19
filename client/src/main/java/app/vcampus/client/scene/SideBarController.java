@@ -1,5 +1,6 @@
 package app.vcampus.client.scene;
 
+import app.vcampus.client.gateway.FinanceClient;
 import app.vcampus.client.repository.FakeRepository;
 import com.jfoenix.controls.JFXButton;
 import javafx.fxml.FXML;
@@ -324,6 +325,7 @@ public class SideBarController implements Initializable {
      */
     @FXML
     private void handleFinance() {
+        setActiveButton(financeButton);
         List<Node> menuItems = new ArrayList<>();
         if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("admin")) {
             JFXButton personalButton = createSecondaryMenuButton("个人财务管理", "/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml");
