@@ -130,7 +130,15 @@ public class ShopController {
     public void refreshData() {
         System.out.println("ShopController: 正在启动数据刷新...");
         new Thread(() -> {
+            // --- 在后台线程中，按顺序执行所有网络操作 ---
+
+            // 1. 【核心新增】首先，强制刷新图片缓存。这是一个阻塞操作。
+            ImageCache.getInstance().refresh();
+
+            // 2. 然后，获取最新的商品列表。这也是一个阻塞操作。
             List<StoreItem> itemsFromServer = StoreClient.getAll(FakeRepository.handler);
+
+            // 3. 当所有数据都准备好后，才回到UI线程进行界面的更新
             Platform.runLater(() -> {
                 if (itemsFromServer != null) {
                     allItems.setAll(itemsFromServer);
@@ -140,6 +148,8 @@ public class ShopController {
                     allItems.clear();
                 }
                 displayedItems.setAll(allItems);
+
+                // 此时调用 populateItemsGrid，ImageCache 中一定已经包含了所有最新的图片
                 populateItemsGrid();
             });
         }).start();
@@ -255,13 +265,15 @@ public class ShopController {
         load_image_from_cache(item.getPictureLink(), VIEWPORT_SIZE, imageContainer);
 
         VBox textContent = new VBox(10);
-        textContent.setAlignment(Pos.CENTER_LEFT);
+        textContent.setAlignment(Pos.TOP_LEFT);
 
         Label nameLabel = new Label(item.getItemName());
         nameLabel.setWrapText(true);
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
         nameLabel.setTextFill(Color.web("#212121"));
 
+
+        nameLabel.setAlignment(Pos.TOP_LEFT); // <-- 这就是我们缺失的关键一行！
         // --- 【核心修正】强制标签显示为两行 ---
         // 1. 允许文本自动换行
         nameLabel.setWrapText(true);
