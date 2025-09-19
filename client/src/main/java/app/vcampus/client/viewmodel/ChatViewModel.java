@@ -103,7 +103,7 @@ public class ChatViewModel {
 
         fetchAndUpdateState();
 
-        pollingTimeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> fetchAndUpdateState()));
+        pollingTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> fetchAndUpdateState()));
         pollingTimeline.setCycleCount(Timeline.INDEFINITE);
         pollingTimeline.play();
     }
