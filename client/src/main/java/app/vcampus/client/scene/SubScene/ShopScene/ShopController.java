@@ -21,6 +21,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -260,6 +261,19 @@ public class ShopController {
         nameLabel.setWrapText(true);
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
         nameLabel.setTextFill(Color.web("#212121"));
+
+        // --- 【核心修正】强制标签显示为两行 ---
+        // 1. 允许文本自动换行
+        nameLabel.setWrapText(true);
+
+        // 2. 当文本超出可用空间时，用省略号(...)表示
+        nameLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
+
+        // 3. 设置一个固定的、足以容纳两行文字的高度。
+        //    对于20号字体，每行高度约24-25px，两行50px是一个安全的高度。
+        //    setMinHeight 确保即使文字只有一行，也占据两行的空间，保持布局统一。
+        nameLabel.setMinHeight(80);
+        nameLabel.setPrefHeight(80);
 
         // --- 价格行相关组件 ---
         Label priceLabel = new Label("¥ " + String.format("%.2f", item.getPrice().doubleValue() / 100.0));
