@@ -190,7 +190,7 @@ public class FinanceController {
      * @param database 数据库会话。
      * @return 操作成功或失败的响应。
      */
-    @RouteMapping(uri = "finance/updateStatus", role = "finance_staff")
+    @RouteMapping(uri = "finance/updateStatus")
     public Response updateCardStatus(Request request, org.hibernate.Session database) {
         String cardNumberStr = request.getParams().get("cardNumber");
         String newStatusStr = request.getParams().get("newStatus");
@@ -239,7 +239,7 @@ public class FinanceController {
      * @param database 数据库会话。
      * @return 包含余额信息的响应。
      */
-    @RouteMapping(uri = "finance/balance", role = "finance_user")
+    @RouteMapping(uri = "finance/balance")
     public Response getBalance(Request request, org.hibernate.Session database) {
         Integer cardNumber = request.getSession().getCardNum();
         FinanceCard card = database.get(FinanceCard.class, cardNumber);
@@ -264,7 +264,7 @@ public class FinanceController {
      * @param database 数据库会话。
      * @return 包含交易记录列表的响应。
      */
-    @RouteMapping(uri = "finance/transactions", role = "finance_user")
+    @RouteMapping(uri = "finance/transactions")
     public Response getTransactionHistory(Request request, org.hibernate.Session database) {
         int cardNumber = request.getSession().getCardNum();
 

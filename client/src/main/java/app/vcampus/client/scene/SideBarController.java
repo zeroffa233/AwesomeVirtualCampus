@@ -324,11 +324,15 @@ public class SideBarController implements Initializable {
      */
     @FXML
     private void handleFinance() {
-        setActiveButton(financeButton);
-        JFXButton personalButton = createSecondaryMenuButton("个人财务管理", "/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml");
-        JFXButton manageButton = createSecondaryMenuButton("一卡通管理", "/app/vcampus/client/scene/SubScene/FinanceScene/ManageFinanceView.fxml");
-        personalButton.getStyleClass().add("active");
-        switchView("/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml", "财务中心", List.of(personalButton, manageButton));
+        List<Node> menuItems = new ArrayList<>();
+        if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("admin")) {
+            JFXButton personalButton = createSecondaryMenuButton("个人财务管理", "/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml");
+            JFXButton manageButton = createSecondaryMenuButton("一卡通管理", "/app/vcampus/client/scene/SubScene/FinanceScene/ManageFinanceView.fxml");
+            menuItems.add(personalButton);
+            menuItems.add(manageButton);
+            personalButton.getStyleClass().add("active");
+        }
+        switchView("/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml", "财务中心", menuItems);
     }
 
     /**
@@ -357,7 +361,7 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleChat() {
         List<Node> menuItems = new ArrayList<>();
-        if(FakeRepository.user != null && (Arrays.asList(FakeRepository.user.getRoles()).contains("admin") || Arrays.asList(FakeRepository.user.getRoles()).contains("chat_admin"))) {
+        if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("admin")) {
             JFXButton ctButton = createSecondaryMenuButton("聊天", "/app/vcampus/client/scene/SubScene/ChatScene/ChatView.fxml");
             JFXButton mgButton = createSecondaryMenuButton("管理", "/app/vcampus/client/scene/SubScene/ChatScene/ManageChatView.fxml");
             menuItems.add(ctButton);
