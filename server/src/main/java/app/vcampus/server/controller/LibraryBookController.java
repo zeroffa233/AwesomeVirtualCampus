@@ -257,7 +257,7 @@ public class LibraryBookController {
      * @param database 数据库会话。
      * @return 包含用户借阅记录列表的响应。
      */
-    @RouteMapping(uri = "library/user/records", role = "library_user")
+    @RouteMapping(uri = "library/user/records", role = "student")
     public Response userRecords(Request request, org.hibernate.Session database) {
         try {
             int cardNumber = request.getSession().getCardNum();
