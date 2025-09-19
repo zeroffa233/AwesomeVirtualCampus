@@ -127,7 +127,7 @@
                                     <children>
                                         <Label fx:id="totalCopiesLabel" text="馆藏副本:" style="-fx-font-size: 14px;"/>
                                         <Label fx:id="availableCopiesLabel" text="可借副本:" style="-fx-font-size: 14px;"/>
-                                        <ImageView fx:id="coverImageView" fitHeight="200.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true"/>
+                                        <ImageView fx:id="coverImageView" fitHeight="300.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true"/>
                                     </children>
                                 </VBox>
                             </children>
