@@ -36,7 +36,7 @@ public class ChatController {
      * @param database 数据库会话。
      * @return 包含 messages, comments, identities 的响应。
      */
-    @RouteMapping(uri = "chat/state", role = "chat_user")
+    @RouteMapping(uri = "chat/state")
     public Response getChatRoomState(Request request, org.hibernate.Session database) {
         Transaction tx = null;
         try {
@@ -92,7 +92,7 @@ public class ChatController {
      * @param database 数据库会话。
      * @return 操作结果的响应。
      */
-    @RouteMapping(uri = "chat/post", role = "chat_user")
+    @RouteMapping(uri = "chat/post")
     public Response postMessage(Request request, org.hibernate.Session database) {
         Transaction tx = null;
         try {
@@ -136,7 +136,7 @@ public class ChatController {
      * @param database 数据库会话。
      * @return 操作结果的响应。
      */
-    @RouteMapping(uri = "chat/message/comment", role = "chat_user")
+    @RouteMapping(uri = "chat/message/comment")
     public Response postComment(Request request, org.hibernate.Session database) {
         Transaction tx = null;
         try {
@@ -185,7 +185,7 @@ public class ChatController {
      * @param database 数据库会话。
      * @return 操作结果的响应。
      */
-    @RouteMapping(uri = "chat/message/like", role = "chat_user")
+    @RouteMapping(uri = "chat/message/like")
     public Response toggleMessageLike(Request request, org.hibernate.Session database) {
         Transaction tx = null;
         try {
@@ -226,7 +226,7 @@ public class ChatController {
      * @param database 数据库会话。
      * @return 操作结果的响应。
      */
-    @RouteMapping(uri = "chat/comment/like", role = "chat_user")
+    @RouteMapping(uri = "chat/comment/like")
     public Response toggleCommentLike(Request request, org.hibernate.Session database) {
         Transaction tx = null;
         try {
@@ -268,7 +268,7 @@ public class ChatController {
      * @param database 数据库会话。
      * @return 操作结果的响应。
      */
-    @RouteMapping(uri = "identity/update", role = "chat_user")
+    @RouteMapping(uri = "identity/update")
     public Response updateUsername(Request request, org.hibernate.Session database) {
         Transaction tx = null;
         try {
