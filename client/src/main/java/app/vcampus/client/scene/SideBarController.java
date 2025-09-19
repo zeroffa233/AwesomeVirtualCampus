@@ -1,5 +1,6 @@
 package app.vcampus.client.scene;
 
+import app.vcampus.client.gateway.FinanceClient;
 import app.vcampus.client.repository.FakeRepository;
 import com.jfoenix.controls.JFXButton;
 import javafx.fxml.FXML;
@@ -339,6 +340,7 @@ public class SideBarController implements Initializable {
      */
     @FXML
     private void handleFinance() {
+        setActiveButton(financeButton);
         List<Node> menuItems = new ArrayList<>();
         if (mainSceneController != null) {
             mainSceneController.refreshCurrentView();
