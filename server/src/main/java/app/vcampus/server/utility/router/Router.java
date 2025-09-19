@@ -105,13 +105,13 @@ public class Router {
                 return method.invoke(object, request, database);
             } catch (IllegalAccessException e) {
                 log.error("Router: Action: call: IllegalAccessException: {}", e.getMessage());
-                e.printStackTrace();
+                return Response.Common.error("访问错误: " + e.getMessage());
             } catch (InvocationTargetException e) {
                 log.error("Router: Action: call: InvocationTargetException: {}", e.getMessage());
-                e.printStackTrace();
+                // 获取原始异常信息，提供更具体的错误
+                Throwable targetException = e.getTargetException();
+                return Response.Common.error("执行错误: " + (targetException != null ? targetException.getMessage() : e.getMessage()));
             }
-
-            return Response.Common.internalError();
         }
     }
 

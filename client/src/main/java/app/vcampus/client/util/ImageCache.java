@@ -105,28 +105,32 @@ public final class ImageCache {
     public void refresh() {
         System.out.println("ImageCache: 正在强制刷新...");
 
-        new Thread(() -> {
-            List<CachedImage> imagesFromServer = ImageClient.getAllImages();
+        // 【核心修正】移除了外层的 "new Thread(() -> { ... }).start()"
+        // 现在这个方法会阻塞当前线程，直到所有网络操作和缓存填充完成。
 
-            if (imagesFromServer != null) {
-                cache.clear();
+        // 1. 调用 ImageClient，从服务器获取所有图片数据
+        List<CachedImage> imagesFromServer = ImageClient.getAllImages();
 
-                for (CachedImage dto : imagesFromServer) {
-                    if (dto.getKey() != null && dto.getImageData() != null) {
-                        try (ByteArrayInputStream stream = new ByteArrayInputStream(dto.getImageData())) {
-                            Image image = new Image(stream);
-                            if (!image.isError()) {
-                                addImage(dto.getKey(), image);
-                            }
-                        } catch (Exception e) {
-                            System.err.println("ImageCache (refresh): 从服务器数据创建图片时出错, Key: " + dto.getKey());
+        if (imagesFromServer != null) {
+            // 2. 先清空旧缓存
+            cache.clear();
+
+            // 3. 再用新数据填充缓存
+            for (CachedImage dto : imagesFromServer) {
+                if (dto.getKey() != null && dto.getImageData() != null) {
+                    try (ByteArrayInputStream stream = new ByteArrayInputStream(dto.getImageData())) {
+                        Image image = new Image(stream);
+                        if (!image.isError()) {
+                            addImage(dto.getKey(), image);
                         }
+                    } catch (Exception e) {
+                        System.err.println("ImageCache (refresh): 从服务器数据创建图片时出错, Key: " + dto.getKey());
                     }
                 }
-                System.out.println("ImageCache: 缓存已成功刷新，共加载 " + cache.size() + " 张图片。");
-            } else {
-                System.err.println("ImageCache: 缓存刷新失败，从服务器获取数据为 null。");
             }
-        }).start();
+            System.out.println("ImageCache: 缓存已成功刷新，共加载 " + cache.size() + " 张图片。");
+        } else {
+            System.err.println("ImageCache: 缓存刷新失败，从服务器获取数据为 null。");
+        }
     }
 }

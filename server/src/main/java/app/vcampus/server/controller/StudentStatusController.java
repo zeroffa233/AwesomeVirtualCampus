@@ -27,21 +27,60 @@ public class StudentStatusController {
      * @param database 数据库会话。
      * @return 包含更新后学生信息的响应。
      */
-    @RouteMapping(uri = "student/updateInfo", role = "affairs_staff")
+    @RouteMapping(uri = "student/updateInfo", role = "admin")
     public Response updateInfo(Request request, org.hibernate.Session database) {
         Student newStudent = IEntity.fromJson(request.getParams().get("student"), Student.class);
 
-        if (newStudent == null) {
+        if (newStudent == null || newStudent.getCardNumber() == null) {
             return Response.Common.badRequest();
         }
 
-        Transaction tx = database.beginTransaction();
-        database.merge(newStudent);
-        tx.commit();
+        try {
+            // 先从数据库获取现有学生信息
+            Student existingStudent = database.get(Student.class, newStudent.getCardNumber());
+            if (existingStudent == null) {
+                return Response.Common.notFound();
+            }
 
-        return Response.Common.ok(Map.of("student", newStudent.toJson()));
+            // 只更新客户端提供的非null字段
+            if (newStudent.getStudentNumber() != null) {
+                existingStudent.setStudentNumber(newStudent.getStudentNumber());
+            }
+            if (newStudent.getFamilyName() != null) {
+                existingStudent.setFamilyName(newStudent.getFamilyName());
+            }
+            if (newStudent.getGivenName() != null) {
+                existingStudent.setGivenName(newStudent.getGivenName());
+            }
+            // 注意：这里不更新gender字段，因为客户端没提供，保留原有值
+            if (newStudent.getBirthDate() != null) {
+                existingStudent.setBirthDate(newStudent.getBirthDate());
+            }
+            if (newStudent.getMajor() != null) {
+                existingStudent.setMajor(newStudent.getMajor());
+            }
+            if (newStudent.getSchool() != null) {
+                existingStudent.setSchool(newStudent.getSchool());
+            }
+            if (newStudent.getStatus() != null) {
+                existingStudent.setStatus(newStudent.getStatus());
+            }
+            if (newStudent.getBirthPlace() != null) {
+                existingStudent.setBirthPlace(newStudent.getBirthPlace());
+            }
+            if (newStudent.getPoliticalStatus() != null) {
+                existingStudent.setPoliticalStatus(newStudent.getPoliticalStatus());
+            }
+
+            Transaction tx = database.beginTransaction();
+            database.merge(existingStudent);
+            tx.commit();
+            return Response.Common.ok(Map.of("student", existingStudent.toJson()));
+        } catch (Exception e) {
+            log.error("更新学生信息失败: {}", e.getMessage());
+            return Response.Common.error("更新学生信息失败: " + e.getMessage());
+        }
     }
-
     /**
      * 获取当前登录学生自己的学籍信息。
      *
@@ -78,7 +117,7 @@ public class StudentStatusController {
      * @param database 数据库会话。
      * @return 包含匹配学生列表的响应。
      */
-    @RouteMapping(uri = "student/filter", role = "affairs_staff")
+    @RouteMapping(uri = "student/filter", role = "admin")
     public Response filter(Request request, org.hibernate.Session database) {
         try {
             String keyword = request.getParams().get("keyword");
