@@ -263,19 +263,50 @@ public class SearchStudentCell extends ListCell<Student> {
             updated.setMajor(majorField.getText());
             updated.setSchool(schoolField.getText());
 
+            // 添加必填字段
+            try { updated.setGender(item.getGender()); } catch (Throwable ignored) {}
+            try { updated.setBirthDate(item.getBirthDate()); } catch (Throwable ignored) {}
+            try { updated.setBirthPlace(item.getBirthPlace()); } catch (Throwable ignored) {}
+            try { updated.setPoliticalStatus(item.getPoliticalStatus()); } catch (Throwable ignored) {}
+            try { updated.setStatus(item.getStatus()); } catch (Throwable ignored) {}
+
             viewModel.updateStudent(updated,
                     () -> Platform.runLater(() -> {
                         try {
-                            int idx = getIndex();
-                            if (getListView() != null && idx >= 0 && idx < getListView().getItems().size()) {
-                                Student replaced = mergeStudents(item, updated);
-                                getListView().getItems().set(idx, replaced);
+                            // 修改1：直接使用item引用更新数据
+                            // 合并更新后的学生信息
+                            Student merged = mergeStudents(item, updated);
+
+                            // 修改2：更新UI显示的文本
+                            familyField.setText(merged.getFamilyName());
+                            givenField.setText(merged.getGivenName());
+                            studentNumberField.setText(merged.getStudentNumber());
+                            majorField.setText(merged.getMajor());
+                            schoolField.setText(merged.getSchool());
+
+                            // 修改3：刷新ListView而不是尝试替换单个项目
+                            if (getListView() != null) {
                                 getListView().refresh();
                             }
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         } finally {
-                            cancelBtn.fire();
+                            // 修改4：不直接调用cancelBtn.fire()，而是手动恢复非编辑状态
+                            isEditing = false;
+                            resetTextFieldStyle(familyField);
+                            resetTextFieldStyle(givenField);
+                            resetTextFieldStyle(studentNumberField);
+                            resetTextFieldStyle(majorField);
+                            resetTextFieldStyle(schoolField);
+                            resetTextFieldStyle(genderField);
+                            resetTextFieldStyle(birthDateField);
+                            resetTextFieldStyle(birthPlaceField);
+                            resetTextFieldStyle(politicalStatusField);
+                            resetTextFieldStyle(statusField);
+
+                            editBtn.setVisible(editable);
+                            confirmBtn.setVisible(false);
+                            cancelBtn.setVisible(false);
                         }
                     }),
                     () -> Platform.runLater(() -> {
