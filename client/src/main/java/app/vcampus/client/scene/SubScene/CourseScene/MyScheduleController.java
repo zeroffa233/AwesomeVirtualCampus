@@ -83,6 +83,16 @@ public class MyScheduleController {
         });
     }
 
+    /**
+     * 刷新课表数据。
+     * 调用viewModel的refresh方法重新加载数据。
+     */
+    public void refresh() {
+        if (viewModel != null) {
+            viewModel.myClasses.refresh();
+        }
+    }
+
     private void updateWeekLabel() {
         weekLabel.setText("第 " + currentWeek + " 周");
         prevWeekBtn.setDisable(currentWeek <= 1);

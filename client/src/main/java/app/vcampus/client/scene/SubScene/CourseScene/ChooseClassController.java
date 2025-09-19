@@ -81,6 +81,16 @@ public class ChooseClassController {
 
     }
 
+    /**
+     * 刷新可选课程数据。
+     * 调用viewModel的refresh方法重新加载数据。
+     */
+    public void refresh() {
+        if (vm != null) {
+            vm.myClasses.refresh();
+        }
+    }
+
     private void populateCourses(List<Course> courses) {
         coursesContainer.getChildren().clear();
         for (Course c : courses) {

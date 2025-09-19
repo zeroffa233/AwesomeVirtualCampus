@@ -199,6 +199,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleHome() {
         setActiveButton(homeButton);
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
 
         String fxmlPath;
         if (FakeRepository.user != null && FakeRepository.user.getRoles() != null) {
@@ -223,6 +226,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleStudentStatus() {
         setActiveButton(studentStatusButton);
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
         List<Node> menuItems = new ArrayList<>();
         if (FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
             JFXButton studentButton = createSecondaryMenuButton("我的学籍", "/app/vcampus/client/scene/SubScene/StudentScene/StudentStatusView.fxml");
@@ -245,6 +251,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleTeachingAffairs() {
         setActiveButton(courseButton);
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
 
         List<Node> menuItems = new ArrayList<>();
         if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("student")) {
@@ -275,6 +284,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleLibrary() {
         setActiveButton(libraryButton);
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
 
         List<Node> menuItems = new ArrayList<>();
         JFXButton searchBookButton = createSecondaryMenuButton("图书检索", "/app/vcampus/client/scene/SubScene/LibraryScene/LibraryView.fxml");
@@ -313,6 +325,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleShop() {
         setActiveButton(shopButton);
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
         JFXButton shopButton = createSecondaryMenuButton("购物页面", "/app/vcampus/client/scene/SubScene/ShopScene/ShopView.fxml");
         JFXButton orderButton = createSecondaryMenuButton("我的订单", "/app/vcampus/client/scene/SubScene/ShopScene/OrderView.fxml");
         JFXButton uploadButton = createSecondaryMenuButton("上传商品", "/app/vcampus/client/scene/SubScene/ShopScene/UploadView.fxml");
@@ -327,6 +342,9 @@ public class SideBarController implements Initializable {
     private void handleFinance() {
         setActiveButton(financeButton);
         List<Node> menuItems = new ArrayList<>();
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
         if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("admin")) {
             JFXButton personalButton = createSecondaryMenuButton("个人财务管理", "/app/vcampus/client/scene/SubScene/FinanceScene/PersonalFinanceView.fxml");
             JFXButton manageButton = createSecondaryMenuButton("一卡通管理", "/app/vcampus/client/scene/SubScene/FinanceScene/ManageFinanceView.fxml");
@@ -343,6 +361,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleAdmin() {
         setActiveButton(adminButton);
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
         JFXButton userManagementButton = createSecondaryMenuButton("用户管理", "/app/vcampus/client/scene/SubScene/AdminScene/AdminView.fxml");
         userManagementButton.getStyleClass().add("active");
         switchView("/app/vcampus/client/scene/SubScene/AdminScene/AdminView.fxml", "系统管理", List.of(userManagementButton));
@@ -354,6 +375,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleGpt() {
         setActiveButton(gptButton);
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
         switchView("/app/vcampus/client/scene/SubScene/LlmScene/GptView.fxml", "VCampus GPT", List.of());
     }
 
@@ -363,6 +387,9 @@ public class SideBarController implements Initializable {
     @FXML
     private void handleChat() {
         List<Node> menuItems = new ArrayList<>();
+        if (mainSceneController != null) {
+            mainSceneController.refreshCurrentView();
+        }
         if(FakeRepository.user != null && Arrays.asList(FakeRepository.user.getRoles()).contains("admin")) {
             JFXButton ctButton = createSecondaryMenuButton("聊天", "/app/vcampus/client/scene/SubScene/ChatScene/ChatView.fxml");
             JFXButton mgButton = createSecondaryMenuButton("管理", "/app/vcampus/client/scene/SubScene/ChatScene/ManageChatView.fxml");

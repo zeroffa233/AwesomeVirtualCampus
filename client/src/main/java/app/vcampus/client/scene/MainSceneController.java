@@ -66,6 +66,11 @@ public class MainSceneController implements Initializable {
      * 共享的教学事务视图模型。
      */
     private final app.vcampus.client.viewmodel.TeachingAffairsViewModel sharedVm = new app.vcampus.client.viewmodel.TeachingAffairsViewModel();
+    
+    /**
+     * 当前加载的控制器。
+     */
+    private Object currentController;
 
     /**
      * 初始化方法，在FXML文件加载完成后自动调用。
@@ -114,6 +119,10 @@ public class MainSceneController implements Initializable {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(fxmlPath)));
             Node view = loader.load();
             Object controller = loader.getController();
+            
+            // 更新当前控制器
+            this.currentController = controller;
+            
             if (controller != null) {
                 if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) {
                     ((app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) controller).setViewModel(sharedVm);
@@ -143,6 +152,22 @@ public class MainSceneController implements Initializable {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * 刷新当前视图。
+     * 调用当前控制器的refresh方法（如果有实现的话）。
+     */
+    public void refreshCurrentView() {
+        if (currentController != null) {
+            if (currentController instanceof app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) {
+                ((app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) currentController).refresh();
+            } else if (currentController instanceof app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) {
+                ((app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) currentController).refresh();
+            } else if (currentController instanceof app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) {
+                ((app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) currentController).refresh();
+            }
+        }
+    }
 
     /**
      * 切换主视图内容。
@@ -155,7 +180,27 @@ public class MainSceneController implements Initializable {
         updateTitle(title);
 
         try {
-            Node view = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(fxmlPath)));
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(fxmlPath)));
+            Node view = loader.load();
+            Object controller = loader.getController();
+            
+            // 更新当前控制器
+            this.currentController = controller;
+            
+            if (controller != null) {
+                if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.ChooseClassController) controller).setViewModel(sharedVm);
+                } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.MyScheduleController) controller).setViewModel(sharedVm);
+                } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.MyClassSubsceneController) controller).setViewModel(sharedVm);
+                } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.AddCourseController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.AddCourseController) controller).setViewModel(sharedVm);
+                } else if (controller instanceof app.vcampus.client.scene.SubScene.CourseScene.AddTeachingClassController) {
+                    ((app.vcampus.client.scene.SubScene.CourseScene.AddTeachingClassController) controller).setViewModel(sharedVm);
+                }
+            }
+            
             contentPane.getChildren().setAll(view);
         } catch (IOException e) {
             e.printStackTrace();
@@ -170,6 +215,9 @@ public class MainSceneController implements Initializable {
             secondaryMenuContainer.setVisible(false);
             secondaryMenuContainer.setManaged(false);
         }
+        
+        // 视图切换完成后刷新当前视图
+        refreshCurrentView();
     }
 
     /**
