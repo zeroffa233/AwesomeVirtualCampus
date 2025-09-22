@@ -1,5 +1,9 @@
 # 开发者指南
 
+> [!CAUTION]
+>
+> 本文的内容可能已过时。请参考标题为 SEU - 2025 Summer School - VCampus 的 README.md。
+
 ## 配置 IDEA
 
 1. 首先执行 `clone`将代码拉至本地
