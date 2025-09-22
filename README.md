@@ -62,7 +62,8 @@ mysql: error while loading shared libraries: libncurses.so.6
 配置好 MySQL 的 `root`  密码后，执行以下操作。
 
 ```bash
-mysql -u root -p # 这一步与你是否配置了mysql的环境变量相关，若没有配置，mysql指向的是 <yourpath>/mysql/bin/mysql
+mysql -u root -p --default-character-set=utf8mb4 
+# 这步与您是否配置了 mysql 的环境变量相关，若未配置，请用 <yourpath>/mysql/bin/mysql 替换 mysql
 mysql> CREATE DATABASE vcampus; # 注意，这里数据库的名称必须是 vcampus 
 mysql> USE vcampus;
 mysql> SOURCE /path/to/file.sql;
@@ -73,7 +74,7 @@ mysql> SHOW TABLES; # 检查
 
 ### 安装 openjdk 和 JavaFX，下载 JFoenix 
 
-`sudo pacman -S openjdk17-src`，而后参考 https://gluonhq.com/products/javafx/ ， https://openjfx.io/openjfx-docs/#install-javafx 安装和设置 JavaFX ，这里我选择Linux 17.0.16版本的 JavaFX SDK。
+`sudo pacman -S openjdk17-src`，而后参考 https://gluonhq.com/products/javafx/ ， https://openjfx.io/openjfx-docs/#install-javafx 安装和设置 `JavaFX` ，这里我选择 `Linux 17.0.16` 版本的 `JavaFX SDK`。
 
 访问 https://github.com/sshahine/JFoenix?tab=readme-ov-file ，直接点击项目 README 中的 [download jar](https://search.maven.org/remotecontent?filepath=com/jfoenix/jfoenix/9.0.10/jfoenix-9.0.10.jar) ，下载 `JFoenix for Java 9 `。
 
